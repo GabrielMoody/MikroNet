@@ -51,16 +51,16 @@ func (a *ProfileControllerImpl) CreateUser(c *fiber.Ctx) error {
 
 func (a *ProfileControllerImpl) LoginUser(c *fiber.Ctx) error {
 	Ctx := c.Context()
-	user := new(dto.UserLoginReq)
+	User := new(dto.UserLoginReq)
 
-	if err := c.BodyParser(&user); err != nil {
+	if err := c.BodyParser(&User); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status": "error",
 			"error":  err.Error(),
 		})
 	}
 
-	res, err := a.ProfileService.LoginUserService(Ctx, *user)
+	res, err := a.ProfileService.LoginUserService(Ctx, *User)
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -70,14 +70,14 @@ func (a *ProfileControllerImpl) LoginUser(c *fiber.Ctx) error {
 	}
 
 	claims := jwt.MapClaims{
-		"ID":    res.ID,
+		"id":    res.ID,
 		"email": res.Email,
 		"exp":   time.Now().Add(time.Hour * 24).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	v := helper.LoadEnv()
-	t, errToken := token.SignedString(v.GetString("JWT_SECRET"))
+	t, errToken := token.SignedString([]byte(v.GetString("JWT_SECRET")))
 
 	if errToken != nil {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{

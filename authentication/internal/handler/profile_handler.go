@@ -17,6 +17,7 @@ func ProfileHandler(r fiber.Router, db *gorm.DB) {
 
 	profileHandler.Get("/:userid", profileController.GetUser)
 	profileHandler.Post("", profileController.CreateUser)
+	profileHandler.Post("/login", profileController.LoginUser)
 	profileHandler.Delete("/:userid", profileController.DeleteUser)
 	profileHandler.Patch("/:userid", profileController.UpdateUser)
 	profileHandler.Patch("/:userid", profileController.ChangePassword)

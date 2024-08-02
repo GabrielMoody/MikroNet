@@ -1,6 +1,9 @@
-FROM golang
+FROM golang:alpine
+RUN apk update && apk add --no-cache git
 WORKDIR /app
-COPY . . 
-ENV PORT=81
-RUN 
-CMD [ "go", "cmd/main.go" ]
+COPY . .
+COPY config/auth-config.env /app/authentication/config/
+ENV PORT=8000
+RUN go mod tidy
+RUN go build -o binary ./cmd/main.go
+ENTRYPOINT ["/app/binary"]

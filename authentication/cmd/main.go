@@ -17,7 +17,7 @@ func main() {
 
 	handler.ProfileHandler(api, db)
 
-	err := app.Listen("localhost:8000")
+	err := app.Listen("0.0.0.0:8000")
 	if err != nil {
 		return
 	}

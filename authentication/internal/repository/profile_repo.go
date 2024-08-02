@@ -25,15 +25,17 @@ type ProfileRepoImpl struct {
 }
 
 func (a *ProfileRepoImpl) LoginUser(c context.Context, data dto.UserLoginReq) (res models.User, err error) {
-	if err := a.db.WithContext(c).First(res, "email = ?", data.Email).Error; err != nil {
+	var user models.User
+
+	if err := a.db.WithContext(c).First(&user, "email = ?", data.Email).Error; err != nil {
 		return res, err
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(data.Password), []byte(data.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password)); err != nil {
 		return res, err
 	}
 
-	return res, nil
+	return user, nil
 }
 
 func (a *ProfileRepoImpl) GetUser(c context.Context, id string) (res models.User, err error) {
@@ -52,6 +54,7 @@ func (a *ProfileRepoImpl) CreateUser(c context.Context, data models.User) (res s
 	}
 
 	user := models.User{
+		ID:           data.ID,
 		NamaLengkap:  data.NamaLengkap,
 		Email:        data.Email,
 		NomorTelepon: data.NomorTelepon,

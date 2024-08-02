@@ -18,7 +18,7 @@ type (
 
 	UserLoginReq struct {
 		Email    string `json:"email" validate:"required,email"`
-		Password string `json:"password" validate:"required,password"`
+		Password string `json:"password" validate:"required"`
 	}
 
 	UserChangeProfileReq struct {
