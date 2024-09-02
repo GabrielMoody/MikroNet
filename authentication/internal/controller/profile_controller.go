@@ -12,11 +12,8 @@ import (
 type ProfileController interface {
 	CreateUser(c *fiber.Ctx) error
 	LoginUser(c *fiber.Ctx) error
-	UpdateUser(c *fiber.Ctx) error
-	DeleteUser(c *fiber.Ctx) error
-	GetUser(c *fiber.Ctx) error
-	ChangePassword(c *fiber.Ctx) error
-	ForgotPassword(c *fiber.Ctx) error
+	SendResetPasswordLink(c *fiber.Ctx) error
+	ResetPassword(c *fiber.Ctx) error
 }
 
 type ProfileControllerImpl struct {
@@ -52,6 +49,7 @@ func (a *ProfileControllerImpl) CreateUser(c *fiber.Ctx) error {
 func (a *ProfileControllerImpl) LoginUser(c *fiber.Ctx) error {
 	Ctx := c.Context()
 	User := new(dto.UserLoginReq)
+	v := helper.LoadEnv()
 
 	if err := c.BodyParser(&User); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -72,11 +70,12 @@ func (a *ProfileControllerImpl) LoginUser(c *fiber.Ctx) error {
 	claims := jwt.MapClaims{
 		"id":    res.ID,
 		"email": res.Email,
+		"role":  res.Role,
 		"exp":   time.Now().Add(time.Hour * 24).Unix(),
+		"iss":   v.GetString("JWT_ISS"),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	v := helper.LoadEnv()
 	t, errToken := token.SignedString([]byte(v.GetString("JWT_SECRET")))
 
 	if errToken != nil {
@@ -93,27 +92,23 @@ func (a *ProfileControllerImpl) LoginUser(c *fiber.Ctx) error {
 	})
 }
 
-func (a *ProfileControllerImpl) UpdateUser(c *fiber.Ctx) error {
-	Ctx := c.Context()
-	user := new(dto.UserChangeProfileReq)
+func (a *ProfileControllerImpl) SendResetPasswordLink(c *fiber.Ctx) error {
+	var email dto.ForgotPasswordReq
+	ctx := c.Context()
 
-	jwtUser := c.Locals("user").(*jwt.Token)
-	claims := jwtUser.Claims.(jwt.MapClaims)
-	id := claims["ID"].(string)
-
-	if err := c.BodyParser(&user); err != nil {
+	if err := c.BodyParser(&email); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status": "error",
 			"error":  err.Error(),
 		})
 	}
 
-	res, err := a.ProfileService.EditUserService(Ctx, id, *user)
+	res, err := a.ProfileService.SendResetPasswordService(ctx, email)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status": "error",
-			"error":  err.Err.Error(),
+			"err":    err.Err.Error(),
 		})
 	}
 
@@ -123,66 +118,19 @@ func (a *ProfileControllerImpl) UpdateUser(c *fiber.Ctx) error {
 	})
 }
 
-func (a *ProfileControllerImpl) DeleteUser(c *fiber.Ctx) error {
-	Ctx := c.Context()
+func (a *ProfileControllerImpl) ResetPassword(c *fiber.Ctx) error {
+	code := c.Params("code")
+	var rp dto.ResetPasswordReq
+	ctx := c.Context()
 
-	jwtUser := c.Locals("user").(*jwt.Token)
-	claims := jwtUser.Claims.(jwt.MapClaims)
-	id := claims["ID"].(string)
-
-	res, err := a.ProfileService.DeleteUserService(Ctx, id)
-
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "error",
-			"error":  err.Err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status": "success",
-		"data":   res,
-	})
-}
-
-func (a *ProfileControllerImpl) GetUser(c *fiber.Ctx) error {
-	Ctx := c.Context()
-
-	jwtUser := c.Locals("user").(*jwt.Token)
-	claims := jwtUser.Claims.(jwt.MapClaims)
-	id := claims["ID"].(string)
-
-	res, err := a.ProfileService.GetUserService(Ctx, id)
-
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "error",
-			"error":  err.Err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status": "success",
-		"data":   res,
-	})
-}
-
-func (a *ProfileControllerImpl) ChangePassword(c *fiber.Ctx) error {
-	jwtUser := c.Locals("user").(*jwt.Token)
-	claims := jwtUser.Claims.(jwt.MapClaims)
-	id := claims["ID"].(string)
-
-	Ctx := c.Context()
-	user := new(dto.ChangePasswordReq)
-
-	if err := c.BodyParser(&user); err != nil {
+	if err := c.BodyParser(&rp); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status": "error",
 			"error":  err.Error(),
 		})
 	}
 
-	res, err := a.ProfileService.ChangePasswordService(Ctx, user.OldPassword, user.NewPassword, id)
+	res, err := a.ProfileService.ResetPassword(ctx, rp, code)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -195,11 +143,6 @@ func (a *ProfileControllerImpl) ChangePassword(c *fiber.Ctx) error {
 		"status": "success",
 		"data":   res,
 	})
-}
-
-func (a *ProfileControllerImpl) ForgotPassword(c *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
 }
 
 func NewProfileController(profileService service.ProfileService) ProfileController {

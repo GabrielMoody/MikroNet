@@ -2,18 +2,24 @@ package dto
 
 type (
 	UserRegistrationsReq struct {
-		NamaLengkap         string `json:"nama_lengkap" form:"nama_lengkap" validate:"required"`
-		Email               string `json:"email" form:"email" validate:"required,email"`
-		NomorTelepon        string `json:"nomor_telepon" form:"nomor_telepon" validate:"required"`
-		KataSandi           string `json:"kata_sandi" form:"kata_sandi" validate:"required,min=8"`
-		KonfirmasiKataSandi string `json:"konfirmasi_kata_sandi" form:"konfirmasi_kata_sandi" validate:"required,eqfield=KataSandi"`
+		FirstName            string `json:"first_name" validate:"required"`
+		LastName             string `json:"last_name"`
+		Email                string `json:"email" validate:"required,email"`
+		PhoneNumber          string `json:"phone_number" validate:"required"`
+		DateOfBirth          string `json:"date_of_birth" validate:"required"`
+		Age                  int    `json:"age" validate:"required"`
+		Gender               string `json:"gender" validate:"required"`
+		Password             string `json:"password" validate:"required,min=8"`
+		PasswordConfirmation string `json:"password_confirmation" validate:"required,eqfield=Password"`
 	}
 
 	UserRegistrationsResp struct {
-		ID           string `json:"id"`
-		NamaLengkap  string `json:"nama_lengkap"`
-		Email        string `json:"email"`
-		NomorTelepon string `json:"nomor_telepon"`
+		ID          string `json:"id"`
+		FirstName   string `json:"first_name"`
+		LastName    string `json:"last_name"`
+		Email       string `json:"email"`
+		PhoneNumber string `json:"phone_number"`
+		Role        string `json:"role"`
 	}
 
 	UserLoginReq struct {
@@ -21,16 +27,12 @@ type (
 		Password string `json:"password" validate:"required"`
 	}
 
-	UserChangeProfileReq struct {
-		NamaLengkap  string `json:"nama_lengkap,omitempty" form:"nama_lengkap"`
-		Email        string `json:"email,omitempty" form:"email" validate:"email"`
-		NomorTelepon string `json:"nomor_telepon,omitempty" form:"nomor_telepon"`
-		JenisKelamin string `json:"jenis_kelamin,omitempty" form:"jenis_kelamin"`
+	ForgotPasswordReq struct {
+		Email string `json:"email" validate:"required,email"`
 	}
 
-	ChangePasswordReq struct {
-		OldPassword        string `json:"old_password" form:"old_password"`
-		NewPassword        string `json:"new_password" form:"new_password" validate:"required,min=8"`
-		NewPasswordConfirm string `json:"new_password_confirm" form:"new_password_confirm" validate:"required,min=8,eqfield=NewPassword"`
+	ResetPasswordReq struct {
+		Password             string `json:"password" validate:"required,min=8"`
+		PasswordConfirmation string `json:"password_confirmation" validate:"required,eqfield=Password"`
 	}
 )

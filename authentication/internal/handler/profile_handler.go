@@ -13,13 +13,10 @@ func ProfileHandler(r fiber.Router, db *gorm.DB) {
 	profileService := service.NewProfileService(repo)
 	profileController := controller.NewProfileController(profileService)
 
-	profileHandler := r.Group("/profile")
+	profileHandler := r.Group("/auth")
 
-	profileHandler.Get("/:userid", profileController.GetUser)
-	profileHandler.Post("", profileController.CreateUser)
+	profileHandler.Post("/register", profileController.CreateUser)
 	profileHandler.Post("/login", profileController.LoginUser)
-	profileHandler.Delete("/:userid", profileController.DeleteUser)
-	profileHandler.Patch("/:userid", profileController.UpdateUser)
-	profileHandler.Patch("/:userid", profileController.ChangePassword)
-	profileHandler.Patch("", profileController.ForgotPassword)
+	profileHandler.Post("/reset-password", profileController.SendResetPasswordLink)
+	profileHandler.Put("/reset-password/:code", profileController.ResetPassword)
 }

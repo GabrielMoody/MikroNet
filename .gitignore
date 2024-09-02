@@ -1,2 +1,4 @@
 authentication/config/auth-config.env
+profiles/config/auth-config.env
+POSTGRES_PASSWORD
 .idea
