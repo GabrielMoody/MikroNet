@@ -1,0 +1,162 @@
+package service
+
+import (
+	"context"
+	"fmt"
+	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
+	"github.com/GabrielMoody/MikroNet/authentication/internal/helper"
+	"github.com/GabrielMoody/MikroNet/authentication/internal/models"
+	"github.com/GabrielMoody/MikroNet/authentication/internal/repository"
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/gomail.v2"
+	"time"
+)
+
+type ProfileService interface {
+	CreateUserService(c context.Context, data dto.UserRegistrationsReq) (res string, err *helper.ErrorStruct)
+	LoginUserService(c context.Context, data dto.UserLoginReq) (res dto.UserRegistrationsResp, err *helper.ErrorStruct)
+	SendResetPasswordService(c context.Context, email dto.ForgotPasswordReq) (res string, err *helper.ErrorStruct)
+	ResetPassword(c context.Context, data dto.ResetPasswordReq, code string) (res string, err *helper.ErrorStruct)
+}
+
+type ProfileServiceImpl struct {
+	ProfileRepo repository.ProfileRepo
+}
+
+func (a *ProfileServiceImpl) CreateUserService(c context.Context, data dto.UserRegistrationsReq) (res string, err *helper.ErrorStruct) {
+	if errValidate := helper.Validate.Struct(data); errValidate != nil {
+		return "", &helper.ErrorStruct{
+			Err:  errValidate,
+			Code: fiber.StatusBadRequest,
+		}
+	}
+
+	format := "01-02-2006"
+	date, _ := time.Parse(format, data.DateOfBirth)
+
+	resRepo, errRepo := a.ProfileRepo.CreateUser(c, models.User{
+		ID:          uuid.NewString(),
+		FirstName:   data.FirstName,
+		LastName:    data.LastName,
+		Email:       data.Email,
+		PhoneNumber: data.PhoneNumber,
+		Password:    data.Password,
+		Age:         data.Age,
+		DateOfBirth: &date,
+		Gender:      data.Gender,
+	})
+
+	if errRepo != nil {
+		return res, &helper.ErrorStruct{
+			Err:  errRepo,
+			Code: fiber.StatusInternalServerError,
+		}
+	}
+
+	return resRepo, nil
+}
+
+func (a *ProfileServiceImpl) LoginUserService(c context.Context, data dto.UserLoginReq) (res dto.UserRegistrationsResp, err *helper.ErrorStruct) {
+	if err := helper.Validate.Struct(data); err != nil {
+		return res, &helper.ErrorStruct{
+			Err:  err,
+			Code: fiber.StatusBadRequest,
+		}
+	}
+
+	resRepo, errRepo := a.ProfileRepo.LoginUser(c, data)
+
+	if errRepo != nil {
+		return res, &helper.ErrorStruct{
+			Err:  errRepo,
+			Code: fiber.StatusInternalServerError,
+		}
+	}
+
+	return dto.UserRegistrationsResp{
+		ID:          resRepo.ID,
+		FirstName:   resRepo.FirstName,
+		LastName:    resRepo.LastName,
+		Email:       resRepo.Email,
+		PhoneNumber: resRepo.PhoneNumber,
+		Role:        resRepo.Role,
+	}, nil
+}
+
+func (a *ProfileServiceImpl) SendResetPasswordService(c context.Context, email dto.ForgotPasswordReq) (res string, err *helper.ErrorStruct) {
+	if err := helper.Validate.Struct(email); err != nil {
+		return res, &helper.ErrorStruct{
+			Err:  err,
+			Code: fiber.StatusBadRequest,
+		}
+	}
+
+	code := uuid.NewString()
+	v := helper.LoadEnv()
+
+	resRepo, errRepo := a.ProfileRepo.SendResetPassword(c, email.Email, code)
+
+	if errRepo != nil {
+		return res, &helper.ErrorStruct{
+			Err:  errRepo,
+			Code: fiber.StatusInternalServerError,
+		}
+	}
+
+	const CONFIG_SMTP_HOST = "sandbox.smtp.mailtrap.io"
+	const CONFIG_SMTP_PORT = 2525
+	const CONFIG_SENDER_NAME = "Mikronet <hello@example.com>"
+	const CONFIG_AUTH_EMAIL = "499bb68e3107dc"
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", CONFIG_SENDER_NAME)
+	mailer.SetHeader("To", email.Email)
+	mailer.SetHeader("Subject", "Reset Password")
+	mailer.SetBody("text/html", fmt.Sprintf("http://localhost:8000/profile/api/profile/reset-password/%s", resRepo.Code))
+
+	dialer := gomail.NewDialer(
+		CONFIG_SMTP_HOST,
+		CONFIG_SMTP_PORT,
+		CONFIG_AUTH_EMAIL,
+		v.GetString("EMAIL_PASSWORD"),
+	)
+
+	if err := dialer.DialAndSend(mailer); err != nil {
+		return res, &helper.ErrorStruct{
+			Err:  err,
+			Code: fiber.StatusInternalServerError,
+		}
+	}
+
+	return "Link reset password telah dikirim ke email anda!", nil
+}
+
+func (a *ProfileServiceImpl) ResetPassword(c context.Context, data dto.ResetPasswordReq, code string) (res string, err *helper.ErrorStruct) {
+	if err := helper.Validate.Struct(data); err != nil {
+		return "", &helper.ErrorStruct{
+			Err:  err,
+			Code: fiber.StatusBadRequest,
+		}
+	}
+
+	password, _ := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+
+	resRepo, errRepo := a.ProfileRepo.ResetPassword(c, string(password), code)
+
+	if errRepo != nil {
+		return "", &helper.ErrorStruct{
+			Err:  errRepo,
+			Code: fiber.StatusInternalServerError,
+		}
+	}
+
+	return resRepo, nil
+}
+
+func NewProfileService(ProfileRepo repository.ProfileRepo) ProfileService {
+	return &ProfileServiceImpl{
+		ProfileRepo: ProfileRepo,
+	}
+}

@@ -1,0 +1,179 @@
+openapi: 3.0.0
+info:
+  title: MikroNet API
+  description: "API to serve both mobile and website platform for Mikronet"
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/
+paths:
+  /api/register:
+    post:
+      tags:
+        - "Authentication"
+      summary: "registrasi pengguna baru"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nama_lengkap:
+                  type: string
+                email:  
+                  type: string
+                nomor_telepon:
+                  type: string
+                kata_sandi:
+                  type: string
+                konfirmasi_kata_sandi:
+                  type: string
+      responses:
+        '201':
+          description: "Sukses registrasi akun baru"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: 
+                    type: string
+                  message:
+                    type: string
+
+  /api/login:
+    post:
+      tags:
+        - "Authentication"
+      summary: "login akun"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:  
+                  type: string
+                kata_sandi:
+                  type: string
+      responses:
+        '201':
+          description: "Sukses login akun"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: 
+                    type: string
+                  message:
+                    type: string
+
+  /api/profil:
+    get:
+      security:
+        - firebaseAuth: []
+      summary: "Mendapatkan data profil pengguna"
+      responses:
+        '200':
+          description: "Berhasil mendapatkan data pengguna"
+          content:
+            application/json:
+              schema: 
+                type: object
+                $ref: "#/components/schemas/profil"
+        
+        '403':
+          description: "Pengguna tidak memiliki hak akses"
+          content:
+            application/json:
+              schema: 
+                type: object
+                $ref: "#/components/schemas/error_response"
+
+
+  /api/edit-profil:
+    patch:
+      security:
+        - firebaseAuth: []
+      summary: "Edit data profil"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/profil"
+      responses:
+        '200':
+          description: "Berhasil memperbaharui data pengguna"
+          content:
+            application/json:
+              schema: 
+                type: object
+                $ref: "#/components/schemas/succes_response"
+
+
+
+  /api/ubah-kata-sandi:
+    patch:
+      security:
+        - firebaseAuth: []
+
+  /api/lupa-kata-sandi:
+    patch:
+
+  /api/cari-mikro:
+    get:
+
+  /api/riwayat:
+    get:
+
+  /api/carter:
+    post:
+
+  /api/perjalanan:
+    get:
+
+  /api/permintaan:
+    get:
+
+  /api/pendapatan:
+    get:
+
+
+components:
+  securitySchemes:
+    firebaseAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    profil: 
+      type: object
+      properties:
+        nama_lengkap:
+          type: string
+        email:  
+          type: string
+        nomor_telepon:
+          type: string
+        jenis_kelamin:
+          type: string
+        tanggal_lahir:
+          type: string
+
+    succes_response:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string        
+    
+    error_response:
+      type: object
+      properties:
+        status:
+          type: string
+          default: "Failed"
+        error_message:
+          type: string
+          default: "Something happened!"
