@@ -14,7 +14,6 @@ type ProfileService interface {
 	EditUserService(c context.Context, id string, data dto.UserChangeProfileReq) (res string, err *helper.ErrorStruct)
 	DeleteUserService(c context.Context, id string) (res string, err *helper.ErrorStruct)
 	ChangePasswordService(c context.Context, id string, data dto.ChangePasswordReq) (res string, err *helper.ErrorStruct)
-	SendResetPasswordService(c context.Context, email dto.ForgotPasswordReq) (res string, err *helper.ErrorStruct)
 }
 
 type ProfileServiceImpl struct {

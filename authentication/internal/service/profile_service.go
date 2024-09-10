@@ -105,16 +105,39 @@ func (a *ProfileServiceImpl) SendResetPasswordService(c context.Context, email d
 		}
 	}
 
-	const CONFIG_SMTP_HOST = "sandbox.smtp.mailtrap.io"
-	const CONFIG_SMTP_PORT = 2525
-	const CONFIG_SENDER_NAME = "Mikronet <hello@example.com>"
-	const CONFIG_AUTH_EMAIL = "499bb68e3107dc"
+	const CONFIG_SMTP_HOST = "smtp.gmail.com"
+	const CONFIG_SMTP_PORT = 587
+	const CONFIG_SENDER_NAME = "Mikronet <test.mikronet@gmail.com>"
+	const CONFIG_AUTH_EMAIL = "test.mikronet@gmail.com"
+
+	html := fmt.Sprintf(`
+		<a href="http://localhost:8000/auth/api/auth/reset-password/%s"
+        style="
+		color: #fff;
+		background-color: #0069d9;
+		display: inline-block;
+        font-weight: 400;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        border: 1px solid transparent;
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        border-radius: .25rem;
+		text-decoration: none;">Reset Password</a>
+	`, resRepo.Code)
 
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", CONFIG_SENDER_NAME)
 	mailer.SetHeader("To", email.Email)
 	mailer.SetHeader("Subject", "Reset Password")
-	mailer.SetBody("text/html", fmt.Sprintf("http://localhost:8000/profile/api/profile/reset-password/%s", resRepo.Code))
+	mailer.SetAddressHeader("Cc", CONFIG_AUTH_EMAIL, "Mikronet <test.mikronet@gmail.com>")
+	mailer.SetBody("text/html", html)
 
 	dialer := gomail.NewDialer(
 		CONFIG_SMTP_HOST,

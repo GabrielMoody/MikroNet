@@ -7,8 +7,9 @@ import (
 )
 
 type message struct {
-	Lat float64 `json:"lat"`
-	Lng float64 `json:"lng"`
+	UserID string  `json:"user_id"`
+	Lat    float64 `json:"lat"`
+	Lng    float64 `json:"lng"`
 }
 
 type Hub struct {
@@ -66,10 +67,9 @@ func LocationTracking(h *Hub) func(*websocket.Conn) {
 	return func(c *websocket.Conn) {
 		defer func() {
 			h.Unregister <- c
-			//_ = c.Close()
+			_ = c.Close()
 		}()
 
-		//name := c.Query("name", "driver")
 		h.Register <- c
 
 		for {

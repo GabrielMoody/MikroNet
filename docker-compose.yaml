@@ -10,15 +10,30 @@ volumes:
       device: tmpfs
 
 services:
-  auth-mysql-database:
-    image: mysql
+  pgadmin:
+    image: dpage/pgadmin4
+    depends_on:
+      auth-postgres-database:
+        condition: service_healthy
+        restart: true
+    restart: always
     ports:
-      - 3306:3306
+      - "8888:80"
     environment:
-      - MYSQL_ROOT_PASSWORD=123
-      - MYSQL_DATABASE=mikronet
+      PGADMIN_DEFAULT_EMAIL: gabriel@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: 123
+    networks:
+      - kong-net
+
+  auth-postgres-database:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: mikronet
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
       interval: 10s
       retries: 5
       start_period: 30s
@@ -31,13 +46,13 @@ services:
     ports:
       - 8010:8010
     depends_on:
-      auth-mysql-database:
+      auth-postgres-database:
         condition: service_healthy
         restart: true
     env_file:
       - authentication/config/auth-config.env
     environment:
-      - MYSQL_HOST=auth-mysql-database
+      - POSTGRES_HOST=auth-postgres-database
     networks:
       - kong-net
 
@@ -46,13 +61,28 @@ services:
     ports:
       - 8011:8011
     depends_on:
-      auth-mysql-database:
+      auth-postgres-database:
         condition: service_healthy
         restart: true
     env_file:
       - authentication/config/auth-config.env
     environment:
-      - MYSQL_HOST=auth-mysql-database
+      - MYSQL_HOST=auth-postgres-database
+    networks:
+      - kong-net
+
+  owner-service:
+    build: business_owner
+    ports:
+      - 8012:8012
+    depends_on:
+      auth-postgres-database:
+        condition: service_healthy
+        restart: true
+    env_file:
+      - business_owner/config/auth-config.env
+    environment:
+      - POSTGRES_HOST=auth-postgres-database
     networks:
       - kong-net
 

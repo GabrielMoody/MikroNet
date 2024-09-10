@@ -11,8 +11,6 @@ type ProfileController interface {
 	DeleteUser(c *fiber.Ctx) error
 	GetUser(c *fiber.Ctx) error
 	ChangePassword(c *fiber.Ctx) error
-	ForgotPassword(c *fiber.Ctx) error
-	SendResetPassword(c *fiber.Ctx) error
 }
 
 type ProfileControllerImpl struct {
@@ -124,19 +122,6 @@ func (a *ProfileControllerImpl) ChangePassword(c *fiber.Ctx) error {
 		"status": "success",
 		"data":   res,
 	})
-}
-
-func (a *ProfileControllerImpl) ForgotPassword(c *fiber.Ctx) error {
-	var email dto.ForgotPasswordReq
-
-	if err := c.BodyParser(&email); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "error",
-			"error":  err.Error(),
-		})
-	}
-
-	return nil
 }
 
 func NewProfileController(profileService service.ProfileService) ProfileController {

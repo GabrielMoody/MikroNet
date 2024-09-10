@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.1.0
 info:
   title: MikroNet API
   description: "API to serve both mobile and website platform for Mikronet"
@@ -10,23 +10,13 @@ paths:
     post:
       tags:
         - "Authentication"
-      summary: "registrasi pengguna baru"
+      summary: "Register new account"
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                nama_lengkap:
-                  type: string
-                email:  
-                  type: string
-                nomor_telepon:
-                  type: string
-                kata_sandi:
-                  type: string
-                konfirmasi_kata_sandi:
-                  type: string
+              allOf:
+                - $ref: '#/components/schemas/profile'
       responses:
         '201':
           description: "Sukses registrasi akun baru"
@@ -80,7 +70,7 @@ paths:
             application/json:
               schema: 
                 type: object
-                $ref: "#/components/schemas/profil"
+                $ref: '#/components/schemas/profile'
         
         '403':
           description: "Pengguna tidak memiliki hak akses"
@@ -88,7 +78,6 @@ paths:
             application/json:
               schema: 
                 type: object
-                $ref: "#/components/schemas/error_response"
 
 
   /api/edit-profil:
@@ -101,7 +90,7 @@ paths:
           application/json:
             schema:
               type: object
-              $ref: "#/components/schemas/profil"
+              $ref: "#/components/schemas/profile"
       responses:
         '200':
           description: "Berhasil memperbaharui data pengguna"
@@ -109,7 +98,7 @@ paths:
             application/json:
               schema: 
                 type: object
-                $ref: "#/components/schemas/succes_response"
+
 
 
 
@@ -145,35 +134,52 @@ components:
     firebaseAuth:
       type: http
       scheme: bearer
+
   schemas:
-    profil: 
+
+    profile:
+      allOf:
+        - $ref: '#/components/schemas/change_profile'
+        - $ref: '#/components/schemas/reset_password'
+
+    change_profile:
       type: object
       properties:
-        nama_lengkap:
+        first_name:
           type: string
-        email:  
+        last_name:
           type: string
-        nomor_telepon:
+        email:
           type: string
-        jenis_kelamin:
+        phone_number:
           type: string
-        tanggal_lahir:
+        gender:
+          type: string
+        date_of_birth:
+          type: string
+        age:
+          type: number
+
+    reset_password:
+      type: object
+      properties:
+        password:
+          type: string
+        password_confirmation:
           type: string
 
-    succes_response:
+    change_password:
+      allOf:
+        - $ref: '#/components/schemas/reset_password'
+        - type: object
+          properties:
+            old_password:
+              type: string
+
+    login:
       type: object
       properties:
-        status:
+        email:
           type: string
-        message:
-          type: string        
-    
-    error_response:
-      type: object
-      properties:
-        status:
+        password:
           type: string
-          default: "Failed"
-        error_message:
-          type: string
-          default: "Something happened!"

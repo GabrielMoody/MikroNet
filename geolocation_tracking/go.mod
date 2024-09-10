@@ -13,6 +13,7 @@ require (
 	github.com/glaslos/go-osm v0.0.0-20170316165313-16aac6148584 // indirect
 	github.com/gofiber/contrib/websocket v1.3.2 // indirect
 	github.com/gofiber/fiber/v2 v2.52.5 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/geo v0.0.0-20230421003525-6adc56603217 // indirect
 	github.com/google/uuid v1.6.0 // indirect

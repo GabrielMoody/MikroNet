@@ -33,20 +33,20 @@ ws.onmessage = function (e) {
     marker = L.marker([data.lat, data.lng], {icon: mikroIcon}).addTo(map)
 }
 
-// navigator.geolocation.watchPosition(success, error)
-//
-// function success(pos) {
-//     const lat = pos.coords.latitude
-//     const lon = pos.coords.longitude
-//
-//     if(marker) {
-//         map.removeLayer(marker)
-//         map.removeLayer(circle)
-//     }
-//
-//     marker = L.marker([lat, lon], {icon: mikroIcon}).addTo(map)
-// }
-//
-// function error(err) {
-//     console.log(err)
-// }
+navigator.geolocation.watchPosition(success, error)
+
+function success(pos) {
+    const lat = pos.coords.latitude
+    const lon = pos.coords.longitude
+
+    if(marker) {
+        map.removeLayer(marker)
+        map.removeLayer(circle)
+    }
+
+    marker = L.marker([lat, lon], {icon: mikroIcon}).addTo(map)
+}
+
+function error(err) {
+    console.log(err)
+}

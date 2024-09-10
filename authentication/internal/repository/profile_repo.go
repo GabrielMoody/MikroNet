@@ -15,10 +15,23 @@ type ProfileRepo interface {
 	LoginUser(c context.Context, data dto.UserLoginReq) (res models.User, err error)
 	SendResetPassword(c context.Context, email string, code string) (data models.ResetPassword, err error)
 	ResetPassword(c context.Context, password string, code string) (res string, err error)
+	OAuthLogin(c context.Context, token string, email string) (res string, err error)
 }
 
 type ProfileRepoImpl struct {
 	db *gorm.DB
+}
+
+func (a *ProfileRepoImpl) OAuthLogin(c context.Context, token string, email string) (res string, err error) {
+	var user models.User
+
+	if err := a.db.WithContext(c).First(&user, "email = ?", email).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+		}
+	}
+
+	panic("Implement Me")
 }
 
 func (a *ProfileRepoImpl) LoginUser(c context.Context, data dto.UserLoginReq) (res models.User, err error) {
