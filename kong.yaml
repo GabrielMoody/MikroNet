@@ -1,0 +1,49 @@
+_format_version: "3.0"
+
+# Services
+services:
+  - name: profile_service
+    url: http://profile_service:8011
+    routes:
+      - name: profile_route
+        paths:
+          - /profile
+        methods:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+
+  - name: auth_service
+    url: http://auth_service:8011
+    routes:
+      - name: auth_route
+        paths:
+          - /auth
+        methods:
+          - POST
+
+  - name: owner_service
+    url: http://owner_service:8012
+    routes:
+      - name: owner_route
+        paths:
+          - /owner
+        methods:
+          - GET
+          - POST
+          - PATCH
+          - PUT
+          - DELETE
+
+# Plugins (Global or Per-Service)
+plugins:
+  - name: key-auth
+    enabled: true
+
+# Consumers (Optional)
+consumers:
+  - username: consumer_1
+    keyauth_credentials:
+      - key: my-secret-key

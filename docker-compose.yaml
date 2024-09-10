@@ -13,7 +13,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     depends_on:
-      auth-postgres-database:
+      auth_postgres_database:
         condition: service_healthy
         restart: true
     restart: always
@@ -25,7 +25,7 @@ services:
     networks:
       - kong-net
 
-  auth-postgres-database:
+  auth_postgres_database:
     image: postgres:latest
     ports:
       - 5432:5432
@@ -40,49 +40,54 @@ services:
       timeout: 10s
     networks:
       - kong-net
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  auth-service:
+  auth_service:
     build: authentication
+    container_name: auth_service
     ports:
       - 8010:8010
     depends_on:
-      auth-postgres-database:
+      auth_postgres_database:
         condition: service_healthy
         restart: true
     env_file:
       - authentication/config/auth-config.env
     environment:
-      - POSTGRES_HOST=auth-postgres-database
+      - POSTGRES_HOST=auth_postgres_database
     networks:
       - kong-net
 
   profile_service:
     build: profiles
+    container_name: profile_service
     ports:
       - 8011:8011
     depends_on:
-      auth-postgres-database:
+      auth_postgres_database:
         condition: service_healthy
         restart: true
     env_file:
       - authentication/config/auth-config.env
     environment:
-      - MYSQL_HOST=auth-postgres-database
+      - POSTGRES_HOST=auth_postgres_database
     networks:
       - kong-net
 
-  owner-service:
+  owner_service:
     build: business_owner
+    container_name: owner_service
     ports:
       - 8012:8012
     depends_on:
-      auth-postgres-database:
+      auth_postgres_database:
         condition: service_healthy
         restart: true
     env_file:
       - business_owner/config/auth-config.env
     environment:
-      - POSTGRES_HOST=auth-postgres-database
+      - POSTGRES_HOST=auth_postgres_database
     networks:
       - kong-net
 

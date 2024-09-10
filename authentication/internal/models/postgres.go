@@ -21,11 +21,11 @@ func DatabaseInit() *gorm.DB {
 
 	log.Print("Connection Succeed")
 
-	err = db.AutoMigrate(&User{}, &ResetPassword{})
+	//err = db.AutoMigrate(&User{}, &ResetPassword{})
 
-	if err != nil {
-		panic(fmt.Errorf("error while migrating database"))
-	}
+	//if err != nil {
+	//	panic(fmt.Errorf("error while migrating database"))
+	//}
 
 	return db
 }
