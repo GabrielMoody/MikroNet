@@ -16,6 +16,7 @@ import (
 
 type ProfileService interface {
 	CreateUserService(c context.Context, data dto.UserRegistrationsReq) (res string, err *helper.ErrorStruct)
+	CreateDriverService(c context.Context, data dto.UserRegistrationsReq) (res string, err *helper.ErrorStruct)
 	LoginUserService(c context.Context, data dto.UserLoginReq) (res dto.UserRegistrationsResp, err *helper.ErrorStruct)
 	SendResetPasswordService(c context.Context, email dto.ForgotPasswordReq) (res string, err *helper.ErrorStruct)
 	ResetPassword(c context.Context, data dto.ResetPasswordReq, code string) (res string, err *helper.ErrorStruct)
@@ -23,6 +24,11 @@ type ProfileService interface {
 
 type ProfileServiceImpl struct {
 	ProfileRepo repository.ProfileRepo
+}
+
+func (a *ProfileServiceImpl) CreateDriverService(c context.Context, data dto.UserRegistrationsReq) (res string, err *helper.ErrorStruct) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (a *ProfileServiceImpl) CreateUserService(c context.Context, data dto.UserRegistrationsReq) (res string, err *helper.ErrorStruct) {

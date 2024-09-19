@@ -17,4 +17,7 @@ func DriverHandler(r fiber.Router, db *gorm.DB) {
 
 	api.Get("/status/:id", controllerDriver.GetStatus)
 	api.Post("/status/:id", controllerDriver.SetStatus)
+	api.Get("/seats/:id", controllerDriver.GetAvailableSeats)
+	api.Patch("/seats/:id", controllerDriver.SetAvailableSeats)
+	api.Get("/histories/:id", controllerDriver.GetTripHistories)
 }

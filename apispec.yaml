@@ -6,7 +6,19 @@ info:
 servers:
   - url: http://localhost:3000/
 paths:
-  /api/register:
+  /api/auth/register/driver:
+    post:
+      tags:
+        - "Authentication"
+      summary: "Register driver account"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/profile'
+
+  /api/auth/register:
     post:
       tags:
         - "Authentication"
@@ -30,11 +42,11 @@ paths:
                   message:
                     type: string
 
-  /api/login:
+  /api/auth/login:
     post:
       tags:
         - "Authentication"
-      summary: "login akun"
+      summary: "Login"
       requestBody:
         content:
           application/json:
@@ -58,11 +70,19 @@ paths:
                   message:
                     type: string
 
-  /api/profil:
+  /api/profile/profile:
     get:
       security:
-        - firebaseAuth: []
+        - JWT: []
+      tags:
+        - "Profiles"
       summary: "Mendapatkan data profil pengguna"
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       responses:
         '200':
           description: "Berhasil mendapatkan data pengguna"
@@ -79,12 +99,19 @@ paths:
               schema: 
                 type: object
 
-
-  /api/edit-profil:
+  /api/profile/:
     patch:
       security:
-        - firebaseAuth: []
+        - JWT: []
+      tags:
+        - "Profiles"
       summary: "Edit data profil"
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -99,13 +126,26 @@ paths:
               schema: 
                 type: object
 
-
-
-
-  /api/ubah-kata-sandi:
+  /api/profile/change-password/:
     patch:
       security:
-        - firebaseAuth: []
+        - JWT: []
+      tags:
+        - "Profiles"
+      summary: "Change user password"
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/change_password"
+
 
   /api/lupa-kata-sandi:
     patch:
@@ -131,12 +171,11 @@ paths:
 
 components:
   securitySchemes:
-    firebaseAuth:
+    JWT:
       type: http
       scheme: bearer
 
   schemas:
-
     profile:
       allOf:
         - $ref: '#/components/schemas/change_profile'

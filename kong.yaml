@@ -1,13 +1,12 @@
 _format_version: "3.0"
 
-# Services
 services:
   - name: profile_service
     url: http://profile_service:8011
     routes:
       - name: profile_route
         paths:
-          - /profile
+          - /api/profile
         methods:
           - GET
           - POST
@@ -16,11 +15,11 @@ services:
           - DELETE
 
   - name: auth_service
-    url: http://auth_service:8011
+    url: http://auth_service:8010
     routes:
       - name: auth_route
         paths:
-          - /auth
+          - /api/auth
         methods:
           - POST
 
@@ -29,7 +28,20 @@ services:
     routes:
       - name: owner_route
         paths:
-          - /owner
+          - /api/owner
+        methods:
+          - GET
+          - POST
+          - PATCH
+          - PUT
+          - DELETE
+
+  - name: driver_service
+    url: http://driver_service:8014
+    routes:
+      - name: driver_route
+        paths:
+          - /api/driver
         methods:
           - GET
           - POST

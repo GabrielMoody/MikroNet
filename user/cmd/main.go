@@ -17,9 +17,9 @@ func main() {
 
 	api := app.Group("/api")
 
-	handler.DriverHandler(api, db)
+	handler.UserHandler(api, db)
 
-	err := app.Listen("0.0.0.0:8013")
+	err := app.Listen("0.0.0.0:8014")
 
 	if err != nil {
 		log.Fatal(err)

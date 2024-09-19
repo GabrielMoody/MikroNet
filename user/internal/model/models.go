@@ -23,3 +23,27 @@ type Driver struct {
 	RegistrationNumber string `gorm:"column:registration_number" json:"registration_number"`
 	Status             string `gorm:"column:status" json:"status"`
 }
+
+type Order struct {
+	ID              string `gorm:"column:id;primaryKey" json:"id"`
+	UserID          string `gorm:"column:user_id" json:"user_id"`
+	DriverID        string `gorm:"column:driver_id" json:"driver_id"`
+	PickUpLocation  string `gorm:"column:pickup_location" json:"pickup_location"`
+	DropOffLocation string `gorm:"column:drop_off_location" json:"drop_off_location"`
+	Status          string `gorm:"column:status" json:"status"`
+}
+
+type Route struct {
+	ID               string `gorm:"column:id;primaryKey" json:"id"`
+	RouteName        string `gorm:"column:route_name" json:"route_name"`
+	InitialRoute     string `gorm:"column:initial_route" json:"initial_route"`
+	DestinationRoute string `gorm:"column:destination_route" json:"destination_route"`
+}
+
+type Review struct {
+	ID       string `gorm:"column:id;primaryKey" json:"id"`
+	UserID   string `gorm:"column:user_id" json:"user_id"`
+	DriverID string `gorm:"column:driver_id" json:"driver_id"`
+	Review   string `gorm:"column:review" json:"review"`
+	Star     int    `gorm:"column:star" json:"star"`
+}

@@ -8,13 +8,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func DriverHandler(r fiber.Router, db *gorm.DB) {
-	repo := repository.NewDriverRepo(db)
-	serviceDriver := service.NewDriverService(repo)
-	controllerDriver := controller.NewDriverController(serviceDriver)
+func UserHandler(r fiber.Router, db *gorm.DB) {
+	repo := repository.NewUserRepo(db)
+	serviceUser := service.NewUserService(repo)
+	controllerUser := controller.NewUserController(serviceUser)
 
-	api := r.Group("/driver")
+	api := r.Group("/user")
 
-	api.Get("/status/:id", controllerDriver.GetStatus)
-	api.Post("/status/:id", controllerDriver.SetStatus)
+	api.Get("/histories/:id", controllerUser.GetTripHistories)
+	api.Get("/routes", controllerUser.GetRoutes)
+	api.Post("/orders/:id", controllerUser.OrderMikro)
 }

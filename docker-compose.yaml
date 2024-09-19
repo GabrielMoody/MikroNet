@@ -10,10 +10,31 @@ volumes:
       device: tmpfs
 
 services:
+  postgres_database:
+    image: postgis/postgis
+    container_name: postgres_database
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: mikronet
+    ports:
+      - 5432:5432
+    healthcheck:
+          test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+          interval: 10s
+          retries: 5
+          start_period: 30s
+          timeout: 10s
+    volumes:
+      - ./data/postgis:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - kong-net
+
   pgadmin:
     image: dpage/pgadmin4
     depends_on:
-      auth_postgres_database:
+      postgres_database:
         condition: service_healthy
         restart: true
     restart: always
@@ -25,23 +46,39 @@ services:
     networks:
       - kong-net
 
-  auth_postgres_database:
-    image: postgres:latest
+#  postgres_database:
+#    image: postgres:latest
+#    ports:
+#      - 5432:5432
+#    environment:
+#      POSTGRES_PASSWORD: 123
+#      POSTGRES_DB: mikronet
+#    healthcheck:
+#      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+#      interval: 10s
+#      retries: 5
+#      start_period: 30s
+#      timeout: 10s
+#    networks:
+#      - kong-net
+#    volumes:
+#      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  driver_service:
+    build: driver
+    container_name: driver_service
     ports:
-      - 5432:5432
+      - 8014:8014
+    depends_on:
+      postgres_database:
+        condition: service_healthy
+        restart: true
+    env_file:
+      - authentication/config/auth-config.env
     environment:
-      POSTGRES_PASSWORD: 123
-      POSTGRES_DB: mikronet
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
-      timeout: 10s
+      - POSTGRES_HOST=postgres_database
     networks:
       - kong-net
-    volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   auth_service:
     build: authentication
@@ -49,13 +86,13 @@ services:
     ports:
       - 8010:8010
     depends_on:
-      auth_postgres_database:
+      postgres_database:
         condition: service_healthy
         restart: true
     env_file:
       - authentication/config/auth-config.env
     environment:
-      - POSTGRES_HOST=auth_postgres_database
+      - POSTGRES_HOST=postgres_database
     networks:
       - kong-net
 
@@ -65,13 +102,13 @@ services:
     ports:
       - 8011:8011
     depends_on:
-      auth_postgres_database:
+      postgres_database:
         condition: service_healthy
         restart: true
     env_file:
       - authentication/config/auth-config.env
     environment:
-      - POSTGRES_HOST=auth_postgres_database
+      - POSTGRES_HOST=postgres_database
     networks:
       - kong-net
 
@@ -81,13 +118,13 @@ services:
     ports:
       - 8012:8012
     depends_on:
-      auth_postgres_database:
+      postgres_database:
         condition: service_healthy
         restart: true
     env_file:
       - business_owner/config/auth-config.env
     environment:
-      - POSTGRES_HOST=auth_postgres_database
+      - POSTGRES_HOST=postgres_database
     networks:
       - kong-net
 

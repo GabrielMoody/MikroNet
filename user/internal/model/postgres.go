@@ -2,7 +2,7 @@ package model
 
 import (
 	"fmt"
-	"github.com/GabrielMoody/mikroNet/driver/internal/helper"
+	"github.com/GabrielMoody/mikroNet/user/internal/helper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"

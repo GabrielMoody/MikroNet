@@ -11,6 +11,7 @@ import (
 
 type ProfileController interface {
 	CreateUser(c *fiber.Ctx) error
+	CreateDriver(c *fiber.Ctx) error
 	LoginUser(c *fiber.Ctx) error
 	SendResetPasswordLink(c *fiber.Ctx) error
 	ResetPassword(c *fiber.Ctx) error
@@ -18,6 +19,10 @@ type ProfileController interface {
 
 type ProfileControllerImpl struct {
 	ProfileService service.ProfileService
+}
+
+func (a *ProfileControllerImpl) CreateDriver(c *fiber.Ctx) error {
+	panic("implement me")
 }
 
 func (a *ProfileControllerImpl) CreateUser(c *fiber.Ctx) error {
@@ -34,7 +39,7 @@ func (a *ProfileControllerImpl) CreateUser(c *fiber.Ctx) error {
 	res, err := a.ProfileService.CreateUserService(Ctx, *User)
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return c.Status(err.Code).JSON(fiber.Map{
 			"status": "error",
 			"error":  err.Err.Error(),
 		})

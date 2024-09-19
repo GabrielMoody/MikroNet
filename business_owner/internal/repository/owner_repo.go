@@ -41,7 +41,7 @@ func (a *OwnerRepoImpl) RegisterBusinessOwner(c context.Context, user models.Use
 
 func (a *OwnerRepoImpl) GetRatings(c context.Context, ownerId string) (res []interface{}, err error) {
 
-	row, err := a.db.WithContext(c).Table("Reviews").
+	row, err := a.db.WithContext(c).Table("reviews").
 		Select("Reviews.review, Reviews.star, Reviews.created_at AS review_date, Users.first_name AS reviewer_first_name, Users.last_name AS reviewer_last_name, Drivers.registration_number AS driver_registration_number").
 		Joins("JOIN Drivers ON Reviews.driver_id = driver_id").
 		Joins("JOIN BusinessOwners ON Drivers.owner_id = BusinessOwners.id").
@@ -93,7 +93,7 @@ func (a *OwnerRepoImpl) RegisterNewDriver(c context.Context, user models.User, d
 }
 
 func (a *OwnerRepoImpl) GetDrivers(c context.Context, ownerId string) (res interface{}, err error) {
-	row, err := a.db.WithContext(c).Table("Drivers").
+	row, err := a.db.WithContext(c).Table("drivers").
 		Select("Users.first_name, Users.last_name, Drivers.registration_number").
 		Joins("JOIN Users ON Drivers.id = Users.id").
 		Where("Drivers.owner_id = ?", ownerId).

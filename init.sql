@@ -1,83 +1,105 @@
 CREATE TYPE roles AS ENUM ('user', 'driver', 'admin', 'government', 'business_owner');
 CREATE TYPE genders AS ENUM ('male', 'female');
 CREATE TYPE statuses AS ENUM ('on', 'off');
+CREATE TYPE order_status AS ENUM  ('pending', 'accepted', 'completed', 'canceled');
 
-CREATE TABLE IF NOT EXISTS Users (
-     id uuid PRIMARY KEY,
-     first_name VARCHAR(255) NOT NULL,
-     last_name VARCHAR(255),
-     email VARCHAR(255) UNIQUE NOT NULL,
-     phone_number VARCHAR(255) UNIQUE NOT NULL,
-     password VARCHAR(255) NOT NULL,
-     date_of_birth DATE,
-     age INTEGER,
-     gender genders,
-     role roles NOT NULL,
-     is_blocked BOOLEAN DEFAULT FALSE,
-     oauth VARCHAR(255) DEFAULT NULL,
-     created_at TIMESTAMP DEFAULT NOW(),
-     updated_at TIMESTAMP DEFAULT NOW()
+CREATE TABLE IF NOT EXISTS users (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone_number VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    date_of_birth DATE,
+    age INTEGER,
+    gender genders,
+    role roles NOT NULL,
+    is_blocked BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE BusinessOwners (
-        id uuid PRIMARY KEY,
-        NIK VARCHAR(255),
-        verified BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (id) REFERENCES Users(id)
+CREATE TABLE business_owners (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    NIK VARCHAR(255),
+    verified BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id) REFERENCES users(id)
 );
 
-CREATE TABLE IF NOT EXISTS Drivers (
-           id uuid PRIMARY KEY,
-           owner_id uuid,
-           registration_number VARCHAR(255) UNIQUE,
-           status statuses DEFAULT 'off',
-           latitude DECIMAL(10, 8),
-           longitude DECIMAL(11, 8),
-           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-           FOREIGN KEY (id) REFERENCES Users(id),
-           FOREIGN KEY (owner_id) REFERENCES BusinessOwners(id)
+CREATE TABLE IF NOT EXISTS drivers (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_id uuid,
+    route_id uuid,
+    registration_number VARCHAR(255) UNIQUE,
+    status statuses DEFAULT 'off',
+    available_seats INT CONSTRAINT seat_constraint CHECK ( available_seats <= 9 ) DEFAULT 9,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id) REFERENCES users(id),
+    FOREIGN KEY (owner_id) REFERENCES business_owners(id),
+    FOREIGN KEY (route_id) REFERENCES routes(id)
 );
 
-CREATE TABLE IF NOT EXISTS Trips (
-         id uuid PRIMARY KEY,
-         user_id uuid,
-         driver_id uuid,
-         location VARCHAR(255),
-         destination VARCHAR(255),
-         trip_date TIMESTAMP,
-         created_at TIMESTAMP,
-         FOREIGN KEY (user_id) REFERENCES Users(id),
-         FOREIGN KEY (driver_id) REFERENCES Drivers(id)
+CREATE TABLE IF NOT EXISTS driver_location (
+    driver_id uuid PRIMARY KEY,
+    location geography(Point, 4326),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (driver_id) REFERENCES drivers(id)
 );
 
-CREATE TABLE IF NOT EXISTS Reviews (
-       id uuid PRIMARY KEY ,
-       user_id uuid,
-       driver_id uuid,
-       review VARCHAR(255),
-       star INT,
-       created_at TIMESTAMP DEFAULT NOW(),
-       FOREIGN KEY (user_id) REFERENCES Users(id),
-       FOREIGN KEY (driver_id) REFERENCES Drivers(id)
+CREATE TABLE IF NOT EXISTS orders
+(
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid,
+    driver_id uuid,
+    start_location geography(Point, 4326),
+    end_location geography(Point, 4326),
+    status order_status,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (driver_id) REFERENCES drivers(id)
 );
 
-CREATE TABLE IF NOT EXISTS Routes (
-      id uuid PRIMARY KEY,
-      route_name VARCHAR(255),
-      initial_route VARCHAR(255),
-      destination_route VARCHAR(255),
-      created_at TIMESTAMP,
-      FOREIGN KEY (id) REFERENCES Drivers(id)
+CREATE TABLE IF NOT EXISTS driver_location_logs (
+    id uuid PRIMARY KEY,
+    location geography(Point, 4326),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id) REFERENCES drivers(id)
 );
 
-CREATE TABLE IF NOT EXISTS ResetPassword (
-     id INT PRIMARY KEY,
-     user_id uuid,
-     reset_code VARCHAR(255),
-     created_at TIMESTAMP
+CREATE TABLE IF NOT EXISTS passenger_histories (
+    id uuid PRIMARY KEY,
+    start_location geography(Point, 4326),
+    end_location geography(Point, 4326),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS reviews (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    review VARCHAR(255),
+    star INT CONSTRAINT star_constraint CHECK (star BETWEEN 1 AND 5),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id) REFERENCES orders(id)
+);
+
+CREATE TABLE IF NOT EXISTS routes (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    route_name VARCHAR(255),
+    initial_route VARCHAR(255),
+    destination_route VARCHAR(255),
+    created_at TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS reset_password (
+    id INT PRIMARY KEY,
+    user_id uuid,
+    reset_code VARCHAR(255),
+    created_at TIMESTAMP
 );
 
 CREATE FUNCTION expire_reset_password_links() RETURNS trigger

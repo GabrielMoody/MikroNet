@@ -11,10 +11,72 @@ type DriverController interface {
 	SetStatus(c *fiber.Ctx) error
 	GetRequest(c *fiber.Ctx) error
 	AcceptRequest(c *fiber.Ctx) error
+	GetTripHistories(c *fiber.Ctx) error
+	GetAvailableSeats(c *fiber.Ctx) error
+	SetAvailableSeats(c *fiber.Ctx) error
 }
 
 type DriverControllerImpl struct {
 	service service.DriverService
+}
+
+func (a *DriverControllerImpl) GetTripHistories(c *fiber.Ctx) error {
+	id := c.Params("id")
+	ctx := c.Context()
+
+	res, err := a.service.GetTripHistories(ctx, id)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"data": res,
+	})
+}
+
+func (a *DriverControllerImpl) GetAvailableSeats(c *fiber.Ctx) error {
+	id := c.Params("id")
+	ctx := c.Context()
+
+	res, err := a.service.GetAvailableSeats(ctx, id)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": res,
+	})
+}
+
+func (a *DriverControllerImpl) SetAvailableSeats(c *fiber.Ctx) error {
+	id := c.Params("id")
+	ctx := c.Context()
+
+	var data dto.SeatReq
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err,
+		})
+	}
+
+	res, err := a.service.SetAvailableSeats(ctx, data, id)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"seat": res,
+	})
 }
 
 func (a *DriverControllerImpl) GetStatus(c *fiber.Ctx) error {
