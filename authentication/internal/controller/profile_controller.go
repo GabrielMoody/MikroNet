@@ -2,10 +2,10 @@ package controller
 
 import (
 	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/helper"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"os"
 	"time"
 )
 
@@ -54,7 +54,6 @@ func (a *ProfileControllerImpl) CreateUser(c *fiber.Ctx) error {
 func (a *ProfileControllerImpl) LoginUser(c *fiber.Ctx) error {
 	Ctx := c.Context()
 	User := new(dto.UserLoginReq)
-	v := helper.LoadEnv()
 
 	if err := c.BodyParser(&User); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -77,11 +76,11 @@ func (a *ProfileControllerImpl) LoginUser(c *fiber.Ctx) error {
 		"email": res.Email,
 		"role":  res.Role,
 		"exp":   time.Now().Add(time.Hour * 24).Unix(),
-		"iss":   v.GetString("JWT_ISS"),
+		"iss":   os.Getenv("JWT_ISS"),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	t, errToken := token.SignedString([]byte(v.GetString("JWT_SECRET")))
+	t, errToken := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
 	if errToken != nil {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{

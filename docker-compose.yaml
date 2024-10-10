@@ -79,6 +79,9 @@ services:
       - POSTGRES_PASS=123
       - POSTGRES_PORT=5432
       - POSTGRES_DATABASE=mikronet
+      - EMAIL_PASSWORD=khzy wosb xckz aihb
+      - JWT_SECRET=FV77z4uhQ9M
+      - JWT_ISS=PJxFwcJTAcNLDMVcV4AiVROZZ41NYfR8
     networks:
       - kong-net
 
