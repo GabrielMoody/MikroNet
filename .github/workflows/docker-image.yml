@@ -39,11 +39,11 @@ jobs:
     - name: build docker image
       id: build-docker-image
       run: |
-        docker build authentication -f Dockerfile -t gabrielmoody/authentication:latest
-        docker build driver -f Dockerfile -t gabrielmoody/driver:latest
-        docker build geolocation_tracking -f Dockerfile -t gabrielmoody/geolocation_tracking:latest
-        docker build profiles -f Dockerfile -t gabrielmoody/profiles:latest
-        docker build user -f Dockerfile -t gabrielmoody/user:latest
+        docker build authentication -t gabrielmoody/authentication:latest
+        docker build driver -t gabrielmoody/driver:latest
+        docker build geolocation_tracking -t gabrielmoody/geolocation_tracking:latest
+        docker build profiles -t gabrielmoody/profiles:latest
+        docker build user -t gabrielmoody/user:latest
         
     - name: Push the docker image
       id: push-docker-image
