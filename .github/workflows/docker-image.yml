@@ -27,7 +27,11 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+<<<<<<< HEAD
 
+=======
+      
+>>>>>>> 4680a487b32e76b3149bf8619cc9ffe52010b145
     - name: Login to Docker Hub
       id: docker-hub
       env:
