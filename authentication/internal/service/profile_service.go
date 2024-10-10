@@ -42,16 +42,22 @@ func (a *ProfileServiceImpl) CreateUserService(c context.Context, data dto.UserR
 	format := "01-02-2006"
 	date, _ := time.Parse(format, data.DateOfBirth)
 
+	pw, errHash := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+
+	if errHash != nil {
+		return "", err
+	}
+
 	resRepo, errRepo := a.ProfileRepo.CreateUser(c, models.User{
-		ID:          uuid.NewString(),
+		ID:          uuid.New().String(),
 		FirstName:   data.FirstName,
 		LastName:    data.LastName,
 		Email:       data.Email,
 		PhoneNumber: data.PhoneNumber,
-		Password:    data.Password,
+		Password:    string(pw),
 		Age:         data.Age,
 		DateOfBirth: &date,
-		Gender:      data.Gender,
+		Role:        "user",
 	})
 
 	if errRepo != nil {

@@ -1,4 +1,5 @@
 _format_version: "3.0"
+_transform: true
 
 services:
   - name: profile_service
@@ -13,6 +14,13 @@ services:
           - PUT
           - PATCH
           - DELETE
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: ["exp"]
+              key_claim_name: "iss"
+              secret_is_base64: false
+              run_on_preflight: true
 
   - name: auth_service
     url: http://auth_service:8010
@@ -35,9 +43,16 @@ services:
           - PATCH
           - PUT
           - DELETE
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [ "exp" ]
+              key_claim_name: "iss"
+              secret_is_base64: false
+              run_on_preflight: true
 
   - name: driver_service
-    url: http://driver_service:8014
+    url: http://driver_service:8013
     routes:
       - name: driver_route
         paths:
@@ -48,14 +63,53 @@ services:
           - PATCH
           - PUT
           - DELETE
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: ["exp"]
+              key_claim_name: "iss"
+              secret_is_base64: false
+              run_on_preflight: true
 
-# Plugins (Global or Per-Service)
-plugins:
-  - name: key-auth
-    enabled: true
+  - name: user_service
+    url: http://user_service:8014
+    routes:
+      - name: user_route
+        paths:
+          - /api/user
+        methods:
+          - GET
+          - POST
+          - PATCH
+          - PUT
+          - DELETE
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: ["exp"]
+              key_claim_name: "iss"
+              secret_is_base64: false
+              run_on_preflight: true
 
-# Consumers (Optional)
-consumers:
-  - username: consumer_1
-    keyauth_credentials:
-      - key: my-secret-key
+  - name: notification_service
+    url: http://notificatoin_service:8015
+    routes:
+      - name: notification_route
+        paths:
+          - /api/notify
+        methods:
+          - GET
+          - POST
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: ["exp"]
+              key_claim_name: "iss"
+              secret_is_base64: false
+              run_on_preflight: true
+
+#consumers:
+#  - username: my_consumer
+#    jwt_secrets:
+#      - key: my_consumer_key
+#        secret: FV77z4uhQ9M

@@ -13,7 +13,7 @@ func UserHandler(r fiber.Router, db *gorm.DB) {
 	serviceUser := service.NewUserService(repo)
 	controllerUser := controller.NewUserController(serviceUser)
 
-	api := r.Group("/user")
+	api := r.Group("/")
 
 	api.Get("/histories/:id", controllerUser.GetTripHistories)
 	api.Get("/routes", controllerUser.GetRoutes)

@@ -2,13 +2,12 @@ package dto
 
 type (
 	UserRegistrationsReq struct {
-		FirstName            string `json:"first_name" validate:"required"`
+		FirstName            string `json:"first_name"`
 		LastName             string `json:"last_name"`
 		Email                string `json:"email" validate:"required,email"`
-		PhoneNumber          string `json:"phone_number" validate:"required"`
-		DateOfBirth          string `json:"date_of_birth" validate:"required"`
-		Age                  int    `json:"age" validate:"required"`
-		Gender               string `json:"gender" validate:"required"`
+		PhoneNumber          string `json:"phone_number"`
+		DateOfBirth          string `json:"date_of_birth"`
+		Age                  int    `json:"age"`
 		Password             string `json:"password" validate:"required,min=8"`
 		PasswordConfirmation string `json:"password_confirmation" validate:"required,eqfield=Password"`
 	}

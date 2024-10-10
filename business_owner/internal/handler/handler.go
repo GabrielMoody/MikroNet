@@ -13,7 +13,7 @@ func OwnerHandler(r fiber.Router, db *gorm.DB) {
 	serviceOwner := service.NewOwnerService(repo)
 	controllerOwner := controller.NewOwnerController(serviceOwner)
 
-	api := r.Group("/owner")
+	api := r.Group("/")
 
 	api.Post("/", controllerOwner.RegisterBusinessOwner)
 	api.Post("/driver", controllerOwner.RegisterNewDriver)

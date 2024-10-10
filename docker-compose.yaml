@@ -46,24 +46,6 @@ services:
     networks:
       - kong-net
 
-#  postgres_database:
-#    image: postgres:latest
-#    ports:
-#      - 5432:5432
-#    environment:
-#      POSTGRES_PASSWORD: 123
-#      POSTGRES_DB: mikronet
-#    healthcheck:
-#      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
-#      interval: 10s
-#      retries: 5
-#      start_period: 30s
-#      timeout: 10s
-#    networks:
-#      - kong-net
-#    volumes:
-#      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-
   driver_service:
     build: driver
     container_name: driver_service
@@ -73,10 +55,12 @@ services:
       postgres_database:
         condition: service_healthy
         restart: true
-    env_file:
-      - authentication/config/auth-config.env
     environment:
       - POSTGRES_HOST=postgres_database
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASS=123
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=mikronet
     networks:
       - kong-net
 
@@ -89,10 +73,12 @@ services:
       postgres_database:
         condition: service_healthy
         restart: true
-    env_file:
-      - authentication/config/auth-config.env
     environment:
       - POSTGRES_HOST=postgres_database
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASS=123
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=mikronet
     networks:
       - kong-net
 
@@ -105,10 +91,12 @@ services:
       postgres_database:
         condition: service_healthy
         restart: true
-    env_file:
-      - authentication/config/auth-config.env
     environment:
       - POSTGRES_HOST=postgres_database
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASS=123
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=mikronet
     networks:
       - kong-net
 
@@ -121,10 +109,66 @@ services:
       postgres_database:
         condition: service_healthy
         restart: true
-    env_file:
-      - business_owner/config/auth-config.env
     environment:
       - POSTGRES_HOST=postgres_database
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASS=123
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=mikronet
+    networks:
+      - kong-net
+
+  user_service:
+    build: user
+    container_name: user_service
+    ports:
+      - 8014:8014
+    depends_on:
+      postgres_database:
+        condition: service_healthy
+        restart: true
+    environment:
+      - POSTGRES_HOST=postgres_database
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASS=123
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=mikronet
+    networks:
+      - kong-net
+
+  notification_service:
+    build: notification
+    container_name: notification_service
+    ports:
+      - 8015:8015
+    depends_on:
+      postgres_database:
+        condition: service_healthy
+        restart: true
+    environment:
+      - POSTGRES_HOST=postgres_database
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASS=123
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=mikronet
+    networks:
+      - kong-net
+
+  geolocation_tracking_service:
+    build: geolocation_tracking
+    container_name: geolocation_tracking_service
+    ports:
+      - 8016:8016
+    depends_on:
+      postgres_database:
+        condition: service_healthy
+        restart: true
+    environment:
+      - POSTGRES_HOST=postgres_database
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASS=123
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=mikronet
     networks:
       - kong-net
 

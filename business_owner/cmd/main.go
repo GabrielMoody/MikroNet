@@ -14,7 +14,7 @@ func main() {
 
 	db := models.DatabaseInit()
 
-	api := app.Group("/api")
+	api := app.Group("/")
 
 	handler.OwnerHandler(api, db)
 

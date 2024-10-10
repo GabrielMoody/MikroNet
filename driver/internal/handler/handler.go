@@ -13,7 +13,7 @@ func DriverHandler(r fiber.Router, db *gorm.DB) {
 	serviceDriver := service.NewDriverService(repo)
 	controllerDriver := controller.NewDriverController(serviceDriver)
 
-	api := r.Group("/driver")
+	api := r.Group("/")
 
 	api.Get("/status/:id", controllerDriver.GetStatus)
 	api.Post("/status/:id", controllerDriver.SetStatus)

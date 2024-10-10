@@ -15,7 +15,7 @@ type (
 	}
 
 	Orders struct {
-		DriverId           string
+		Id                 string
 		FirstName          string
 		LastName           string
 		RegistrationNumber string

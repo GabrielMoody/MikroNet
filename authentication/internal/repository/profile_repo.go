@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/models"
-	mysql2 "github.com/go-sql-driver/mysql"
+	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -37,38 +37,11 @@ func (a *ProfileRepoImpl) LoginUser(c context.Context, data dto.UserLoginReq) (r
 }
 
 func (a *ProfileRepoImpl) CreateUser(c context.Context, data models.User) (res string, err error) {
-	pw, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
-
-	if err != nil {
-		return "", err
-	}
-
-	//user := models.User{
-	//	ID:          data.ID,
-	//	FirstName:   data.FirstName,
-	//	LastName:    data.LastName,
-	//	Email:       data.Email,
-	//	PhoneNumber: data.PhoneNumber,
-	//	Password:    string(pw),
-	//	Age:         data.Age,
-	//	DateOfBirth: data.DateOfBirth,
-	//	Gender:      data.Gender,
-	//	Role:        "user",
-	//}
-
-	data.Password = string(pw)
-	data.Role = "user"
-
 	result := a.db.WithContext(c).Create(&data)
+	var pgErr *pgconn.PgError
 
-	var mysqlErr *mysql2.MySQLError
-
-	if errors.As(result.Error, &mysqlErr) && mysqlErr.Number == 1062 {
-		return res, errors.New("email or phone number already exist")
-	}
-
-	if result.Error != nil {
-		return res, result.Error
+	if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" {
+		return res, errors.New("email/phone number has been taken")
 	}
 
 	return data.ID, nil
@@ -81,28 +54,15 @@ func (a *ProfileRepoImpl) CreateDriver(c context.Context, user models.User, driv
 		return "", err
 	}
 
-	//data := models.User{
-	//	ID:          user.ID,
-	//	FirstName:   user.FirstName,
-	//	LastName:    user.LastName,
-	//	Email:       user.Email,
-	//	PhoneNumber: user.PhoneNumber,
-	//	Password:    string(pw),
-	//	Age:         user.Age,
-	//	DateOfBirth: user.DateOfBirth,
-	//	Gender:      user.Gender,
-	//	Role:        "driver",
-	//}
-
 	user.Password = string(pw)
 	user.Role = "driver"
 
 	result := a.db.WithContext(c).Create(&user)
 
-	var mysqlErr *mysql2.MySQLError
+	var pgErr *pgconn.PgError
 
-	if errors.As(result.Error, &mysqlErr) && mysqlErr.Number == 1062 {
-		return res, errors.New("email or phone number already exist")
+	if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" {
+		return res, errors.New("email/phone number has been taken")
 	}
 
 	if result.Error != nil {

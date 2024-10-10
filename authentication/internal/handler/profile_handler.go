@@ -13,7 +13,7 @@ func ProfileHandler(r fiber.Router, db *gorm.DB) {
 	profileService := service.NewProfileService(repo)
 	profileController := controller.NewProfileController(profileService)
 
-	profileHandler := r.Group("/auth")
+	profileHandler := r.Group("/")
 
 	profileHandler.Post("/register", profileController.CreateUser)
 	profileHandler.Post("/register/driver", profileController.CreateDriver)

@@ -15,7 +15,7 @@ func main() {
 
 	db := model.DatabaseInit()
 
-	api := app.Group("/api")
+	api := app.Group("/")
 
 	handler.UserHandler(api, db)
 

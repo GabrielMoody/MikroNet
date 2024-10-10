@@ -2,11 +2,13 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/GabrielMoody/mikroNet/user/internal/dto"
 	"github.com/GabrielMoody/mikroNet/user/internal/helper"
 	"github.com/GabrielMoody/mikroNet/user/internal/model"
 	"github.com/GabrielMoody/mikroNet/user/internal/repository"
 	"github.com/gofiber/fiber/v2"
+	"log"
 	"net/http"
 )
 
@@ -56,7 +58,7 @@ func (a *userServiceImpl) GetRoutes(c context.Context) (res []model.Route, err *
 }
 
 func (a *userServiceImpl) OrderMikro(c context.Context, lat, lon, userId string) (res interface{}, err *helper.ErrorStruct) {
-	resRepo, errRepo := a.repo.OrderMikro(c, lat, lon, userId, nil)
+	drivers, _, errRepo := a.repo.OrderMikro(c, lat, lon, userId, nil)
 
 	if errRepo != nil {
 		return nil, &helper.ErrorStruct{
@@ -65,7 +67,42 @@ func (a *userServiceImpl) OrderMikro(c context.Context, lat, lon, userId string)
 		}
 	}
 
-	return resRepo, nil
+	payload := map[string]string{
+		"Message": "Ada orang yang pesan mikro",
+		"Lat":     lat,
+		"Lon":     lon,
+	}
+
+	for _, driver := range drivers {
+		url := fmt.Sprintf("http://localhost:8015/sse/notify/%s?message=%s", driver.Id, payload)
+		req, err := http.NewRequest("POST", url, nil)
+		req.Header.Set("Content-Type", "text/event-stream")
+		req.Header.Set("Cache-Control", "no-cache")
+		req.Header.Set("Connection", "keep-alive")
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+
+		if err != nil {
+			return nil, &helper.ErrorStruct{
+				Err:  err,
+				Code: http.StatusInternalServerError,
+			}
+		}
+
+		defer resp.Body.Close()
+
+		// Log the response status
+		log.Printf("Response for driver %s: %s", driver.Id, resp.Status)
+
+		// Optional: Check if the response is successful
+		if resp.StatusCode != http.StatusOK {
+			log.Printf("Failed to notify driver %s: %s", driver.Id, resp.Status)
+			continue // Handle as necessary
+		}
+	}
+
+	return drivers, nil
 }
 
 func (a *userServiceImpl) CarterMikro(c context.Context, route interface{}) (res interface{}, err *helper.ErrorStruct) {

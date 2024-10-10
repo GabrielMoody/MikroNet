@@ -2,18 +2,17 @@ package models
 
 import (
 	"fmt"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/helper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
+	"os"
 )
 
 func DatabaseInit() *gorm.DB {
-	v := helper.LoadEnv()
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Singapore", v.GetString("POSTGRES_HOST"), v.GetString("POSTGRES_USERNAME"), v.GetString("POSTGRES_PASS"), v.GetString("POSTGRES_DATABASE"), v.GetString("POSTGRES_PORT"))
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Singapore", os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_USERNAME"), os.Getenv("POSTGRES_PASS"), os.Getenv("POSTGRES_DATABASE"), os.Getenv("POSTGRES_PORT"))
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.New(postgres.Config{DSN: dsn}), &gorm.Config{})
 
 	if err != nil {
 		panic(fmt.Errorf("error while connecting database"))

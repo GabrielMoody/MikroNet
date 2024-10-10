@@ -9,7 +9,6 @@ on:
 jobs:
 
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -18,6 +17,12 @@ jobs:
             dockerfile: authentication/Dockerfile
           - image: gabrielmoody/profiles
             dockerfile: profiles/Dockerfile
+          - image: gabrielmoody/notification
+            dockerfile: notification/Dockerfile
+          - image: gabrielmoody/driver
+            dockerfile: driver/Dockerfile
+          - image: gabrielmoody/geolocation_tracking
+            dockerfile: geolocation_tracking/Dockerfile
 
     steps:
     - name: Checkout code

@@ -1,5 +1,10 @@
-authentication/config/auth-config.env
-profiles/config/auth-config.env
 POSTGRES_PASSWORD
 mikronet-6cf58-firebase-adminsdk-prfvh-573a5582a6.json
 .idea
+model
+query
+data
+
+auth-config.env
+
+docker-compose.yaml

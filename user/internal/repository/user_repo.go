@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/GabrielMoody/mikroNet/user/internal/dto"
 	"github.com/GabrielMoody/mikroNet/user/internal/model"
@@ -12,12 +11,12 @@ import (
 )
 
 type UserRepo interface {
-	GetRoutes(c context.Context) (res []model.Route, err error)
-	OrderMikro(c context.Context, lat string, lon string, userId string, route interface{}) (res model.Order, err error)
-	CarterMikro(c context.Context, route interface{}) (res interface{}, err error)
-	GetTripHistories(c context.Context, id string) (res interface{}, err error)
-	ReviewOrder(c context.Context, data dto.ReviewReq, orderId string) (res model.Review, err error)
-	findNearestDriver(c context.Context, lat string, lon string) (res dto.Orders, err error)
+	GetRoutes(c context.Context) ([]model.Route, error)
+	OrderMikro(c context.Context, lat string, lon string, userId string, route interface{}) ([]dto.Orders, model.Order, error)
+	CarterMikro(c context.Context, route interface{}) (interface{}, error)
+	GetTripHistories(c context.Context, id string) (interface{}, error)
+	ReviewOrder(c context.Context, data dto.ReviewReq, orderId string) (model.Review, error)
+	findNearestDriver(c context.Context, lat string, lon string) ([]dto.Orders, error)
 }
 
 type UserRepoImpl struct {
@@ -55,25 +54,25 @@ func (a *UserRepoImpl) GetRoutes(c context.Context) (res []model.Route, err erro
 	return routes, nil
 }
 
-func (a *UserRepoImpl) OrderMikro(c context.Context, lat string, lon string, userId string, route interface{}) (res model.Order, err error) {
-	driver, err := a.findNearestDriver(c, lat, lon)
+func (a *UserRepoImpl) OrderMikro(c context.Context, lat string, lon string, userId string, route interface{}) (driver []dto.Orders, res model.Order, err error) {
+	drivers, err := a.findNearestDriver(c, lat, lon)
 
 	if err != nil {
-		return res, err
+		return drivers, res, err
 	}
 
-	order := model.Order{
-		UserID:          userId,
-		DriverID:        driver.DriverId,
-		PickUpLocation:  "test",
-		DropOffLocation: "test",
-	}
+	//order := model.Order{
+	//	UserID: userId,
+	//	//DriverID:        driver.DriverId,
+	//	PickUpLocation:  "test",
+	//	DropOffLocation: "test",
+	//}
+	//
+	//if err := a.db.WithContext(c).Create(&order).Error; err != nil {
+	//	return res, err
+	//}
 
-	if err := a.db.WithContext(c).Create(&order).Error; err != nil {
-		return res, err
-	}
-
-	return order, nil
+	return drivers, res, nil
 }
 
 func (a *UserRepoImpl) CarterMikro(c context.Context, route interface{}) (res interface{}, err error) {
@@ -113,26 +112,28 @@ func (a *UserRepoImpl) GetTripHistories(c context.Context, id string) (res inter
 	return trip, nil
 }
 
-func (a *UserRepoImpl) findNearestDriver(c context.Context, lat string, lon string) (res dto.Orders, err error) {
-	var d dto.Orders
+func (a *UserRepoImpl) findNearestDriver(c context.Context, lat string, lon string) (res []dto.Orders, err error) {
+	var d []dto.Orders
 
 	err = a.db.WithContext(c).Table("driver_location").
-		Select(fmt.Sprintf("drivers.id, users.first_name, users.last_name, drivers.registration_number, ST_Distance(\nCAST(FORMAT('SRID=4326;POINT(%s %s)', ST_Y(location::geometry), ST_X(location::geometry)) AS geography), \nCAST('SRID=4326;POINT(124.844728 1.493190)' AS geography)) AS distance", lon, lat)).
+		Select(fmt.Sprintf("drivers.id, users.first_name, users.last_name, drivers.registration_number, ST_Distance(\nCAST(FORMAT('SRID=4326;POINT(%%s %%s)', ST_X(location::geometry), ST_Y(location::geometry)) AS geography), \nCAST('SRID=4326;POINT(%s %s)' AS geography)) AS distance", lon, lat)).
 		Joins("JOIN drivers ON drivers.id = driver_location.driver_id").
 		Joins("JOIN users ON users.id = drivers.id").
+		Where("drivers.status = ?", "on").
 		Limit(5).Order("distance").Scan(&d).Error
 
 	if err != nil {
 		return res, err
 	}
-
-	distance, _ := strconv.ParseFloat(d.Distance, 5)
-
-	if distance > 1000 {
-		return res, errors.New("no nearest driver")
+	var nd []dto.Orders
+	for _, v := range d {
+		f, _ := strconv.ParseFloat(v.Distance, 64)
+		if f <= 1000 {
+			nd = append(nd, v)
+		}
 	}
 
-	return d, nil
+	return nd, nil
 }
 
 func NewUserRepo(db *gorm.DB) UserRepo {
