@@ -13,7 +13,7 @@ func ProfileHandler(r fiber.Router, db *gorm.DB) {
 	serviceProfile := service.NewProfileService(repo)
 	controllerProfile := controller.NewProfileController(serviceProfile)
 
-	api := r.Group("/profile")
+	api := r.Group("/")
 
 	api.Get("/:id", controllerProfile.GetUser)
 	api.Patch("/:id", controllerProfile.UpdateUser)
