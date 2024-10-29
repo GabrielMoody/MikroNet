@@ -8,3 +8,5 @@ data
 auth-config.env
 
 docker-compose.yaml
+
+docker-compose-prod.yaml

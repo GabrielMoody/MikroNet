@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     gender genders,
     role roles NOT NULL,
     is_blocked BOOLEAN DEFAULT FALSE,
-    image VARCHAR(255) DEFAULT NULL,
+    image_url VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -27,6 +27,14 @@ CREATE TABLE business_owners (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS routes (
+    id uuid PRIMARY KEY,
+    route_name VARCHAR(255),
+    initial_route VARCHAR(255),
+    destination_route VARCHAR(255),
+    created_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS drivers (
@@ -86,14 +94,6 @@ CREATE TABLE IF NOT EXISTS reviews (
     star INT CONSTRAINT star_constraint CHECK (star BETWEEN 1 AND 5),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id) REFERENCES orders(id)
-);
-
-CREATE TABLE IF NOT EXISTS routes (
-    id uuid PRIMARY KEY,
-    route_name VARCHAR(255),
-    initial_route VARCHAR(255),
-    destination_route VARCHAR(255),
-    created_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS reset_password (

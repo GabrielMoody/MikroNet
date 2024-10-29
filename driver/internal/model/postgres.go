@@ -11,7 +11,7 @@ import (
 func DatabaseInit() *gorm.DB {
 	v := helper.LoadEnv()
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Singapore", v.GetString("POSTGRES_HOST"), v.GetString("POSTGRES_USERNAME"), v.GetString("POSTGRES_PASS"), v.GetString("POSTGRES_DATABASE"), v.GetString("POSTGRES_PORT"))
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require TimeZone=Asia/Singapore", v.GetString("POSTGRES_HOST"), v.GetString("POSTGRES_USERNAME"), v.GetString("POSTGRES_PASS"), v.GetString("POSTGRES_DATABASE"), v.GetString("POSTGRES_PORT"))
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
