@@ -70,7 +70,20 @@ paths:
                   message:
                     type: string
 
-  /api/profile/profile:
+  /api/auth/reset-password:
+    post:
+      tags:
+        - "Authentication"
+      description: Send a request for reset password link
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+
+  /api/profile/{id}:
     get:
       security:
         - JWT: []
@@ -99,7 +112,6 @@ paths:
               schema: 
                 type: object
 
-  /api/profile/:
     patch:
       security:
         - JWT: []
@@ -126,6 +138,26 @@ paths:
               schema: 
                 type: object
 
+    delete:
+      security:
+        - JWT: [ ]
+      tags:
+        - "Profiles"
+      summary: "Edit data profil"
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: "Berhasil memperbaharui data pengguna"
+          content:
+            application/json:
+              schema:
+                type: object
+
   /api/profile/change-password/:
     patch:
       security:
@@ -145,10 +177,6 @@ paths:
             schema:
               type: object
               $ref: "#/components/schemas/change_password"
-
-
-  /api/lupa-kata-sandi:
-    patch:
 
   /api/cari-mikro:
     get:

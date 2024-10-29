@@ -3,27 +3,27 @@ package controller
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/GabrielMoody/mikroNet/profiles/internal/dto"
-	"github.com/GabrielMoody/mikroNet/profiles/internal/service"
+	"github.com/GabrielMoody/mikroNet/government/internal/dto"
+	"github.com/GabrielMoody/mikroNet/government/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"os"
 	"time"
 )
 
-type ProfileController interface {
+type GovController interface {
 	UpdateUser(c *fiber.Ctx) error
 	DeleteUser(c *fiber.Ctx) error
 	GetUser(c *fiber.Ctx) error
 	ChangePassword(c *fiber.Ctx) error
 }
 
-type ProfileControllerImpl struct {
-	ProfileService service.ProfileService
+type GovControllerImpl struct {
+	GovService service.GovService
 }
 
-func (a *ProfileControllerImpl) UpdateUser(c *fiber.Ctx) error {
+func (a *GovControllerImpl) UpdateUser(c *fiber.Ctx) error {
 	Ctx := c.Context()
-	user := dto.UserChangeProfileReq{}
+	user := dto.UserChangeGovReq{}
 	id := c.Params("id")
 	image, _ := c.FormFile("image")
 
@@ -42,7 +42,7 @@ func (a *ProfileControllerImpl) UpdateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	res, err := a.ProfileService.EditUserService(Ctx, id, user)
+	res, err := a.GovService.EditUserService(Ctx, id, user)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -63,14 +63,14 @@ func (a *ProfileControllerImpl) UpdateUser(c *fiber.Ctx) error {
 	})
 }
 
-func (a *ProfileControllerImpl) DeleteUser(c *fiber.Ctx) error {
+func (a *GovControllerImpl) DeleteUser(c *fiber.Ctx) error {
 	Ctx := c.Context()
 	id := c.Params("id")
 	//jwtUser := c.Locals("user").(*jwt.Token)
 	//claims := jwtUser.Claims.(jwt.MapClaims)
 	//id := claims["id"].(string)
 
-	res, err := a.ProfileService.DeleteUserService(Ctx, id)
+	res, err := a.GovService.DeleteUserService(Ctx, id)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -85,7 +85,7 @@ func (a *ProfileControllerImpl) DeleteUser(c *fiber.Ctx) error {
 	})
 }
 
-func (a *ProfileControllerImpl) GetUser(c *fiber.Ctx) error {
+func (a *GovControllerImpl) GetUser(c *fiber.Ctx) error {
 	Ctx := c.Context()
 	id := c.Params("id")
 
@@ -93,7 +93,7 @@ func (a *ProfileControllerImpl) GetUser(c *fiber.Ctx) error {
 	//claims := jwtUser.Claims.(jwt.MapClaims)
 	//id := claims["id"].(string)
 
-	res, err := a.ProfileService.GetUserService(Ctx, id)
+	res, err := a.GovService.GetUserService(Ctx, id)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -125,7 +125,7 @@ func (a *ProfileControllerImpl) GetUser(c *fiber.Ctx) error {
 	})
 }
 
-func (a *ProfileControllerImpl) ChangePassword(c *fiber.Ctx) error {
+func (a *GovControllerImpl) ChangePassword(c *fiber.Ctx) error {
 	id := c.Params("id")
 	//jwtUser := c.Locals("user").(*jwt.Token)
 	//claims := jwtUser.Claims.(jwt.MapClaims)
@@ -141,7 +141,7 @@ func (a *ProfileControllerImpl) ChangePassword(c *fiber.Ctx) error {
 		})
 	}
 
-	res, err := a.ProfileService.ChangePasswordService(Ctx, id, user)
+	res, err := a.GovService.ChangePasswordService(Ctx, id, user)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -156,6 +156,6 @@ func (a *ProfileControllerImpl) ChangePassword(c *fiber.Ctx) error {
 	})
 }
 
-func NewProfileController(profileService service.ProfileService) ProfileController {
-	return &ProfileControllerImpl{ProfileService: profileService}
+func NewGovController(profileService service.GovService) GovController {
+	return &GovControllerImpl{GovService: profileService}
 }

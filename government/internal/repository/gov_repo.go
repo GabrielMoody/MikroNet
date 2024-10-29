@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
-	"github.com/GabrielMoody/mikroNet/profiles/internal/models"
+	"github.com/GabrielMoody/mikroNet/government/internal/models"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )

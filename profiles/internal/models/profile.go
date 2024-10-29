@@ -12,6 +12,8 @@ type User struct {
 	DateOfBirth time.Time `gorm:"column:date_of_birth" json:"date_of_birth"`
 	Age         int32     `gorm:"column:age" json:"age"`
 	Gender      string    `gorm:"column:gender" json:"gender"`
+	Role        string    `gorm:"column:role" json:"role"`
+	ImageURL    string    `gorm:"column:image_url" json:"image_url"`
 	CreatedAt   time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"column:updated_at;default:CURRENT_TIMESTAMP" json:"updated_at"`
 }

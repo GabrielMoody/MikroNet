@@ -4,7 +4,7 @@ CREATE TYPE statuses AS ENUM ('on', 'off');
 CREATE TYPE order_status AS ENUM  ('pending', 'accepted', 'completed', 'canceled');
 
 CREATE TABLE IF NOT EXISTS users (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    id uuid PRIMARY KEY,
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255),
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE business_owners (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    id uuid PRIMARY KEY,
     NIK VARCHAR(255),
     verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -30,7 +30,7 @@ CREATE TABLE business_owners (
 );
 
 CREATE TABLE IF NOT EXISTS drivers (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    id uuid PRIMARY KEY,
     owner_id uuid,
     route_id uuid,
     registration_number VARCHAR(255) UNIQUE,
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS driver_location (
 
 CREATE TABLE IF NOT EXISTS orders
 (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    id uuid PRIMARY KEY,
     user_id uuid,
     driver_id uuid,
     start_location geography(Point, 4326),
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS passenger_histories (
 );
 
 CREATE TABLE IF NOT EXISTS reviews (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    id uuid PRIMARY KEY,
     review VARCHAR(255),
     star INT CONSTRAINT star_constraint CHECK (star BETWEEN 1 AND 5),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS reviews (
 );
 
 CREATE TABLE IF NOT EXISTS routes (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    id uuid PRIMARY KEY,
     route_name VARCHAR(255),
     initial_route VARCHAR(255),
     destination_route VARCHAR(255),

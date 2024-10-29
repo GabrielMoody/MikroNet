@@ -1,14 +1,14 @@
 package handler
 
 import (
-	"github.com/GabrielMoody/mikroNet/profiles/internal/controller"
-	"github.com/GabrielMoody/mikroNet/profiles/internal/repository"
-	"github.com/GabrielMoody/mikroNet/profiles/internal/service"
+	"github.com/GabrielMoody/mikroNet/government/internal/controller"
+	"github.com/GabrielMoody/mikroNet/government/internal/repository"
+	"github.com/GabrielMoody/mikroNet/government/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
-func ProfileHandler(r fiber.Router, db *gorm.DB) {
+func GovHandler(r fiber.Router, db *gorm.DB) {
 	repo := repository.NewProfileRepo(db)
 	serviceProfile := service.NewProfileService(repo)
 	controllerProfile := controller.NewProfileController(serviceProfile)
