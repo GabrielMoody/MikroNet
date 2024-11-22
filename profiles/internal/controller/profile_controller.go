@@ -31,10 +31,6 @@ func (a *ProfileControllerImpl) UpdateUser(c *fiber.Ctx) error {
 		user.Image = fmt.Sprintf("%d.%s", time.Now().Unix(), image.Filename)
 	}
 
-	//jwtUser := c.Locals("user").(*jwt.Token)
-	//claims := jwtUser.Claims.(jwt.MapClaims)
-	//id := claims["id"].(string)
-
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status": "error",
@@ -66,9 +62,6 @@ func (a *ProfileControllerImpl) UpdateUser(c *fiber.Ctx) error {
 func (a *ProfileControllerImpl) DeleteUser(c *fiber.Ctx) error {
 	Ctx := c.Context()
 	id := c.Params("id")
-	//jwtUser := c.Locals("user").(*jwt.Token)
-	//claims := jwtUser.Claims.(jwt.MapClaims)
-	//id := claims["id"].(string)
 
 	res, err := a.ProfileService.DeleteUserService(Ctx, id)
 
@@ -127,9 +120,6 @@ func (a *ProfileControllerImpl) GetUser(c *fiber.Ctx) error {
 
 func (a *ProfileControllerImpl) ChangePassword(c *fiber.Ctx) error {
 	id := c.Params("id")
-	//jwtUser := c.Locals("user").(*jwt.Token)
-	//claims := jwtUser.Claims.(jwt.MapClaims)
-	//id := claims["id"].(string)
 
 	Ctx := c.Context()
 	var user dto.ChangePasswordReq

@@ -9,10 +9,10 @@
 
 ## Login
 1. <strike> Buka Aplikasi: Jalankan aplikasi MikroNet. </strike>
-2. Pilih Login: Masukkan alamat email dan kata sandi yang sudah didaftarkan.
-3. Lupa Kata Sandi: Jika lupa kata sandi, pilih opsi 'Lupa Kata Sandi'.
-4. Masuk: Setelah berhasil login, User akan diarahkan ke halaman utama.
-   Mencari Mikrolet
+2. <strike> Pilih Login: Masukkan alamat email dan kata sandi yang sudah didaftarkan. </strike>
+3. <strike> Lupa Kata Sandi: Jika lupa kata sandi, pilih opsi 'Lupa Kata Sandi'. </strike>
+4. <strike> Masuk: Setelah berhasil login, User akan diarahkan ke halaman utama.
+   Mencari Mikrolet </strike>
 
 ## Cara Menggunakan Fitur Lihat Rute Mikro
 1. Cara Menggunakan Fitur Lihat Rute Mikro
@@ -45,20 +45,24 @@
 
 # B. Driver
 ## Login
-1. Buka Aplikasi: Jalankan aplikasi MikroNet.
-2. Pilih Login: Masukkan alamat email dan kata sandi yang sudah didaftarkan
-   oleh Business Owner.
-3. Lupa Kata Sandi: Jika lupa kata sandi, pilih opsi 'Lupa Kata Sandi'.
-4. Masuk: Setelah berhasil login, Driver akan diarahkan ke halaman utama.
+1. <strike> Buka Aplikasi: Jalankan aplikasi MikroNet. </strike>
+2. <strike> Pilih Login: Masukkan alamat email dan kata sandi yang sudah didaftarkan
+   oleh Business Owner. </strike>
+3. <strike> Lupa Kata Sandi: Jika lupa kata sandi, pilih opsi 'Lupa Kata Sandi'. </strike>
+4. <strike> Masuk: Setelah berhasil login, Driver akan diarahkan ke halaman utama. </strike>
+
 ## Profil
-1. Akses Profil: Di menu utama, pilih ikon 'Profil' untuk melihat dan mengedit
-   informasi pribadi dan informasi kendaraan.
-   Notifikasi dan Info Layanan
+1. <strike> Akses Profil: Di menu utama, pilih ikon 'Profil' untuk melihat dan mengedit
+   informasi pribadi dan informasi kendaraan. </strike>
+   
+## Notifikasi dan Info Layanan
+   
 1. Notifikasi Pesanan: Driver akan menerima notifikasi real-time mengenai
    permintaan User baru, termasuk detail penjemputan dan tujuan.
 2. Pembaruan Layanan: Driver dapat mengakses informasi terbaru tentang
    layanan MikroNet, termasuk perubahan kebijakan, update sistem, dan berita
    penting lainnya.
+
 ## Status On/Off
 1. Tombol On/Off: Di bagian atas aplikasi, terdapat tombol untuk mengatur
    status on atau off.
@@ -67,16 +71,19 @@
 3. Mode Off: Aktifkan mode off saat Driver tidak ingin menerima User melalui
    aplikasi, misalnya saat waktu istirahat atau tidak dalam operasional.
    Menu Utama
+
 ## Input Manual
 1. Catat Perjalanan Manual: Jika ada User yang tidak menggunakan aplikasi
    MikroNet, Driver dapat memasukkan detail perjalanan secara manual.
 2. Isi Informasi: Masukkan informasi jumlah User.
 3. Simpan Data: Simpan data untuk memperbarui pendapatan dan rekam jejak
    perjalanan.
+
 ## Permintaan Antar
 1. Lihat Permintaan: Di menu utama, pilih 'Permintaan Antar' untuk melihat
    daftar permintaan User yang tersedia.
 2. Terima Permintaan: Pilih salah satu permintaan untuk menerima dan mulai
+
 ## perjalanan.
    Perjalanan dan Pendapatan
 1. Riwayat Perjalanan: Lihat dan lacak perjalanan yang sedang berlangsung.

@@ -17,7 +17,7 @@ func ProfileHandler(r fiber.Router, db *gorm.DB) {
 
 	profileHandler.Post("/register", profileController.CreateUser)
 	profileHandler.Post("/register/driver", profileController.CreateDriver)
-	profileHandler.Post("/login", profileController.LoginUser)
+	profileHandler.Post("/login/:role", profileController.LoginUser)
 	profileHandler.Post("/reset-password", profileController.SendResetPasswordLink)
 	profileHandler.Put("/reset-password/:code", profileController.ResetPassword)
 }

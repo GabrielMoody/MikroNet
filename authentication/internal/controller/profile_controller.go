@@ -53,7 +53,14 @@ func (a *ProfileControllerImpl) CreateUser(c *fiber.Ctx) error {
 
 func (a *ProfileControllerImpl) LoginUser(c *fiber.Ctx) error {
 	Ctx := c.Context()
+	role := c.Params("role")
 	User := new(dto.UserLoginReq)
+
+	if !(role == "user" || role == "driver" || role == "admin" || role == "government" || role == "business_owner") {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status": "error",
+		})
+	}
 
 	if err := c.BodyParser(&User); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
