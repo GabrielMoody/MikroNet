@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/handler"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/models"
 	"github.com/gofiber/fiber/v2"
@@ -19,11 +20,13 @@ func main() {
 
 	db := models.DatabaseInit()
 
+	fmt.Println("Success published message")
+
 	api := app.Group("/")
 
 	handler.ProfileHandler(api, db)
 
-	err := app.Listen("0.0.0.0:8010")
+	err = app.Listen("0.0.0.0:8010")
 	if err != nil {
 		return
 	}

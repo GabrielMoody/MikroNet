@@ -1,8 +1,12 @@
-FROM golang:alpine
-RUN apk update && apk add --no-cache git
+FROM golang:alpine AS build
+RUN apk --no-cache add gcc g++ make ca-certificates
 WORKDIR /app
 COPY . .
-EXPOSE 8010
 RUN go mod tidy
-RUN go build -o binary ./cmd/main.go
-ENTRYPOINT ["/app/binary"]
+RUN go build -o /go/bin/app ./cmd/
+
+FROM alpine
+WORKDIR /usr/bin
+COPY --from=build /go/bin .
+EXPOSE 8010
+CMD ["app"]

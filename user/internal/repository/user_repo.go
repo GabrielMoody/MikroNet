@@ -11,6 +11,7 @@ import (
 )
 
 type UserRepo interface {
+	CreateUser(c context.Context, user model.User) (model.User, error)
 	GetRoutes(c context.Context) ([]model.Route, error)
 	OrderMikro(c context.Context, lat string, lon string, userId string, route interface{}) ([]dto.Orders, model.Order, error)
 	CarterMikro(c context.Context, route interface{}) (interface{}, error)
@@ -21,6 +22,14 @@ type UserRepo interface {
 
 type UserRepoImpl struct {
 	db *gorm.DB
+}
+
+func (a *UserRepoImpl) CreateUser(c context.Context, user model.User) (res model.User, err error) {
+	if err = a.db.WithContext(c).Create(&user).Error; err != nil {
+		return res, err
+	}
+
+	return user, nil
 }
 
 func (a *UserRepoImpl) ReviewOrder(c context.Context, data dto.ReviewReq, orderId string) (res model.Review, err error) {

@@ -1,0 +1,23 @@
+### GET request to example server
+POST localhost:8010/register/user
+Content-Type: application/json
+
+{
+  "firs_name": "Gabriel",
+  "last_name": "Wawworundeng",
+  "email": "gabriel@gmail.com",
+  "date_of_birth": "01-01-1970",
+  "password": "12345678",
+  "password_confirmation" : "12345678"
+}
+###
+
+### Login
+POST localhost:8010/login/user
+Content-Type: application/json
+
+{
+  "email": "gabriel@gmail.com",
+  "password": "12345678"
+}
+###
