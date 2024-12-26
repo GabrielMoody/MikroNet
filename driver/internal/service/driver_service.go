@@ -10,6 +10,8 @@ import (
 )
 
 type DriverService interface {
+	GetDriverDetails(c context.Context, id string) (res interface{}, err *helper.ErrorStruct)
+	EditDriverDetails(c context.Context, id string, data dto.EditDriverReq) (res interface{}, err *helper.ErrorStruct)
 	GetStatus(c context.Context, id string) (res interface{}, err *helper.ErrorStruct)
 	SetStatus(c context.Context, id string, data dto.StatusReq) (res interface{}, err *helper.ErrorStruct)
 	GetRequest(c context.Context) (res interface{}, err *helper.ErrorStruct)
@@ -21,6 +23,41 @@ type DriverService interface {
 
 type driverServiceImpl struct {
 	repo repository.DriverRepo
+}
+
+func (a *driverServiceImpl) GetDriverDetails(c context.Context, id string) (res interface{}, err *helper.ErrorStruct) {
+	resRepo, errRepo := a.repo.GetDriverDetails(c, id)
+
+	if errRepo != nil {
+		return nil, &helper.ErrorStruct{
+			Err:  errRepo,
+			Code: http.StatusInternalServerError,
+		}
+	}
+
+	return resRepo, nil
+}
+
+func (a *driverServiceImpl) EditDriverDetails(c context.Context, id string, data dto.EditDriverReq) (res interface{}, err *helper.ErrorStruct) {
+	driver := model.DriverDetails{
+		ID:          id,
+		FirstName:   data.FirstName,
+		LastName:    data.LastName,
+		DateOfBirth: data.DateOfBirth,
+		Age:         int32(data.Age),
+		Gender:      data.Gender,
+	}
+
+	resRepo, errRepo := a.repo.EditDriverDetails(c, driver)
+
+	if errRepo != nil {
+		return nil, &helper.ErrorStruct{
+			Err:  errRepo,
+			Code: http.StatusInternalServerError,
+		}
+	}
+
+	return resRepo, nil
 }
 
 func (a *driverServiceImpl) GetTripHistories(c context.Context, id string) (res interface{}, err *helper.ErrorStruct) {
@@ -50,7 +87,7 @@ func (a *driverServiceImpl) GetAvailableSeats(c context.Context, id string) (res
 }
 
 func (a *driverServiceImpl) SetAvailableSeats(c context.Context, data dto.SeatReq, id string) (res interface{}, err *helper.ErrorStruct) {
-	driver := model.Driver{
+	driver := model.DriverDetails{
 		ID:             id,
 		AvailableSeats: data.Seat,
 	}

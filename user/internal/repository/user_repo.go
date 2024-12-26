@@ -11,7 +11,11 @@ import (
 )
 
 type UserRepo interface {
-	CreateUser(c context.Context, user model.User) (model.User, error)
+	CreateUser(c context.Context, user model.UserDetails) (model.UserDetails, error)
+	GetUserDetails(c context.Context, id string) (model.UserDetails, error)
+	GetAllUsers(c context.Context) ([]model.UserDetails, error)
+	EditUserDetails(c context.Context, user model.UserDetails) (model.UserDetails, error)
+	DeleteUserDetails(c context.Context, id string) error
 	GetRoutes(c context.Context) ([]model.Route, error)
 	OrderMikro(c context.Context, lat string, lon string, userId string, route interface{}) ([]dto.Orders, model.Order, error)
 	CarterMikro(c context.Context, route interface{}) (interface{}, error)
@@ -24,7 +28,39 @@ type UserRepoImpl struct {
 	db *gorm.DB
 }
 
-func (a *UserRepoImpl) CreateUser(c context.Context, user model.User) (res model.User, err error) {
+func (a *UserRepoImpl) GetAllUsers(c context.Context) (res []model.UserDetails, err error) {
+	if err := a.db.WithContext(c).Find(&res).Error; err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (a *UserRepoImpl) GetUserDetails(c context.Context, id string) (res model.UserDetails, err error) {
+	if err := a.db.WithContext(c).Find(&res, "id = ?", id).Error; err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
+func (a *UserRepoImpl) EditUserDetails(c context.Context, user model.UserDetails) (model.UserDetails, error) {
+	if err := a.db.WithContext(c).Updates(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (a *UserRepoImpl) DeleteUserDetails(c context.Context, id string) error {
+	if err := a.db.WithContext(c).Delete(&model.UserDetails{}, "id = ?", id).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *UserRepoImpl) CreateUser(c context.Context, user model.UserDetails) (res model.UserDetails, err error) {
 	if err = a.db.WithContext(c).Create(&user).Error; err != nil {
 		return res, err
 	}

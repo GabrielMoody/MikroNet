@@ -13,6 +13,9 @@ import (
 )
 
 type UserService interface {
+	GetUserDetails(c context.Context, id string) (res model.UserDetails, err *helper.ErrorStruct)
+	EditUserDetails(c context.Context, id string, data dto.EditUserDetails) (res model.UserDetails, err *helper.ErrorStruct)
+	DeleteUserDetails(c context.Context, id string) (err *helper.ErrorStruct)
 	GetRoutes(c context.Context) (res []model.Route, err *helper.ErrorStruct)
 	OrderMikro(c context.Context, lat, lon, userId string) (res interface{}, err *helper.ErrorStruct)
 	CarterMikro(c context.Context, route interface{}) (res interface{}, err *helper.ErrorStruct)
@@ -22,6 +25,59 @@ type UserService interface {
 
 type userServiceImpl struct {
 	repo repository.UserRepo
+}
+
+func (a *userServiceImpl) GetUserDetails(c context.Context, id string) (res model.UserDetails, err *helper.ErrorStruct) {
+	resRepo, errRepo := a.repo.GetUserDetails(c, id)
+
+	if errRepo != nil {
+		return res, &helper.ErrorStruct{
+			Err:  errRepo,
+			Code: http.StatusInternalServerError,
+		}
+	}
+
+	return resRepo, nil
+}
+
+func (a *userServiceImpl) EditUserDetails(c context.Context, id string, data dto.EditUserDetails) (res model.UserDetails, err *helper.ErrorStruct) {
+	if err := helper.Validate.Struct(data); err != nil {
+		return res, &helper.ErrorStruct{
+			Code: http.StatusBadRequest,
+			Err:  err,
+		}
+	}
+
+	resRepo, errRepo := a.repo.EditUserDetails(c, model.UserDetails{
+		ID:          id,
+		FirstName:   data.FirstName,
+		LastName:    data.LastName,
+		DateOfBirth: data.DateOfBirth,
+		Gender:      data.Gender,
+		Age:         int32(data.Age),
+	})
+
+	if errRepo != nil {
+		return res, &helper.ErrorStruct{
+			Code: http.StatusInternalServerError,
+			Err:  errRepo,
+		}
+	}
+
+	return resRepo, nil
+}
+
+func (a *userServiceImpl) DeleteUserDetails(c context.Context, id string) (err *helper.ErrorStruct) {
+	errRepo := a.repo.DeleteUserDetails(c, id)
+
+	if errRepo != nil {
+		return &helper.ErrorStruct{
+			Code: http.StatusInternalServerError,
+			Err:  errRepo,
+		}
+	}
+
+	return nil
 }
 
 func (a *userServiceImpl) ReviewOrder(c context.Context, orderId string, data dto.ReviewReq) (res interface{}, err *helper.ErrorStruct) {

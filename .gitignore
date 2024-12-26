@@ -4,7 +4,7 @@ mikronet-6cf58-firebase-adminsdk-prfvh-573a5582a6.json
 ./model
 query
 data
-
+*/tmp/
 auth-config.env
 
 docker-compose.yaml

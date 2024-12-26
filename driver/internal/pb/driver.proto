@@ -1,0 +1,13 @@
+syntax = 'proto3';
+
+package driver;
+option go_package = "github.com/GabrielMoody/MikroNet/driver/internal/pb";
+
+message Routes {
+  string id = 1;
+  string route_name = 2;
+}
+
+message GetAllRoutes {
+
+}

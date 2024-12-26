@@ -41,7 +41,7 @@ func main() {
 		}
 	}()
 
-	err := app.Listen("0.0.0.0:8014")
+	err := app.Listen("0.0.0.0:8010")
 
 	if err != nil {
 		log.Fatal(err)

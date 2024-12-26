@@ -10,27 +10,6 @@ volumes:
       device: tmpfs
 
 services:
-  postgres_database:
-    image: postgis/postgis
-    container_name: postgres_database
-    restart: always
-    environment:
-      POSTGRES_PASSWORD: 123
-      POSTGRES_DB: mikronet
-    ports:
-      - 5432:5432
-    healthcheck:
-          test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
-          interval: 10s
-          retries: 5
-          start_period: 30s
-          timeout: 10s
-    volumes:
-      - ./data/postgis:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - kong-net
-
   pgadmin:
     image: dpage/pgadmin4
     depends_on:
@@ -51,10 +30,10 @@ services:
     container_name: driver_service
     ports:
       - 8014:8014
-    depends_on:
-      postgres_database:
-        condition: service_healthy
-        restart: true
+#    depends_on:
+#      postgres_database:
+#        condition: service_healthy
+#        restart: true
     environment:
       - POSTGRES_HOST=postgres_database
       - POSTGRES_USERNAME=postgres
@@ -68,9 +47,9 @@ services:
     build: authentication
     container_name: auth_service
     ports:
-      - 8010:8010
-#    depends_on:
-#      postgres_database:
+      - 8000:8000
+    depends_on:
+      - auth_database
 #        condition: service_healthy
 #        restart: true
     environment:
@@ -85,47 +64,11 @@ services:
 #    networks:
 #      - kong-net
 
-  profile_service:
-    build: profiles
-    container_name: profile_service
-    ports:
-      - 8011:8011
-    depends_on:
-      postgres_database:
-        condition: service_healthy
-        restart: true
-    environment:
-      - POSTGRES_HOST=postgres_database
-      - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASS=123
-      - POSTGRES_PORT=5432
-      - POSTGRES_DATABASE=mikronet
-    networks:
-      - kong-net
-
-  owner_service:
-    build: business_owner
-    container_name: owner_service
-    ports:
-      - 8012:8012
-    depends_on:
-      postgres_database:
-        condition: service_healthy
-        restart: true
-    environment:
-      - POSTGRES_HOST=postgres_database
-      - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASS=123
-      - POSTGRES_PORT=5432
-      - POSTGRES_DATABASE=mikronet
-    networks:
-      - kong-net
-
   user_service:
     build: user
     container_name: user_service
     ports:
-      - 8014:8014
+      - 8010:8010
     depends_on:
       postgres_database:
         condition: service_healthy
@@ -172,6 +115,62 @@ services:
       - POSTGRES_PASS=123
       - POSTGRES_PORT=5432
       - POSTGRES_DATABASE=mikronet
+    networks:
+      - kong-net
+
+#############################################################################################
+# DATABASE CONTAINER
+
+  auth_database:
+    image: mysql:latest
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: authentication
+    networks:
+      - kong-net
+
+  user_database:
+    image: mysql:latest
+    ports:
+      - 3307:3307
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: user
+    networks:
+      - kong-net
+
+  geolocation_database:
+    image: postgis/postgis
+    container_name: postgres_database
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: mikronet
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    volumes:
+      - ./data/postgis:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - kong-net
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=mikronet
+      - RABBITMQ_DEFAULT_PASS=123
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     networks:
       - kong-net
 

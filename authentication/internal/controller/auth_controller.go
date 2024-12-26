@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
+	"github.com/GabrielMoody/MikroNet/authentication/internal/pb"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -18,11 +19,12 @@ type ProfileController interface {
 
 type ProfileControllerImpl struct {
 	ProfileService service.ProfileService
+	pb             pb.UserServiceClient
 }
 
 func (a *ProfileControllerImpl) CreateUser(c *fiber.Ctx) error {
-	User := new(dto.UserRegistrationsReq)
-	Ctx := c.Context()
+	user := new(dto.UserRegistrationsReq)
+	ctx := c.Context()
 	role := c.Params("role")
 
 	if (role != "user") && (role != "driver") {
@@ -32,19 +34,39 @@ func (a *ProfileControllerImpl) CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := c.BodyParser(&User); err != nil {
+	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status": "error",
 			"error":  err.Error(),
 		})
 	}
 
-	res, err := a.ProfileService.CreateUserService(Ctx, *User, role)
+	res, err := a.ProfileService.CreateUserService(ctx, *user, role)
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
 			"status": "error",
 			"error":  err.Err.Error(),
+		})
+	}
+
+	_, errPb := a.pb.CreateUser(ctx, &pb.CreateUserRequest{
+		User: &pb.User{
+			Id:          res,
+			FirstName:   user.FirstName,
+			LastName:    user.LastName,
+			Email:       user.Email,
+			PhoneNumber: user.PhoneNumber,
+			Password:    user.Password,
+			DateOfBirth: user.DateOfBirth,
+			Age:         uint32(user.Age),
+		},
+	})
+
+	if errPb != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "error",
+			"error":  errPb.Error(),
 		})
 	}
 
@@ -101,7 +123,9 @@ func (a *ProfileControllerImpl) LoginUser(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "success",
-		"token":  t,
+		"data": fiber.Map{
+			"token": t,
+		},
 	})
 }
 
@@ -158,6 +182,9 @@ func (a *ProfileControllerImpl) ResetPassword(c *fiber.Ctx) error {
 	})
 }
 
-func NewProfileController(profileService service.ProfileService) ProfileController {
-	return &ProfileControllerImpl{ProfileService: profileService}
+func NewProfileController(profileService service.ProfileService, client pb.UserServiceClient) ProfileController {
+	return &ProfileControllerImpl{
+		ProfileService: profileService,
+		pb:             client,
+	}
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
-	"os"
 )
 
 type ProfileService interface {
@@ -137,7 +136,7 @@ func (a *ProfileServiceImpl) SendResetPasswordService(c context.Context, email d
 		CONFIG_SMTP_HOST,
 		CONFIG_SMTP_PORT,
 		CONFIG_AUTH_EMAIL,
-		os.Getenv("EMAIL_PASSWORD"),
+		"tiuq dxsj ubgf ztxf",
 	)
 
 	if err := dialer.DialAndSend(mailer); err != nil {
@@ -172,8 +171,8 @@ func (a *ProfileServiceImpl) ResetPassword(c context.Context, data dto.ResetPass
 	return resRepo, nil
 }
 
-func NewProfileService(ProfileRepo repository.ProfileRepo) ProfileService {
+func NewProfileService(profileRepo repository.ProfileRepo) ProfileService {
 	return &ProfileServiceImpl{
-		ProfileRepo: ProfileRepo,
+		ProfileRepo: profileRepo,
 	}
 }

@@ -4,10 +4,21 @@ import (
 	"context"
 	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/dto"
 	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/helper"
+	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/midleware"
 	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/repository"
 	"github.com/gofiber/contrib/websocket"
 	"log"
+	"os"
+	"sync"
 )
+
+type Room struct {
+	clients map[*websocket.Conn]bool
+	mu      sync.Mutex
+}
+
+var rooms = make(map[string]*Room)
+var roomsMu sync.Mutex
 
 type GeoTrack interface {
 	LocationTracking(ctx context.Context) func(*websocket.Conn)
@@ -41,7 +52,27 @@ func (a *GeoTrackImpl) LocationTracking(ctx context.Context) func(*websocket.Con
 			_ = c.Close()
 		}()
 
+		// Extract the JWT token from the query parameters
+		tokenString := c.Locals("token").([]string)
+		if tokenString == nil {
+			log.Println("Missing token")
+			return
+		}
+
+		// Validate the JWT token
+		claims, err := midleware.ValidateJWT(tokenString[0], os.Getenv("JWT_SECRET"))
+		if err != nil {
+			log.Println("Invalid token:", err)
+			return
+		}
+
+		// Authorize the user based on the token claims
+		userID := claims["id"].(string)
+		routeID := c.Query("route_id")
+
 		a.h.Register <- c
+		joinRoom(routeID, c)
+		defer leaveRoom(routeID, c)
 
 		for {
 			var msg dto.Message
@@ -56,15 +87,48 @@ func (a *GeoTrackImpl) LocationTracking(ctx context.Context) func(*websocket.Con
 				return
 			}
 
-			a.h.Broadcast <- msg
+			a.h.Broadcast <- dto.Message{
+				UserID: userID,
+				Lat:    msg.Lat,
+				Lng:    msg.Lng,
+			}
 
-			_, err = a.repo.SaveCurrentDriverLocation(ctx, msg)
+			_, err = a.repo.SaveCurrentDriverLocation(ctx, dto.Message{
+				UserID: userID,
+				Lat:    msg.Lat,
+				Lng:    msg.Lng,
+			})
 
 			if err != nil {
 				log.Println(err)
 			}
 		}
 	}
+}
+
+func joinRoom(routeID string, ws *websocket.Conn) {
+	roomsMu.Lock()
+	room, exists := rooms[routeID]
+	if !exists {
+		room = &Room{clients: make(map[*websocket.Conn]bool)}
+		rooms[routeID] = room
+	}
+	roomsMu.Unlock()
+
+	room.mu.Lock()
+	room.clients[ws] = true
+	room.mu.Unlock()
+}
+
+func leaveRoom(routeID string, ws *websocket.Conn) {
+	roomsMu.Lock()
+	room, exists := rooms[routeID]
+	if exists {
+		room.mu.Lock()
+		delete(room.clients, ws)
+		room.mu.Unlock()
+	}
+	roomsMu.Unlock()
 }
 
 func NewWsGeoTracking(h *dto.Hub, repo repository.GeoTrackRepository) GeoTrack {

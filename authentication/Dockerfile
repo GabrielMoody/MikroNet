@@ -8,5 +8,5 @@ RUN go build -o /go/bin/app ./cmd/
 FROM alpine
 WORKDIR /usr/bin
 COPY --from=build /go/bin .
-EXPOSE 8010
+EXPOSE 8000
 CMD ["app"]

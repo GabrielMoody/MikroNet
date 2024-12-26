@@ -16,6 +16,10 @@ func UserHandler(r fiber.Router, db *gorm.DB) {
 
 	api := r.Group("/")
 
+	api.Get("/", controllerUser.GetUser)
+	api.Put("/", controllerUser.EditUser)
+	api.Delete("/", controllerUser.DeleteUser)
+
 	api.Get("/histories/:id", controllerUser.GetTripHistories)
 	api.Get("/routes", controllerUser.GetRoutes)
 	api.Post("/orders/:id", controllerUser.OrderMikro)

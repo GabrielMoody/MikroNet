@@ -8,17 +8,35 @@ import (
 )
 
 type DriverRepo interface {
+	GetDriverDetails(c context.Context, id string) (model.DriverDetails, error)
+	EditDriverDetails(c context.Context, user model.DriverDetails) (model.DriverDetails, error)
 	GetStatus(c context.Context, id string) (res interface{}, err error)
 	SetStatus(c context.Context, status string, id string) (res interface{}, err error)
 	GetRequest(c context.Context) (res interface{}, err error)
 	AcceptRequest(c context.Context) (res interface{}, err error)
 	GetAvailableSeats(c context.Context, id string) (res interface{}, err error)
-	SetAvailableSeats(c context.Context, data model.Driver) (res interface{}, err error)
+	SetAvailableSeats(c context.Context, data model.DriverDetails) (res interface{}, err error)
 	GetTripHistories(c context.Context, id string) (res interface{}, err error)
 }
 
 type DriverRepoImpl struct {
 	db *gorm.DB
+}
+
+func (a *DriverRepoImpl) GetDriverDetails(c context.Context, id string) (res model.DriverDetails, err error) {
+	if err := a.db.WithContext(c).Find(&res, "id = ?", id).Error; err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
+func (a *DriverRepoImpl) EditDriverDetails(c context.Context, user model.DriverDetails) (res model.DriverDetails, err error) {
+	if err := a.db.WithContext(c).Updates(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
 }
 
 func (a *DriverRepoImpl) GetTripHistories(c context.Context, id string) (res interface{}, err error) {
@@ -54,7 +72,7 @@ func (a *DriverRepoImpl) GetTripHistories(c context.Context, id string) (res int
 }
 
 func (a *DriverRepoImpl) GetAvailableSeats(c context.Context, id string) (res interface{}, err error) {
-	var driver model.Driver
+	var driver model.DriverDetails
 
 	if err := a.db.WithContext(c).Select("available_seats").Where("id = ?", id).Find(&driver).Error; err != nil {
 		return nil, err
@@ -63,7 +81,7 @@ func (a *DriverRepoImpl) GetAvailableSeats(c context.Context, id string) (res in
 	return driver.AvailableSeats, nil
 }
 
-func (a *DriverRepoImpl) SetAvailableSeats(c context.Context, data model.Driver) (res interface{}, err error) {
+func (a *DriverRepoImpl) SetAvailableSeats(c context.Context, data model.DriverDetails) (res interface{}, err error) {
 	if err := a.db.WithContext(c).Updates(data).Error; err != nil {
 		return nil, err
 	}
@@ -72,7 +90,7 @@ func (a *DriverRepoImpl) SetAvailableSeats(c context.Context, data model.Driver)
 }
 
 func (a *DriverRepoImpl) GetStatus(c context.Context, id string) (res interface{}, err error) {
-	var driver model.Driver
+	var driver model.DriverDetails
 
 	if err := a.db.WithContext(c).Select("status").First(&driver, "id = ?", id).Error; err != nil {
 		return nil, err
@@ -82,7 +100,7 @@ func (a *DriverRepoImpl) GetStatus(c context.Context, id string) (res interface{
 }
 
 func (a *DriverRepoImpl) SetStatus(c context.Context, status string, id string) (res interface{}, err error) {
-	if err := a.db.WithContext(c).Where("id = ?", id).Updates(model.Driver{Status: status}).Error; err != nil {
+	if err := a.db.WithContext(c).Where("id = ?", id).Updates(model.DriverDetails{Status: status}).Error; err != nil {
 		return nil, err
 	}
 

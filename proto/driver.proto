@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package dashboard;
+option go_package = "github.com/GabrielMoody/MikroNet/dashboard/internal/pb";
+
+message Driver {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string phone_number = 5;
+  string date_of_birth = 6;
+  uint32 age = 7;
+  string registration_number = 8;
+  string route = 9;
+}
+
+message Empty{}
+
+message Drivers {
+  repeated Driver drivers = 1;
+}
+
+service DriverService {
+  rpc GetDrivers (Empty) returns (Drivers){}
+  rpc GetDriverDetails (Empty) returns (Driver){}
+}

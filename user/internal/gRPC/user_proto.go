@@ -34,7 +34,7 @@ func (a *GRPC) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (res *
 		return res, err
 	}
 
-	data := model.User{
+	data := model.UserDetails{
 		ID:          req.User.Id,
 		FirstName:   req.User.FirstName,
 		LastName:    req.User.LastName,
@@ -54,5 +54,31 @@ func (a *GRPC) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (res *
 
 	return &pb.CreateUserResponse{
 		Id: resRepo.ID,
+	}, nil
+}
+
+func (a *GRPC) GetUsers(ctx context.Context, _ *pb.Empty) (res *pb.Users, err error) {
+	resRepo, err := a.repo.GetAllUsers(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var users []*pb.User
+
+	for _, v := range resRepo {
+		users = append(users, &pb.User{
+			Id:          v.ID,
+			FirstName:   v.FirstName,
+			LastName:    v.LastName,
+			Email:       v.Email,
+			PhoneNumber: v.PhoneNumber,
+			Age:         uint32(v.Age),
+			Gender:      v.Gender,
+		})
+	}
+
+	return &pb.Users{
+		Users: users,
 	}, nil
 }
