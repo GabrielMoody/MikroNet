@@ -8,18 +8,37 @@ import (
 	"gorm.io/gorm"
 )
 
-type ProfileRepo interface {
+type AuthRepo interface {
 	CreateUser(c context.Context, data models.User) (res string, err error)
 	LoginUser(c context.Context, data dto.UserLoginReq) (res models.User, err error)
 	SendResetPassword(c context.Context, email string, code string) (data models.ResetPassword, err error)
 	ResetPassword(c context.Context, password string, code string) (res string, err error)
+	ChangePassword(c context.Context, oldPassword, newPassword, id string) (res string, err error)
 }
 
-type ProfileRepoImpl struct {
+type AuthRepoImpl struct {
 	db *gorm.DB
 }
 
-func (a *ProfileRepoImpl) LoginUser(c context.Context, data dto.UserLoginReq) (res models.User, err error) {
+func (a *AuthRepoImpl) ChangePassword(c context.Context, oldPassword, newPassword, id string) (res string, err error) {
+	var user models.User
+
+	if err := a.db.WithContext(c).First(&user, "id = ?", id).Error; err != nil {
+		return "Email not found!", gorm.ErrRecordNotFound
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
+		return "Incorrect password!", err
+	}
+
+	if err := a.db.WithContext(c).Model(&user).Update("password", newPassword).Error; err != nil {
+		return "Error while Updating data", err
+	}
+
+	return "Success updating the password", nil
+}
+
+func (a *AuthRepoImpl) LoginUser(c context.Context, data dto.UserLoginReq) (res models.User, err error) {
 	var user models.User
 
 	if err := a.db.WithContext(c).First(&user, "email = ?", data.Email).Error; err != nil {
@@ -33,7 +52,7 @@ func (a *ProfileRepoImpl) LoginUser(c context.Context, data dto.UserLoginReq) (r
 	return user, nil
 }
 
-func (a *ProfileRepoImpl) CreateUser(c context.Context, data models.User) (res string, err error) {
+func (a *AuthRepoImpl) CreateUser(c context.Context, data models.User) (res string, err error) {
 	result := a.db.WithContext(c).Create(&data)
 
 	if result.Error != nil {
@@ -43,7 +62,7 @@ func (a *ProfileRepoImpl) CreateUser(c context.Context, data models.User) (res s
 	return data.ID, nil
 }
 
-func (a *ProfileRepoImpl) SendResetPassword(c context.Context, email string, code string) (data models.ResetPassword, err error) {
+func (a *AuthRepoImpl) SendResetPassword(c context.Context, email string, code string) (data models.ResetPassword, err error) {
 	var user models.User
 
 	if err := a.db.WithContext(c).First(&user, "email = ?", email).Error; err != nil {
@@ -62,7 +81,7 @@ func (a *ProfileRepoImpl) SendResetPassword(c context.Context, email string, cod
 	return rp, nil
 }
 
-func (a *ProfileRepoImpl) ResetPassword(c context.Context, password string, code string) (res string, err error) {
+func (a *AuthRepoImpl) ResetPassword(c context.Context, password string, code string) (res string, err error) {
 	var rp models.ResetPassword
 
 	if err := a.db.WithContext(c).First(&rp, "code = ?", code).Error; err != nil {
@@ -84,8 +103,8 @@ func (a *ProfileRepoImpl) ResetPassword(c context.Context, password string, code
 	return "Success", nil
 }
 
-func NewProfileRepo(db *gorm.DB) ProfileRepo {
-	return &ProfileRepoImpl{
+func NewAuthRepo(db *gorm.DB) AuthRepo {
+	return &AuthRepoImpl{
 		db: db,
 	}
 }

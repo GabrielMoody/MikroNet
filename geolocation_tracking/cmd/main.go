@@ -26,7 +26,7 @@ func main() {
 
 	handler.NewWSHandler(api, db)
 
-	err := app.Listen("0.0.0.0:8040")
+	err := app.Listen(":8040")
 
 	if err != nil {
 		log.Fatal(err)

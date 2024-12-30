@@ -1,266 +1,315 @@
 openapi: 3.0.3
 info:
-  title: MikroNet API Documentation
+  title: MikroNet
   version: 1.0.0
-  description: API documentation for the MikroNet application, covering User, Driver, Business Owner, Government, and Admin functionalities.
 servers:
-  - url: https://api.mikronet.com/v1
-    description: Production server
+  - url: http://localhost/api/v1/
+  - url: http://localhost:8000/
+  - url: http://localhost:8010/
+  - url: http://localhost:8020/
+  - url: http://localhost:8030/
+  - url: http://localhost:8040/
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+tags:
+  - name: Authentication
+  - name: Admin
+  - name: Driver
+  - name: User
+  - name: Notification
 
 paths:
-  /user/register:
+#*################################################################################
+#*                             AUTHENTICATION                                    #
+#*################################################################################
+
+  /register/user:
     post:
-      summary: User registration
-      description: Register a new user account.
+      tags:
+        - Authentication
+      summary: Register new profile
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               type: object
-              properties:
-                name:
-                  type: string
-                email:
-                  type: string
-                  format: email
-                phone:
-                  type: string
-                password:
-                  type: string
-                  format: password
-              required:
-                - name
-                - email
-                - phone
-                - password
-      responses:
-        '201':
-          description: User registered successfully
-        '400':
-          description: Invalid input data
-
-  /user/verify:
-    post:
-      summary: Verify user email or phone
-      description: Verify user email or phone number using a code.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                emailOrPhone:
-                  type: string
-              required:
-                - code
-                - emailOrPhone
+              example:
+                first_name: Gabriel Moody
+                last_name: Waworundeng
+                email: gabrie123l@mail.com
+                phone_number: '089279213091'
+                date_of_birth: 01-01-1970
+                age: 54
+                password: gabriel0803
+                password_confirmation: gabriel0803
       responses:
         '200':
-          description: Verification successful
-        '400':
-          description: Invalid code or email/phone
-
-  /user/login:
-    post:
-      summary: User login
-      description: Login with email and password.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-                  format: password
-              required:
-                - email
-                - password
-      responses:
-        '200':
-          description: Login successful
-        '401':
-          description: Invalid credentials
-
-  /user/routes:
-    get:
-      summary: View Mikrolet routes
-      description: Fetch available Mikrolet routes.
-      responses:
-        '200':
-          description: List of routes
+          description: Successful response
           content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    routeId:
-                      type: string
-                    routeName:
-                      type: string
-                    active:
-                      type: boolean
-        '404':
-          description: No routes found
+            application/json: {}
 
-  /user/book:
+  /login:
     post:
-      summary: Book a Mikrolet
-      description: Book a Mikrolet based on route or destination.
+      tags:
+        - Authentication
+      summary: User Login
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               type: object
-              properties:
-                routeId:
-                  type: string
-                destination:
-                  type: string
-              required:
-                - routeId
-                - destination
+              example:
+                email: gabrie123l@mail.com
+                password: gabriel0803
       responses:
         '200':
-          description: Booking successful
-        '400':
-          description: Invalid booking details
-
-  /user/history:
-    get:
-      summary: View travel history
-      description: Fetch user travel history.
-      responses:
-        '200':
-          description: List of travel history
+          description: Successful response
           content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    tripId:
-                      type: string
-                    date:
-                      type: string
-                      format: date
-                    route:
-                      type: string
-                    feedback:
-                      type: string
-        '404':
-          description: No history found
+            application/json: {}
 
-  /driver/login:
+  /change-password:
     post:
-      summary: Driver login
-      description: Login for drivers with email and password.
+      tags:
+        - Authentication
+      summary: Change old password
+      security:
+        - bearerAuth: [ ]
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               type: object
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-                  format: password
-              required:
-                - email
-                - password
+              example:
+                old_password: "passwordlama"
+                new_password: "passwordbaru"
+                new_password_confirm: "passwordbaru"
       responses:
         '200':
-          description: Login successful
-        '401':
-          description: Invalid credentials
-
-  /driver/profile:
-    get:
-      summary: Driver profile
-      description: Fetch driver profile details.
-      responses:
-        '200':
-          description: Driver profile details
+          description: Successful response
           content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  name:
-                    type: string
-                  email:
-                    type: string
-                  phone:
-                    type: string
-                  vehicleInfo:
-                    type: object
-                    properties:
-                      vehicleType:
-                        type: string
-                      licensePlate:
-                        type: string
-        '401':
-          description: Unauthorized
+            application/json: { }
 
-  /government/dashboard:
-    get:
-      summary: Government dashboard
-      description: Fetch data for government dashboard overview.
+
+  /reset-password{id}:
+    post:
+      tags:
+        - Authentication
+      summary: Request Reset Password Link
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: gabrielmdy08@gmail.com
       responses:
         '200':
-          description: Dashboard data
+          description: Successful response
           content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  activeVehicles:
-                    type: integer
-                  registeredUsers:
-                    type: integer
-                  driverDetails:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        name:
-                          type: string
-                        age:
-                          type: integer
-                        status:
-                          type: string
-                  businessOwners:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        name:
-                          type: string
-                        contact:
-                          type: string
-                  feedback:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        rating:
-                          type: integer
-                        comment:
-                          type: string
-        '401':
-          description: Unauthorized
+            application/json: {}
+    put:
+      tags:
+        - Authentication
+      summary: Reset Password
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                password: '87654321'
+                password_confirmation: '87654321'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+
+#*################################################################################
+#*                                ADMIN                                          #
+#*################################################################################
+
+  /users:
+    get:
+      tags:
+        - Admin
+      summary: Get all users
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+
+#*################################################################################
+#*                                DRIVER                                         #
+#*################################################################################
+
+  /status:
+    get:
+      tags:
+        - Driver
+      summary: Get driver status
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    put:
+      tags:
+        - Driver
+      summary: Update driver status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                status: 'off'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+
+  /seats:
+    get:
+      tags:
+        - Driver
+      summary: Get available seats
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    put:
+      tags:
+        - Driver
+      summary: Update the available seats
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                seat: 10
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+
+#*################################################################################
+#*                                USER                                           #
+#*################################################################################
+
+  /:
+    get:
+      tags:
+        - User
+      summary: Get user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    put:
+      tags:
+        - User
+      summary: Update user profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                first_name: Gabriel Moody
+                last_name: Waworundeng
+                date_of_birth: 01-01-1970
+                age: '54'
+                gender: Male
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - User
+      summary: Delete user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+
+  /015/sse/notification/{id}:
+    get:
+      tags:
+        - Notification
+      summary: Make a connection
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /015/sse/notify/{id}:
+    post:
+      tags:
+        - Notification
+      summary: Send a notification
+      requestBody:
+        content: {}
+      parameters:
+        - name: message
+          in: query
+          schema:
+            type: string
+          example: '{ "data": "adasda" , "location": "asdasd"}'
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}

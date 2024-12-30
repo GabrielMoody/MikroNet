@@ -19,11 +19,11 @@ func DatabaseInit() *gorm.DB {
 
 	log.Print("Connection Succeed")
 
-	//err = db.AutoMigrate(&User{}, &ResetPassword{})
+	err = db.AutoMigrate(&OwnerDetails{}, &BlockedAccount{}, &GovDetails{}, &Admin{}, &OwnerDetails{})
 
-	//if err != nil {
-	//	panic(fmt.Errorf("error while migrating database"))
-	//}
+	if err != nil {
+		panic(fmt.Errorf("error while migrating database"))
+	}
 
 	return db
 }

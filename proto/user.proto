@@ -30,7 +30,12 @@ message Users {
   repeated User users = 1;
 }
 
+message GetUserDetailsRequest {
+  string id = 1;
+}
+
 service UserService {
   rpc CreateUser (CreateUserRequest) returns (CreateUserResponse){}
   rpc GetUsers (Empty) returns (Users){}
+  rpc GetUserDetails (GetUserDetailsRequest) returns (User){}
 }

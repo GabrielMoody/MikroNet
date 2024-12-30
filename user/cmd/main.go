@@ -6,10 +6,11 @@ import (
 	"github.com/GabrielMoody/mikroNet/user/internal/model"
 	"github.com/GabrielMoody/mikroNet/user/internal/pb"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"log"
 	"net"
 )
 
@@ -17,6 +18,10 @@ func main() {
 	app := fiber.New()
 	grpcServer := grpc.NewServer()
 
+	app.Use(cors.New(cors.Config{
+		AllowHeaders: "Authorization, Content-Type",
+		AllowOrigins: "*",
+	}))
 	app.Use(logger.New())
 
 	db := model.DatabaseInit()
@@ -41,7 +46,7 @@ func main() {
 		}
 	}()
 
-	err := app.Listen("0.0.0.0:8010")
+	err := app.Listen(":8010")
 
 	if err != nil {
 		log.Fatal(err)

@@ -5,7 +5,6 @@ import (
 	"github.com/GabrielMoody/mikroNet/user/internal/model"
 	"github.com/GabrielMoody/mikroNet/user/internal/pb"
 	"github.com/GabrielMoody/mikroNet/user/internal/repository"
-	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
@@ -21,12 +20,6 @@ func NewgRPC(repo repository.UserRepo) *GRPC {
 }
 
 func (a *GRPC) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (res *pb.CreateUserResponse, err error) {
-	hashed, err := bcrypt.GenerateFromPassword([]byte(req.User.Password), bcrypt.DefaultCost)
-
-	if err != nil {
-		return res, err
-	}
-
 	format := "02-01-2006"
 	date, err := time.Parse(format, req.User.DateOfBirth)
 
@@ -39,7 +32,6 @@ func (a *GRPC) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (res *
 		FirstName:   req.User.FirstName,
 		LastName:    req.User.LastName,
 		Email:       req.User.Email,
-		Password:    string(hashed),
 		PhoneNumber: req.User.PhoneNumber,
 		Age:         int32(req.User.Age),
 		Gender:      req.User.Gender,
@@ -80,5 +72,22 @@ func (a *GRPC) GetUsers(ctx context.Context, _ *pb.Empty) (res *pb.Users, err er
 
 	return &pb.Users{
 		Users: users,
+	}, nil
+}
+
+func (a *GRPC) GetUserDetails(ctx context.Context, req *pb.GetUserDetailsRequest) (res *pb.User, err error) {
+	resRepo, err := a.repo.GetUserDetails(ctx, req.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.User{
+		Id:          resRepo.ID,
+		FirstName:   resRepo.FirstName,
+		LastName:    resRepo.LastName,
+		Email:       resRepo.Email,
+		PhoneNumber: resRepo.PhoneNumber,
+		Age:         uint32(resRepo.Age),
 	}, nil
 }

@@ -8,6 +8,8 @@ import (
 )
 
 type DriverRepo interface {
+	CreateDriver(c context.Context, data model.DriverDetails) (model.DriverDetails, error)
+	GetAllDrivers(c context.Context) ([]model.DriverDetails, error)
 	GetDriverDetails(c context.Context, id string) (model.DriverDetails, error)
 	EditDriverDetails(c context.Context, user model.DriverDetails) (model.DriverDetails, error)
 	GetStatus(c context.Context, id string) (res interface{}, err error)
@@ -21,6 +23,22 @@ type DriverRepo interface {
 
 type DriverRepoImpl struct {
 	db *gorm.DB
+}
+
+func (a *DriverRepoImpl) CreateDriver(c context.Context, data model.DriverDetails) (res model.DriverDetails, err error) {
+	if err := a.db.WithContext(c).Create(&data).Error; err != nil {
+		return res, err
+	}
+
+	return data, nil
+}
+
+func (a *DriverRepoImpl) GetAllDrivers(c context.Context) (res []model.DriverDetails, err error) {
+	if err := a.db.WithContext(c).Find(&res).Error; err != nil {
+		return res, err
+	}
+
+	return res, nil
 }
 
 func (a *DriverRepoImpl) GetDriverDetails(c context.Context, id string) (res model.DriverDetails, err error) {
@@ -82,7 +100,7 @@ func (a *DriverRepoImpl) GetAvailableSeats(c context.Context, id string) (res in
 }
 
 func (a *DriverRepoImpl) SetAvailableSeats(c context.Context, data model.DriverDetails) (res interface{}, err error) {
-	if err := a.db.WithContext(c).Updates(data).Error; err != nil {
+	if err := a.db.WithContext(c).Updates(&data).Error; err != nil {
 		return nil, err
 	}
 

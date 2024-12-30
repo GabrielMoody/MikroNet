@@ -26,6 +26,7 @@ type DriverControllerImpl struct {
 
 func (a *DriverControllerImpl) GetDriver(c *fiber.Ctx) error {
 	token := c.Get("Authorization")
+
 	payload, _ := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
 	ctx := c.Context()
 
@@ -46,6 +47,7 @@ func (a *DriverControllerImpl) GetDriver(c *fiber.Ctx) error {
 
 func (a *DriverControllerImpl) EditDriver(c *fiber.Ctx) error {
 	token := c.Get("Authorization")
+
 	payload, _ := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
 	ctx := c.Context()
 
@@ -75,6 +77,7 @@ func (a *DriverControllerImpl) EditDriver(c *fiber.Ctx) error {
 
 func (a *DriverControllerImpl) GetTripHistories(c *fiber.Ctx) error {
 	token := c.Get("Authorization")
+
 	payload, _ := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
 	ctx := c.Context()
 
@@ -95,6 +98,7 @@ func (a *DriverControllerImpl) GetTripHistories(c *fiber.Ctx) error {
 
 func (a *DriverControllerImpl) GetAvailableSeats(c *fiber.Ctx) error {
 	token := c.Get("Authorization")
+
 	payload, _ := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
 	ctx := c.Context()
 
@@ -109,7 +113,9 @@ func (a *DriverControllerImpl) GetAvailableSeats(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "Success",
-		"data":   res,
+		"data": fiber.Map{
+			"seats": res,
+		},
 	})
 }
 
@@ -137,7 +143,7 @@ func (a *DriverControllerImpl) SetAvailableSeats(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status": "Error",
+		"status": "Success",
 		"data": fiber.Map{
 			"seat": res,
 		},
@@ -146,6 +152,7 @@ func (a *DriverControllerImpl) SetAvailableSeats(c *fiber.Ctx) error {
 
 func (a *DriverControllerImpl) GetStatus(c *fiber.Ctx) error {
 	token := c.Get("Authorization")
+
 	payload, _ := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
 	ctx := c.Context()
 
@@ -160,13 +167,16 @@ func (a *DriverControllerImpl) GetStatus(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "Success",
-		"data":   res,
+		"data": fiber.Map{
+			"status": res,
+		},
 	})
 }
 
 func (a *DriverControllerImpl) SetStatus(c *fiber.Ctx) error {
 	var data dto.StatusReq
 	token := c.Get("Authorization")
+
 	payload, _ := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
 	ctx := c.Context()
 
@@ -188,7 +198,9 @@ func (a *DriverControllerImpl) SetStatus(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "Success",
-		"data":   res,
+		"data": fiber.Map{
+			"status": res,
+		},
 	})
 }
 

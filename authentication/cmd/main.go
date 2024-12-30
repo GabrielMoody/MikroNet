@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/handler"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/models"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/pb"
@@ -22,25 +21,31 @@ func main() {
 		AllowMethods: "*",
 	}))
 
-	conn, err := grpc.NewClient(":5005", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	userConn, err := grpc.NewClient(":5005", grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer conn.Close()
+	driverConn, err := grpc.NewClient(":5006", grpc.WithTransportCredentials(insecure.NewCredentials()))
 
-	client := pb.NewUserServiceClient(conn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer driverConn.Close()
+	defer userConn.Close()
+
+	userPB := pb.NewUserServiceClient(userConn)
+	driverPB := pb.NewDriverServiceClient(driverConn)
 
 	db := models.DatabaseInit()
 
-	fmt.Println("Success published message")
-
 	api := app.Group("/")
 
-	handler.ProfileHandler(api, db, client)
+	handler.ProfileHandler(api, db, userPB, driverPB)
 
-	err = app.Listen("0.0.0.0:8000")
+	err = app.Listen(":8000")
 	if err != nil {
 		return
 	}

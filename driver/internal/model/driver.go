@@ -5,19 +5,20 @@ import (
 )
 
 type DriverDetails struct {
-	ID                 string    `gorm:"column:id;primaryKey" json:"id"`
-	OwnerID            string    `gorm:"column:owner_id" json:"owner_id"`
-	Email              string    `gorm:"column:email" json:"email"`
-	FirstName          string    `gorm:"column:first_name" json:"first_name"`
-	LastName           string    `gorm:"column:last_name" json:"last_name"`
-	DateOfBirth        time.Time `gorm:"column:date_of_birth" json:"date_of_birth"`
-	Age                int32     `gorm:"column:age" json:"age"`
-	Gender             string    `gorm:"column:gender" json:"gender"`
-	RouteID            int       `gorm:"column:route_id" json:"route_id"`
-	Route              Route     `gorm:"foreignKey:RouteID;references:ID"`
-	RegistrationNumber string    `gorm:"column:registration_number" json:"registration_number"`
-	Status             string    `gorm:"column:status" json:"status"`
-	AvailableSeats     int32     `gorm:"column:available_seats" json:"available_seats"`
+	ID             string    `gorm:"column:id;primaryKey" json:"id"`
+	OwnerID        string    `gorm:"column:owner_id" json:"owner_id"`
+	Email          string    `gorm:"column:email" json:"email"`
+	FirstName      string    `gorm:"column:first_name" json:"first_name"`
+	LastName       string    `gorm:"column:last_name" json:"last_name"`
+	DateOfBirth    time.Time `gorm:"column:date_of_birth" json:"date_of_birth"`
+	PhoneNumber    string    `gorm:"column:phone_number" json:"phone_number"`
+	Age            int32     `gorm:"column:age" json:"age"`
+	Gender         string    `gorm:"column:gender" json:"gender"`
+	RouteID        int       `gorm:"column:route_id" json:"route_id"`
+	Route          Route     `gorm:"foreignKey:RouteID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	LicenseNumber  string    `gorm:"column:license_number" json:"license_number"`
+	Status         string    `gorm:"column:status" json:"status"`
+	AvailableSeats int32     `gorm:"column:available_seats" json:"available_seats"`
 }
 
 type Route struct {

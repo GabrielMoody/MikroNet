@@ -7,10 +7,11 @@ import (
 	"github.com/GabrielMoody/mikroNet/driver/internal/model"
 	"github.com/GabrielMoody/mikroNet/driver/internal/repository"
 	"net/http"
+	"time"
 )
 
 type DriverService interface {
-	GetDriverDetails(c context.Context, id string) (res interface{}, err *helper.ErrorStruct)
+	GetDriverDetails(c context.Context, id string) (res dto.GetDriverDetailsRes, err *helper.ErrorStruct)
 	EditDriverDetails(c context.Context, id string, data dto.EditDriverReq) (res interface{}, err *helper.ErrorStruct)
 	GetStatus(c context.Context, id string) (res interface{}, err *helper.ErrorStruct)
 	SetStatus(c context.Context, id string, data dto.StatusReq) (res interface{}, err *helper.ErrorStruct)
@@ -25,25 +26,37 @@ type driverServiceImpl struct {
 	repo repository.DriverRepo
 }
 
-func (a *driverServiceImpl) GetDriverDetails(c context.Context, id string) (res interface{}, err *helper.ErrorStruct) {
+func (a *driverServiceImpl) GetDriverDetails(c context.Context, id string) (res dto.GetDriverDetailsRes, err *helper.ErrorStruct) {
 	resRepo, errRepo := a.repo.GetDriverDetails(c, id)
 
 	if errRepo != nil {
-		return nil, &helper.ErrorStruct{
+		return res, &helper.ErrorStruct{
 			Err:  errRepo,
 			Code: http.StatusInternalServerError,
 		}
 	}
 
-	return resRepo, nil
+	return dto.GetDriverDetailsRes{
+		ID:                 resRepo.ID,
+		FirstName:          resRepo.FirstName,
+		LastName:           resRepo.LastName,
+		DateOfBirth:        resRepo.DateOfBirth,
+		Age:                int(resRepo.Age),
+		Email:              resRepo.Email,
+		RegistrationNumber: resRepo.LicenseNumber,
+		Gender:             resRepo.Gender,
+	}, nil
 }
 
 func (a *driverServiceImpl) EditDriverDetails(c context.Context, id string, data dto.EditDriverReq) (res interface{}, err *helper.ErrorStruct) {
+	format := "02-01-2006"
+	date, _ := time.Parse(format, data.DateOfBirth)
+
 	driver := model.DriverDetails{
 		ID:          id,
 		FirstName:   data.FirstName,
 		LastName:    data.LastName,
-		DateOfBirth: data.DateOfBirth,
+		DateOfBirth: date,
 		Age:         int32(data.Age),
 		Gender:      data.Gender,
 	}

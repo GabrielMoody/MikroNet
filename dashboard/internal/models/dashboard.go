@@ -10,6 +10,7 @@ type GovDetails struct {
 	ID        string `gorm:"column:id;primaryKey" json:"id"`
 	FirstName string `gorm:"column:first_name" json:"first_name"`
 	LastName  string `gorm:"column:last_name" json:"last_name"`
+	Email     string `gorm:"column:email" json:"email"`
 	NIP       string `gorm:"column:nip" json:"nip"`
 }
 
@@ -17,6 +18,7 @@ type OwnerDetails struct {
 	ID        string `gorm:"column:id;primaryKey" json:"id"`
 	FirstName string `gorm:"column:first_name" json:"first_name"`
 	LastName  string `gorm:"column:last_name" json:"last_name"`
+	Email     string `gorm:"column:email" json:"email"`
 	NIK       string `gorm:"column:nik" json:"nik"`
 	Verified  bool   `gorm:"column:verified" json:"verified"`
 }

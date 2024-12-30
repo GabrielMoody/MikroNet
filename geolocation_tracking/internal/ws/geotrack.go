@@ -55,14 +55,14 @@ func (a *GeoTrackImpl) LocationTracking(ctx context.Context) func(*websocket.Con
 		// Extract the JWT token from the query parameters
 		tokenString := c.Locals("token").([]string)
 		if tokenString == nil {
-			log.Println("Missing token")
+			log.Fatal("Missing token")
 			return
 		}
 
 		// Validate the JWT token
 		claims, err := midleware.ValidateJWT(tokenString[0], os.Getenv("JWT_SECRET"))
 		if err != nil {
-			log.Println("Invalid token:", err)
+			log.Fatal("Invalid token:", err)
 			return
 		}
 

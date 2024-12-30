@@ -17,7 +17,7 @@ func DatabaseInit() *gorm.DB {
 		panic(fmt.Errorf("error while connecting database"))
 	}
 
-	err = db.AutoMigrate(&UserDetails{})
+	err = db.AutoMigrate(&UserDetails{}, &Review{})
 
 	if err != nil {
 		panic(fmt.Errorf("error while migrating database"))

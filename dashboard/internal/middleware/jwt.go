@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -26,17 +25,4 @@ func GetJWTPayload(tokenString, secretKey string) (jwt.MapClaims, error) {
 	} else {
 		return nil, fmt.Errorf("invalid JWT claims")
 	}
-}
-
-func CheckHeaderAuthorization(c *fiber.Ctx) error {
-	token := c.Get("Authorization")
-
-	if token == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"status": "Error",
-			"error":  "Unauthorized",
-		})
-	}
-
-	return c.Next()
 }

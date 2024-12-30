@@ -38,7 +38,7 @@ type (
 	}
 
 	ReviewReq struct {
-		Review string `json:"review"`
-		Star   int    `json:"star" validate:"required"`
+		Comment string `json:"comment"`
+		Star    int    `json:"star" validate:"required"`
 	}
 )

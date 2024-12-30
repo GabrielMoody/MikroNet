@@ -13,7 +13,10 @@ import (
 )
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		StrictRouting: true,
+	})
+
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowHeaders: "*",
@@ -26,20 +29,28 @@ func main() {
 
 	api := app.Group("/")
 
-	conn, err := grpc.NewClient(":5005", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	userConn, err := grpc.NewClient(":5005", grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer conn.Close()
+	defer userConn.Close()
 
-	driver := pb.NewDriverServiceClient(conn)
-	user := pb.NewUserServiceClient(conn)
+	driverConn, err := grpc.NewClient(":5006", grpc.WithTransportCredentials(insecure.NewCredentials()))
 
-	handler.OwnerHandler(api, db, driver, user)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	err = app.Listen("0.0.0.0:8030")
+	defer driverConn.Close()
+
+	driver := pb.NewDriverServiceClient(driverConn)
+	user := pb.NewUserServiceClient(userConn)
+
+	handler.DashboardHandler(api, db, driver, user)
+
+	err = app.Listen(":8030")
 	if err != nil {
 		return
 	}

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
+	"github.com/GabrielMoody/MikroNet/authentication/internal/middleware"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/pb"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/service"
 	"github.com/gofiber/fiber/v2"
@@ -10,29 +11,27 @@ import (
 	"time"
 )
 
-type ProfileController interface {
+type AuthController interface {
 	CreateUser(c *fiber.Ctx) error
+	CreateDriver(c *fiber.Ctx) error
 	LoginUser(c *fiber.Ctx) error
 	SendResetPasswordLink(c *fiber.Ctx) error
 	ResetPassword(c *fiber.Ctx) error
+	ChangePassword(c *fiber.Ctx) error
 }
 
-type ProfileControllerImpl struct {
-	ProfileService service.ProfileService
-	pb             pb.UserServiceClient
+type AuthControllerImpl struct {
+	AuthService service.AuthService
+	pbUser      pb.UserServiceClient
+	pbDriver    pb.DriverServiceClient
 }
 
-func (a *ProfileControllerImpl) CreateUser(c *fiber.Ctx) error {
-	user := new(dto.UserRegistrationsReq)
-	ctx := c.Context()
-	role := c.Params("role")
+func (a *AuthControllerImpl) ChangePassword(c *fiber.Ctx) error {
+	token := c.Get("Authorization")
+	payload, _ := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
 
-	if (role != "user") && (role != "driver") {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"status": "error",
-			"error":  "No such request",
-		})
-	}
+	Ctx := c.Context()
+	var user dto.ChangePasswordReq
 
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -41,7 +40,33 @@ func (a *ProfileControllerImpl) CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	res, err := a.ProfileService.CreateUserService(ctx, *user, role)
+	res, err := a.AuthService.ChangePasswordService(Ctx, payload["id"].(string), user)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "error",
+			"error":  err.Err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": "success",
+		"data":   res,
+	})
+}
+
+func (a *AuthControllerImpl) CreateUser(c *fiber.Ctx) error {
+	var user dto.UserRegistrationsReq
+	ctx := c.Context()
+
+	if err := c.BodyParser(&user); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "error",
+			"error":  err.Error(),
+		})
+	}
+
+	res, err := a.AuthService.CreateUserService(ctx, user, "user")
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
@@ -50,7 +75,7 @@ func (a *ProfileControllerImpl) CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	_, errPb := a.pb.CreateUser(ctx, &pb.CreateUserRequest{
+	_, errPb := a.pbUser.CreateUser(ctx, &pb.CreateUserRequest{
 		User: &pb.User{
 			Id:          res,
 			FirstName:   user.FirstName,
@@ -76,16 +101,54 @@ func (a *ProfileControllerImpl) CreateUser(c *fiber.Ctx) error {
 	})
 }
 
-func (a *ProfileControllerImpl) LoginUser(c *fiber.Ctx) error {
-	Ctx := c.Context()
-	role := c.Params("role")
-	User := new(dto.UserLoginReq)
+func (a *AuthControllerImpl) CreateDriver(c *fiber.Ctx) error {
+	var driver dto.DriverRegistrationsReq
+	ctx := c.Context()
 
-	if !(role == "user" || role == "driver" || role == "admin" || role == "government" || role == "business_owner") {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+	if err := c.BodyParser(&driver); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status": "error",
+			"error":  err.Error(),
 		})
 	}
+
+	res, err := a.AuthService.CreateDriverService(ctx, driver, "driver")
+
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status": "error",
+			"error":  err.Err.Error(),
+		})
+	}
+
+	_, errPb := a.pbDriver.CreateDriver(ctx, &pb.CreateDriverRequest{
+		Id:            res,
+		FirstName:     driver.FirstName,
+		LastName:      driver.LastName,
+		Email:         driver.Email,
+		Password:      driver.Password,
+		Age:           uint32(driver.Age),
+		PhoneNumber:   driver.PhoneNumber,
+		DateOfBirth:   driver.DateOfBirth,
+		LicenseNumber: driver.LicenseNumber,
+	})
+
+	if errPb != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "error",
+			"error":  errPb.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"status": "success",
+		"data":   res,
+	})
+}
+
+func (a *AuthControllerImpl) LoginUser(c *fiber.Ctx) error {
+	Ctx := c.Context()
+	User := new(dto.UserLoginReq)
 
 	if err := c.BodyParser(&User); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -94,7 +157,7 @@ func (a *ProfileControllerImpl) LoginUser(c *fiber.Ctx) error {
 		})
 	}
 
-	res, err := a.ProfileService.LoginUserService(Ctx, *User)
+	res, err := a.AuthService.LoginUserService(Ctx, *User)
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -129,7 +192,7 @@ func (a *ProfileControllerImpl) LoginUser(c *fiber.Ctx) error {
 	})
 }
 
-func (a *ProfileControllerImpl) SendResetPasswordLink(c *fiber.Ctx) error {
+func (a *AuthControllerImpl) SendResetPasswordLink(c *fiber.Ctx) error {
 	var email dto.ForgotPasswordReq
 	ctx := c.Context()
 
@@ -140,7 +203,7 @@ func (a *ProfileControllerImpl) SendResetPasswordLink(c *fiber.Ctx) error {
 		})
 	}
 
-	res, err := a.ProfileService.SendResetPasswordService(ctx, email)
+	res, err := a.AuthService.SendResetPasswordService(ctx, email)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -155,7 +218,7 @@ func (a *ProfileControllerImpl) SendResetPasswordLink(c *fiber.Ctx) error {
 	})
 }
 
-func (a *ProfileControllerImpl) ResetPassword(c *fiber.Ctx) error {
+func (a *AuthControllerImpl) ResetPassword(c *fiber.Ctx) error {
 	code := c.Params("code")
 	var rp dto.ResetPasswordReq
 	ctx := c.Context()
@@ -167,7 +230,7 @@ func (a *ProfileControllerImpl) ResetPassword(c *fiber.Ctx) error {
 		})
 	}
 
-	res, err := a.ProfileService.ResetPassword(ctx, rp, code)
+	res, err := a.AuthService.ResetPassword(ctx, rp, code)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -182,9 +245,10 @@ func (a *ProfileControllerImpl) ResetPassword(c *fiber.Ctx) error {
 	})
 }
 
-func NewProfileController(profileService service.ProfileService, client pb.UserServiceClient) ProfileController {
-	return &ProfileControllerImpl{
-		ProfileService: profileService,
-		pb:             client,
+func NewAuthController(authService service.AuthService, user pb.UserServiceClient, driver pb.DriverServiceClient) AuthController {
+	return &AuthControllerImpl{
+		AuthService: authService,
+		pbUser:      user,
+		pbDriver:    driver,
 	}
 }
