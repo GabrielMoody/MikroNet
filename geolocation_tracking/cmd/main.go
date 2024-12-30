@@ -13,6 +13,8 @@ func main() {
 
 	app.Use(func(c *fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {
+			token := c.GetReqHeaders()["Authorization"]
+			c.Locals("token", token)
 			return c.Next()
 		}
 
@@ -24,7 +26,7 @@ func main() {
 
 	handler.NewWSHandler(api, db)
 
-	err := app.Listen("0.0.0.0:8016")
+	err := app.Listen(":8040")
 
 	if err != nil {
 		log.Fatal(err)

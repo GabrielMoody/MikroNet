@@ -1,252 +1,315 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
-  title: MikroNet API
-  description: "API to serve both mobile and website platform for Mikronet"
+  title: MikroNet
   version: 1.0.0
 servers:
-  - url: http://localhost:3000/
-paths:
-  /api/auth/register/driver:
-    post:
-      tags:
-        - "Authentication"
-      summary: "Register driver account"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '#/components/schemas/profile'
-
-  /api/auth/register:
-    post:
-      tags:
-        - "Authentication"
-      summary: "Register new account"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '#/components/schemas/profile'
-      responses:
-        '201':
-          description: "Sukses registrasi akun baru"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status: 
-                    type: string
-                  message:
-                    type: string
-
-  /api/auth/login:
-    post:
-      tags:
-        - "Authentication"
-      summary: "Login"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:  
-                  type: string
-                kata_sandi:
-                  type: string
-      responses:
-        '201':
-          description: "Sukses login akun"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status: 
-                    type: string
-                  message:
-                    type: string
-
-  /api/auth/reset-password:
-    post:
-      tags:
-        - "Authentication"
-      description: Send a request for reset password link
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-
-  /api/profile/{id}:
-    get:
-      security:
-        - JWT: []
-      tags:
-        - "Profiles"
-      summary: "Mendapatkan data profil pengguna"
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-      responses:
-        '200':
-          description: "Berhasil mendapatkan data pengguna"
-          content:
-            application/json:
-              schema: 
-                type: object
-                $ref: '#/components/schemas/profile'
-        
-        '403':
-          description: "Pengguna tidak memiliki hak akses"
-          content:
-            application/json:
-              schema: 
-                type: object
-
-    patch:
-      security:
-        - JWT: []
-      tags:
-        - "Profiles"
-      summary: "Edit data profil"
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              $ref: "#/components/schemas/profile"
-      responses:
-        '200':
-          description: "Berhasil memperbaharui data pengguna"
-          content:
-            application/json:
-              schema: 
-                type: object
-
-    delete:
-      security:
-        - JWT: [ ]
-      tags:
-        - "Profiles"
-      summary: "Edit data profil"
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-      responses:
-        '200':
-          description: "Berhasil memperbaharui data pengguna"
-          content:
-            application/json:
-              schema:
-                type: object
-
-  /api/profile/change-password/:
-    patch:
-      security:
-        - JWT: []
-      tags:
-        - "Profiles"
-      summary: "Change user password"
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              $ref: "#/components/schemas/change_password"
-
-  /api/cari-mikro:
-    get:
-
-  /api/riwayat:
-    get:
-
-  /api/carter:
-    post:
-
-  /api/perjalanan:
-    get:
-
-  /api/permintaan:
-    get:
-
-  /api/pendapatan:
-    get:
-
+  - url: http://localhost/api/v1/
+  - url: http://localhost:8000/
+  - url: http://localhost:8010/
+  - url: http://localhost:8020/
+  - url: http://localhost:8030/
+  - url: http://localhost:8040/
 
 components:
   securitySchemes:
-    JWT:
+    bearerAuth:
       type: http
       scheme: bearer
+      bearerFormat: JWT
 
-  schemas:
-    profile:
-      allOf:
-        - $ref: '#/components/schemas/change_profile'
-        - $ref: '#/components/schemas/reset_password'
+tags:
+  - name: Authentication
+  - name: Admin
+  - name: Driver
+  - name: User
+  - name: Notification
 
-    change_profile:
-      type: object
-      properties:
-        first_name:
-          type: string
-        last_name:
-          type: string
-        email:
-          type: string
-        phone_number:
-          type: string
-        gender:
-          type: string
-        date_of_birth:
-          type: string
-        age:
-          type: number
+paths:
+#*################################################################################
+#*                             AUTHENTICATION                                    #
+#*################################################################################
 
-    reset_password:
-      type: object
-      properties:
-        password:
-          type: string
-        password_confirmation:
-          type: string
+  /register/user:
+    post:
+      tags:
+        - Authentication
+      summary: Register new profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                first_name: Gabriel Moody
+                last_name: Waworundeng
+                email: gabrie123l@mail.com
+                phone_number: '089279213091'
+                date_of_birth: 01-01-1970
+                age: 54
+                password: gabriel0803
+                password_confirmation: gabriel0803
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
 
-    change_password:
-      allOf:
-        - $ref: '#/components/schemas/reset_password'
-        - type: object
-          properties:
-            old_password:
-              type: string
+  /login:
+    post:
+      tags:
+        - Authentication
+      summary: User Login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: gabrie123l@mail.com
+                password: gabriel0803
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
 
-    login:
-      type: object
-      properties:
-        email:
-          type: string
-        password:
-          type: string
+  /change-password:
+    post:
+      tags:
+        - Authentication
+      summary: Change old password
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                old_password: "passwordlama"
+                new_password: "passwordbaru"
+                new_password_confirm: "passwordbaru"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: { }
+
+
+  /reset-password{id}:
+    post:
+      tags:
+        - Authentication
+      summary: Request Reset Password Link
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: gabrielmdy08@gmail.com
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    put:
+      tags:
+        - Authentication
+      summary: Reset Password
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                password: '87654321'
+                password_confirmation: '87654321'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+
+#*################################################################################
+#*                                ADMIN                                          #
+#*################################################################################
+
+  /users:
+    get:
+      tags:
+        - Admin
+      summary: Get all users
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+
+#*################################################################################
+#*                                DRIVER                                         #
+#*################################################################################
+
+  /status:
+    get:
+      tags:
+        - Driver
+      summary: Get driver status
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    put:
+      tags:
+        - Driver
+      summary: Update driver status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                status: 'off'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+
+  /seats:
+    get:
+      tags:
+        - Driver
+      summary: Get available seats
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    put:
+      tags:
+        - Driver
+      summary: Update the available seats
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                seat: 10
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+
+#*################################################################################
+#*                                USER                                           #
+#*################################################################################
+
+  /:
+    get:
+      tags:
+        - User
+      summary: Get user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    put:
+      tags:
+        - User
+      summary: Update user profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                first_name: Gabriel Moody
+                last_name: Waworundeng
+                date_of_birth: 01-01-1970
+                age: '54'
+                gender: Male
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - User
+      summary: Delete user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+
+  /015/sse/notification/{id}:
+    get:
+      tags:
+        - Notification
+      summary: Make a connection
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /015/sse/notify/{id}:
+    post:
+      tags:
+        - Notification
+      summary: Send a notification
+      requestBody:
+        content: {}
+      parameters:
+        - name: message
+          in: query
+          schema:
+            type: string
+          example: '{ "data": "adasda" , "location": "asdasd"}'
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}

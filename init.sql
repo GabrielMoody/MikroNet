@@ -30,10 +30,8 @@ CREATE TABLE business_owners (
 );
 
 CREATE TABLE IF NOT EXISTS routes (
-    id uuid PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     route_name VARCHAR(255),
-    initial_route VARCHAR(255),
-    destination_route VARCHAR(255),
     created_at TIMESTAMP
 );
 
@@ -129,7 +127,7 @@ CREATE TRIGGER expire_reset_password_links
 CREATE OR REPLACE FUNCTION log_driver_location_table_changes()
     RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO driver_location_logs(id, location)
+    INSERT INTO driver_location_logs(driver_id, location)
     VALUES (OLD.driver_id, OLD.location);
 
     RETURN NEW;
@@ -137,6 +135,29 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER log_driver_location_table_updates
-    BEFORE UPDATE ON driver_location
+    BEFORE UPDATE ON driver_locations
     FOR EACH ROW
 EXECUTE FUNCTION log_driver_location_table_changes();
+
+CREATE EXTENSION postgis;
+CREATE EXTENSION postgis_topology;
+INSERT INTO routes (route_name) values
+    ('Pusat Kota – Terminal Malalayang'),
+    ('Pusat Kota – Kampus UNSRAT – Terminal Malalayang'),
+    ('Pusat Kota – Terminal Karombasan'),
+    ('Terminal Malalayang – Terminal Karombasan'),
+    ('Terminal Karombasan – Terminal Paal Dua'),
+    ('Pusat Kota – Terminal Paal Dua'),
+    ('Pusat Kota – Kairagi'),
+    ('Pusat Kota – Perkamil'),
+    ('Pusat Kota – Paal 4 – Taas'),
+    ('Pusat Kota – Winangun'),
+    ('Pusat Kota – Tuminting'),
+    ('Terminal Paal Dua – Bandara Sam Ratulangi – Lapangan'),
+    ('Terminal Paal Dua – Politeknik Negeri Manado'),
+    ('Terminal Paal Dua – Terminal Karombasan'),
+    ('Pusat Kota – Woasa'),
+    ('Terminal Karombasan – Pineleng (Minahasa)'),
+    ('Terminal Karombasan – Warembungan (Minahasa)'),
+    ('Terminal Paal Dua – Maumbi – Kolongan'),
+    ('Terminal Paal Dua – Terminal Airmadidi (Minahasa Utara)')

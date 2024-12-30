@@ -1,55 +1,55 @@
-name: Docker Image CI
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-jobs:
-
-  build:
-    runs-on: ubuntu-latest
-#    strategy:
-#      matrix:
-#        include:
-#          - image: gabrielmoody/authentication
-#            dockerfile: authentication/Dockerfile
-#          - image: gabrielmoody/profiles
-#            dockerfile: profiles/Dockerfile
-#          - image: gabrielmoody/notification
-#            dockerfile: notification/Dockerfile
-#          - image: gabrielmoody/driver
-#            dockerfile: driver/Dockerfile
-#          - image: gabrielmoody/geolocation_tracking
-#            dockerfile: geolocation_tracking/Dockerfile
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Login to Docker Hub
-      id: docker-hub
-      env:
-        username: ${{secrets.DOCKER_HUB_USERNAME}}
-        password: ${{secrets.DOCKER_HUB_PASSWORD}}
-      run: |
-        docker login -u $username -p $password
-
-    - name: build docker image
-      id: build-docker-image
-      run: |
-        docker build authentication -t gabrielmoody/authentication:latest
-        docker build driver -t gabrielmoody/driver:latest
-        docker build geolocation_tracking -t gabrielmoody/geolocation_tracking:latest
-        docker build profiles -t gabrielmoody/profiles:latest
-        docker build user -t gabrielmoody/user:latest
-        
-    - name: Push the docker image
-      id: push-docker-image
-      run: |
-        docker push ${{secrets.DOCKER_HUB_USERNAME}}/authentication:latest
-        docker push ${{secrets.DOCKER_HUB_USERNAME}}/driver:latest
-        docker push ${{secrets.DOCKER_HUB_USERNAME}}/user:latest
-        docker push ${{secrets.DOCKER_HUB_USERNAME}}/profiles:latest
-        docker push ${{secrets.DOCKER_HUB_USERNAME}}/geolocation_tracking:latest
+#name: Docker Image CI
+#
+#on:
+#  push:
+#    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
+#
+#jobs:
+#
+#  build:
+#    runs-on: ubuntu-latest
+##    strategy:
+##      matrix:
+##        include:
+##          - image: gabrielmoody/authentication
+##            dockerfile: authentication/Dockerfile
+##          - image: gabrielmoody/profiles
+##            dockerfile: profiles/Dockerfile
+##          - image: gabrielmoody/notification
+##            dockerfile: notification/Dockerfile
+##          - image: gabrielmoody/driver
+##            dockerfile: driver/Dockerfile
+##          - image: gabrielmoody/geolocation_tracking
+##            dockerfile: geolocation_tracking/Dockerfile
+#
+#    steps:
+#    - name: Checkout code
+#      uses: actions/checkout@v4
+#
+#    - name: Login to Docker Hub
+#      id: docker-hub
+#      env:
+#        username: ${{secrets.DOCKER_HUB_USERNAME}}
+#        password: ${{secrets.DOCKER_HUB_PASSWORD}}
+#      run: |
+#        docker login -u $username -p $password
+#
+#    - name: build docker image
+#      id: build-docker-image
+#      run: |
+#        docker build authentication -t gabrielmoody/authentication:latest
+#        docker build driver -t gabrielmoody/driver:latest
+#        docker build geolocation_tracking -t gabrielmoody/geolocation_tracking:latest
+#        docker build profiles -t gabrielmoody/profiles:latest
+#        docker build user -t gabrielmoody/user:latest
+#
+#    - name: Push the docker image
+#      id: push-docker-image
+#      run: |
+#        docker push ${{secrets.DOCKER_HUB_USERNAME}}/authentication:latest
+#        docker push ${{secrets.DOCKER_HUB_USERNAME}}/driver:latest
+#        docker push ${{secrets.DOCKER_HUB_USERNAME}}/user:latest
+#        docker push ${{secrets.DOCKER_HUB_USERNAME}}/profiles:latest
+#        docker push ${{secrets.DOCKER_HUB_USERNAME}}/geolocation_tracking:latest

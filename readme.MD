@@ -2,7 +2,7 @@
 
 ### Goals for the project 
 
-- [ ] API Gateway
+- [X] API Gateway
 - [X] Authentication & Authorization System
 - [X] Profile API
 - [ ] Driver API

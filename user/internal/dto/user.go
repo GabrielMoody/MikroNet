@@ -1,6 +1,16 @@
 package dto
 
+import "time"
+
 type (
+	EditUserDetails struct {
+		FirstName   string    `json:"first_name"`
+		LastName    string    `json:"last_name"`
+		DateOfBirth time.Time `json:"date_of_birth"`
+		Age         int       `json:"age"`
+		Gender      string    `json:"gender"`
+	}
+
 	OrderReq struct {
 		From      string `json:"from" validate:"required"`
 		To        string `json:"to" validate:"required"`
@@ -28,7 +38,7 @@ type (
 	}
 
 	ReviewReq struct {
-		Review string `json:"review"`
-		Star   int    `json:"star" validate:"required"`
+		Comment string `json:"comment"`
+		Star    int    `json:"star" validate:"required"`
 	}
 )
