@@ -11,19 +11,6 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - image: gabrielmoody/authentication
-            dockerfile: authentication/Dockerfile
-          - image: gabrielmoody/user
-            dockerfile: user/Dockerfile
-          - image: gabrielmoody/driver
-            dockerfile: driver/Dockerfile
-          - image: gabrielmoody/geolocation_tracking
-            dockerfile: geolocation_tracking/Dockerfile
-          - image: gabrielmoody/dashboard
-            dockerfile: dashboard/Dockerfile
     steps:
       - uses: actions/checkout@v4
 
