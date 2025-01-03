@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/handler"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/models"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/pb"
@@ -10,6 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
+	"os"
 )
 
 func main() {
@@ -21,13 +23,13 @@ func main() {
 		AllowMethods: "*",
 	}))
 
-	userConn, err := grpc.NewClient(":5005", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	userConn, err := grpc.NewClient(fmt.Sprintf("%s:5005", os.Getenv("GRPC_USER")), grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	driverConn, err := grpc.NewClient(":5006", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	driverConn, err := grpc.NewClient(fmt.Sprintf("%s:5006", os.Getenv("GRPC_DRIVER")), grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		log.Fatal(err)
@@ -45,7 +47,7 @@ func main() {
 
 	handler.ProfileHandler(api, db, userPB, driverPB)
 
-	err = app.Listen(":8000")
+	err = app.Listen(":8050")
 	if err != nil {
 		return
 	}

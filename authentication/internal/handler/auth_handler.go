@@ -21,5 +21,5 @@ func ProfileHandler(r fiber.Router, db *gorm.DB, user pb.UserServiceClient, driv
 	authHandler.Post("/login", authController.LoginUser)
 	authHandler.Post("/reset-password", authController.SendResetPasswordLink)
 	authHandler.Put("/reset-password/:code", authController.ResetPassword)
-	authHandler.Post("/change-password", authController.ChangePassword)
+	authHandler.Put("/change-password", authController.ChangePassword)
 }

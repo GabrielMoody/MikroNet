@@ -36,7 +36,7 @@ func main() {
 
 	go func() {
 		fmt.Println("gRPC server running on 5005")
-		lis, err := net.Listen("tcp", ":5005")
+		lis, err := net.Listen("tcp", "0.0.0.0:5005")
 		if err != nil {
 			log.Fatalf("failed to listen: %v", err)
 		}
@@ -46,7 +46,7 @@ func main() {
 		}
 	}()
 
-	err := app.Listen(":8010")
+	err := app.Listen("0.0.0.0:8010")
 
 	if err != nil {
 		log.Fatal(err)

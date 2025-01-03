@@ -23,12 +23,13 @@ func DashboardHandler(r fiber.Router, db *gorm.DB, driver pb.DriverServiceClient
 	api.Get("/drivers/:id", controllerDashboard.GetDriverDetails)
 
 	api.Get("/owners", controllerDashboard.GetBusinessOwners)
+	api.Get("/owners/:id", controllerDashboard.GetBusinessOwnerDetails)
 	api.Get("/owners/blocked", controllerDashboard.GetBlockedBusinessOwners)
 
 	api.Post("/block/:accountId", controllerDashboard.BlockAccount)
 
 	api.Post("/", controllerDashboard.RegisterBusinessOwner)
 
-	api.Get("/ratings/:id", controllerDashboard.GetRatings)
-	api.Get("/status/:id", controllerDashboard.GetStatus)
+	api.Get("/reviews", controllerDashboard.GetReviews)
+	api.Get("/reviews/:id", controllerDashboard.GetReviewByID)
 }

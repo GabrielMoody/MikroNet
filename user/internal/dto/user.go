@@ -1,14 +1,12 @@
 package dto
 
-import "time"
-
 type (
 	EditUserDetails struct {
-		FirstName   string    `json:"first_name"`
-		LastName    string    `json:"last_name"`
-		DateOfBirth time.Time `json:"date_of_birth"`
-		Age         int       `json:"age"`
-		Gender      string    `json:"gender"`
+		FirstName   string `json:"first_name"`
+		LastName    string `json:"last_name"`
+		DateOfBirth string `json:"date_of_birth"`
+		Age         int    `json:"age"`
+		Gender      string `json:"gender"`
 	}
 
 	OrderReq struct {

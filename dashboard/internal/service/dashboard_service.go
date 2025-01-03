@@ -11,12 +11,26 @@ import (
 
 type DashboardService interface {
 	GetBusinessOwners(c context.Context) (res []models.OwnerDetails, err *helper.ErrorStruct)
+	GetBusinessOwner(c context.Context, id string) (res models.OwnerDetails, err *helper.ErrorStruct)
 	GetBlockedBusinessOwners(c context.Context, role string) (res []models.OwnerDetails, err *helper.ErrorStruct)
 	BlockAccount(c context.Context, accountId string) (res models.BlockedAccount, err *helper.ErrorStruct)
 }
 
 type DashboardServiceImpl struct {
 	DashboardRepo repository.DashboardRepo
+}
+
+func (a *DashboardServiceImpl) GetBusinessOwner(c context.Context, id string) (res models.OwnerDetails, err *helper.ErrorStruct) {
+	resRepo, errRepo := a.DashboardRepo.GetBusinessOwner(c, id)
+
+	if errRepo != nil {
+		return res, &helper.ErrorStruct{
+			Code: http.StatusInternalServerError,
+			Err:  errRepo,
+		}
+	}
+
+	return resRepo, nil
 }
 
 func (a *DashboardServiceImpl) BlockAccount(c context.Context, accountId string) (res models.BlockedAccount, err *helper.ErrorStruct) {

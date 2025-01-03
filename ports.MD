@@ -6,14 +6,14 @@ NB: Needs to be updated
 
 ---
 
-| Services       | Ports         |
-|:---------------|:------|
-| Authentication | 8000  | 
-| User           | 8010  |                                        
-| Driver         | 8020  |
-| Admin          | 8030  |
-| Geolocation    | 8040  |
-
+| Services    | Ports |
+|:------------|:------|
+| Kong        | 8000  | 
+| User        | 8010  |                                        
+| Driver      | 8020  |
+| Admin       | 8030  |
+| Geolocation | 8040  |
+| Auth        | 8050  |
 
 ## Databases
 

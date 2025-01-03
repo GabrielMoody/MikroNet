@@ -8,7 +8,7 @@ type UserDetails struct {
 	LastName    string    `gorm:"column:last_name" json:"last_name"`
 	Email       string    `gorm:"column:email" json:"email"`
 	PhoneNumber string    `gorm:"column:phone_number" json:"phone_number"`
-	DateOfBirth time.Time `gorm:"column:date_of_birth" json:"date_of_birth"`
+	DateOfBirth time.Time `gorm:"column:date_of_birth;type:date" json:"date_of_birth"`
 	Age         int32     `gorm:"column:age" json:"age"`
 	Gender      string    `gorm:"column:gender" json:"gender"`
 }

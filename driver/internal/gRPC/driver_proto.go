@@ -5,6 +5,7 @@ import (
 	"github.com/GabrielMoody/mikroNet/driver/internal/model"
 	"github.com/GabrielMoody/mikroNet/driver/internal/pb"
 	"github.com/GabrielMoody/mikroNet/driver/internal/repository"
+	"time"
 )
 
 type GRPC struct {
@@ -28,6 +29,7 @@ func (a *GRPC) GetDrivers(ctx context.Context, _ *pb.Empty) (res *pb.Drivers, er
 	var drivers []*pb.Driver
 
 	for _, v := range resRepo {
+		formattedDate := v.DateOfBirth.Format("02-01-2006")
 		drivers = append(drivers, &pb.Driver{
 			Id:          v.ID,
 			FirstName:   v.FirstName,
@@ -35,6 +37,7 @@ func (a *GRPC) GetDrivers(ctx context.Context, _ *pb.Empty) (res *pb.Drivers, er
 			Email:       v.Email,
 			PhoneNumber: v.PhoneNumber,
 			Age:         uint32(v.Age),
+			DateOfBirth: formattedDate,
 		})
 	}
 
@@ -50,6 +53,8 @@ func (a *GRPC) GetDriverDetails(ctx context.Context, data *pb.ReqDriverDetails) 
 		return nil, err
 	}
 
+	formattedDate := resRepo.DateOfBirth.Format("02-01-2006")
+
 	return &pb.Driver{
 		Id:          resRepo.ID,
 		FirstName:   resRepo.FirstName,
@@ -57,10 +62,14 @@ func (a *GRPC) GetDriverDetails(ctx context.Context, data *pb.ReqDriverDetails) 
 		Email:       resRepo.Email,
 		PhoneNumber: resRepo.PhoneNumber,
 		Age:         uint32(resRepo.Age),
+		DateOfBirth: formattedDate,
 	}, nil
 }
 
 func (a *GRPC) CreateDriver(ctx context.Context, data *pb.CreateDriverRequest) (res *pb.Driver, err error) {
+	format := "02-01-2006"
+	date, _ := time.Parse(format, data.DateOfBirth)
+
 	resRepo, err := a.repo.CreateDriver(ctx, model.DriverDetails{
 		ID:            data.Id,
 		FirstName:     data.FirstName,
@@ -69,6 +78,8 @@ func (a *GRPC) CreateDriver(ctx context.Context, data *pb.CreateDriverRequest) (
 		PhoneNumber:   data.PhoneNumber,
 		Age:           int32(data.Age),
 		LicenseNumber: data.LicenseNumber,
+		DateOfBirth:   date,
+		RouteID:       20,
 	})
 
 	if err != nil {

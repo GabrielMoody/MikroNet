@@ -5,6 +5,7 @@ import (
 	"github.com/GabrielMoody/mikroNet/user/internal/model"
 	"github.com/GabrielMoody/mikroNet/user/internal/pb"
 	"github.com/GabrielMoody/mikroNet/user/internal/repository"
+	"strconv"
 	"time"
 )
 
@@ -59,11 +60,13 @@ func (a *GRPC) GetUsers(ctx context.Context, _ *pb.Empty) (res *pb.Users, err er
 	var users []*pb.User
 
 	for _, v := range resRepo {
+		formattedDate := v.DateOfBirth.Format("02-01-2006")
 		users = append(users, &pb.User{
 			Id:          v.ID,
 			FirstName:   v.FirstName,
 			LastName:    v.LastName,
 			Email:       v.Email,
+			DateOfBirth: formattedDate,
 			PhoneNumber: v.PhoneNumber,
 			Age:         uint32(v.Age),
 			Gender:      v.Gender,
@@ -75,12 +78,14 @@ func (a *GRPC) GetUsers(ctx context.Context, _ *pb.Empty) (res *pb.Users, err er
 	}, nil
 }
 
-func (a *GRPC) GetUserDetails(ctx context.Context, req *pb.GetUserDetailsRequest) (res *pb.User, err error) {
+func (a *GRPC) GetUserDetails(ctx context.Context, req *pb.GetByIDRequest) (res *pb.User, err error) {
 	resRepo, err := a.repo.GetUserDetails(ctx, req.Id)
 
 	if err != nil {
 		return nil, err
 	}
+
+	formattedDate := resRepo.DateOfBirth.Format("02-01-2006")
 
 	return &pb.User{
 		Id:          resRepo.ID,
@@ -89,5 +94,46 @@ func (a *GRPC) GetUserDetails(ctx context.Context, req *pb.GetUserDetailsRequest
 		Email:       resRepo.Email,
 		PhoneNumber: resRepo.PhoneNumber,
 		Age:         uint32(resRepo.Age),
+		DateOfBirth: formattedDate,
+	}, nil
+}
+
+func (a *GRPC) GetReviews(ctx context.Context, _ *pb.Empty) (res *pb.GetReviewsResponse, err error) {
+	resRepo, err := a.repo.GetAllReviews(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var reviews []*pb.Review
+
+	for _, v := range resRepo {
+		reviews = append(reviews, &pb.Review{
+			Id:       strconv.Itoa(v.ID),
+			UserId:   v.UserID,
+			DriverId: v.DriverID,
+			Comment:  v.Comment,
+			Star:     uint32(v.Star),
+		})
+	}
+
+	return &pb.GetReviewsResponse{
+		Reviews: reviews,
+	}, nil
+}
+
+func (a *GRPC) GetReviewsByID(ctx context.Context, req *pb.GetByIDRequest) (res *pb.Review, err error) {
+	resRepo, err := a.repo.GetReviewsByID(ctx, req.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.Review{
+		Id:       strconv.Itoa(resRepo.ID),
+		UserId:   resRepo.UserID,
+		DriverId: resRepo.DriverID,
+		Comment:  resRepo.Comment,
+		Star:     uint32(resRepo.Star),
 	}, nil
 }

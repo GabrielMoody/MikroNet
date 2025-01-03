@@ -15,12 +15,30 @@ type UserRepo interface {
 	GetAllUsers(c context.Context) ([]model.UserDetails, error)
 	EditUserDetails(c context.Context, user model.UserDetails) (model.UserDetails, error)
 	DeleteUserDetails(c context.Context, id string) error
+	GetAllReviews(c context.Context) ([]model.Review, error)
+	GetReviewsByID(c context.Context, id string) (model.Review, error)
 	ReviewOrder(c context.Context, data dto.ReviewReq, userId string, driverId string) (model.Review, error)
 	findNearestDriver(c context.Context, lat string, lon string) ([]dto.Orders, error)
 }
 
 type UserRepoImpl struct {
 	db *gorm.DB
+}
+
+func (a *UserRepoImpl) GetAllReviews(c context.Context) (res []model.Review, err error) {
+	if err := a.db.WithContext(c).Find(&res).Error; err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (a *UserRepoImpl) GetReviewsByID(c context.Context, id string) (res model.Review, err error) {
+	if err := a.db.WithContext(c).Find(&res, "id = ?", id).Error; err != nil {
+		return res, err
+	}
+
+	return res, nil
 }
 
 func (a *UserRepoImpl) GetAllUsers(c context.Context) (res []model.UserDetails, err error) {

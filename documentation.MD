@@ -443,3 +443,25 @@ Response Body
   }
 }
 ```
+
+25. Get Review By ID
+```http request
+GET /api/dashboard/reviews/{id}
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+Response Body
+
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "1",
+    "driver_id": "d43d0e09-6a7e-44f1-a0b3-df3127ffb7e7",
+    "user_id": "d43d0e09-6a7e-44f1-a0b3-df3127ffb7e7",
+    "rating": 5,
+    "comment": "good driver"
+  }
+}
+```

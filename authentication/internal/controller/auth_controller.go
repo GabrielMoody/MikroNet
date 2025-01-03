@@ -148,16 +148,16 @@ func (a *AuthControllerImpl) CreateDriver(c *fiber.Ctx) error {
 
 func (a *AuthControllerImpl) LoginUser(c *fiber.Ctx) error {
 	Ctx := c.Context()
-	User := new(dto.UserLoginReq)
+	var user dto.UserLoginReq
 
-	if err := c.BodyParser(&User); err != nil {
+	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status": "error",
 			"error":  err.Error(),
 		})
 	}
 
-	res, err := a.AuthService.LoginUserService(Ctx, *User)
+	res, err := a.AuthService.LoginUserService(Ctx, user)
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{

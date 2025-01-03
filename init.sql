@@ -141,7 +141,7 @@ EXECUTE FUNCTION log_driver_location_table_changes();
 
 CREATE EXTENSION postgis;
 CREATE EXTENSION postgis_topology;
-INSERT INTO routes (route_name) values
+INSERT INTO routes ( route_name) values
     ('Pusat Kota – Terminal Malalayang'),
     ('Pusat Kota – Kampus UNSRAT – Terminal Malalayang'),
     ('Pusat Kota – Terminal Karombasan'),

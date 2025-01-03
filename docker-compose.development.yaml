@@ -10,18 +10,45 @@ volumes:
       device: tmpfs
 
 services:
-  pgadmin:
-    image: dpage/pgadmin4
-    depends_on:
-      postgres_database:
-        condition: service_healthy
-        restart: true
-    restart: always
+  auth_service:
+    build: authentication
+    container_name: auth_service
     ports:
-      - "8888:80"
+      - 8050:8050
+    depends_on:
+      auth_database:
+        condition: service_healthy
     environment:
-      PGADMIN_DEFAULT_EMAIL: gabriel@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: 123
+      - DB_HOST=auth_database
+      - DB_USER=root
+      - DB_PASSWORD=123
+      - DB_PORT=3306
+      - DB_NAME=authentication
+      - GRPC_USER=user_service
+      - GRPC_DRIVER=driver_service
+      - EMAIL_PASSWORD=khzy wosb xckz aihb
+      - JWT_SECRET=FV77z4uhQ9M
+      - JWT_ISS=PJxFwcJTAcNLDMVcV4AiVROZZ41NYfR8
+    networks:
+      - kong-net
+
+  user_service:
+    build: user
+    container_name: user_service
+    ports:
+      - 8010:8010
+      - 5005:5005
+    depends_on:
+      user_database:
+        condition: service_healthy
+    environment:
+      - DB_HOST=user_database
+      - DB_USER=root
+      - DB_PASSWORD=123
+      - DB_PORT=3306
+      - DB_NAME=user
+      - JWT_SECRET=FV77z4uhQ9M
+      - JWT_ISS=PJxFwcJTAcNLDMVcV4AiVROZZ41NYfR8
     networks:
       - kong-net
 
@@ -29,74 +56,40 @@ services:
     build: driver
     container_name: driver_service
     ports:
-      - 8014:8014
-#    depends_on:
-#      postgres_database:
-#        condition: service_healthy
-#        restart: true
-    environment:
-      - POSTGRES_HOST=postgres_database
-      - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASS=123
-      - POSTGRES_PORT=5432
-      - POSTGRES_DATABASE=mikronet
-    networks:
-      - kong-net
-
-  auth_service:
-    build: authentication
-    container_name: auth_service
-    ports:
-      - 8000:8000
+      - 8020:8020
+      - 5006:5006
     depends_on:
-      - auth_database
-#        condition: service_healthy
-#        restart: true
+      driver_database:
+        condition: service_healthy
     environment:
-      - DB_HOST=mysql-database
+      - DB_HOST=driver_database
       - DB_USER=root
       - DB_PASSWORD=123
       - DB_PORT=3306
-      - DB_DATABASE=mikronet
-      - EMAIL_PASSWORD=khzy wosb xckz aihb
+      - DB_NAME=driver
       - JWT_SECRET=FV77z4uhQ9M
       - JWT_ISS=PJxFwcJTAcNLDMVcV4AiVROZZ41NYfR8
-#    networks:
-#      - kong-net
-
-  user_service:
-    build: user
-    container_name: user_service
-    ports:
-      - 8010:8010
-    depends_on:
-      postgres_database:
-        condition: service_healthy
-        restart: true
-    environment:
-      - POSTGRES_HOST=postgres_database
-      - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASS=123
-      - POSTGRES_PORT=5432
-      - POSTGRES_DATABASE=mikronet
     networks:
       - kong-net
 
-  notification_service:
-    build: notification
-    container_name: notification_service
+  dashboard_service:
+    build: dashboard
+    container_name: dashboard_service
     ports:
-      - 8015:8015
+      - 8030:8030
     depends_on:
-      postgres_database:
+      dashboard_database:
         condition: service_healthy
-        restart: true
     environment:
-      - POSTGRES_HOST=postgres_database
-      - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASS=123
-      - POSTGRES_PORT=5432
-      - POSTGRES_DATABASE=mikronet
+      - DB_HOST=dashboard_database
+      - DB_USER=root
+      - DB_PASSWORD=123
+      - DB_PORT=3306
+      - DB_NAME=dashboard
+      - GRPC_USER=user_service
+      - GRPC_DRIVER=driver_service
+      - JWT_SECRET=FV77z4uhQ9M
+      - JWT_ISS=PJxFwcJTAcNLDMVcV4AiVROZZ41NYfR8
     networks:
       - kong-net
 
@@ -104,17 +97,18 @@ services:
     build: geolocation_tracking
     container_name: geolocation_tracking_service
     ports:
-      - 8016:8016
+      - 8040:8040
     depends_on:
-      postgres_database:
-        condition: service_healthy
-        restart: true
+        geolocation_database:
+            condition: service_healthy
     environment:
-      - POSTGRES_HOST=postgres_database
-      - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASS=123
-      - POSTGRES_PORT=5432
-      - POSTGRES_DATABASE=mikronet
+      - DB_HOST=location_database
+      - DB_USER=postgres
+      - DB_PASSWORD=123
+      - DB_PORT=5432
+      - DB_NAME=mikronet
+      - JWT_SECRET=FV77z4uhQ9M
+      - JWT_ISS=PJxFwcJTAcNLDMVcV4AiVROZZ41NYfR8
     networks:
       - kong-net
 
@@ -122,28 +116,72 @@ services:
 # DATABASE CONTAINER
 
   auth_database:
+    container_name: auth_database
     image: mysql:latest
     ports:
       - 3306:3306
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p '123'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: 123
       MYSQL_DATABASE: authentication
     networks:
       - kong-net
 
   user_database:
+    container_name: user_database
     image: mysql:latest
     ports:
-      - 3307:3307
+      - 3307:3306
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p '123'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: 123
       MYSQL_DATABASE: user
+    networks:
+      - kong-net
+
+  driver_database:
+    container_name: driver_database
+    image: mysql:latest
+    ports:
+      - 3308:3306
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p '123'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: driver
+    networks:
+      - kong-net
+
+  dashboard_database:
+    container_name: dashboard_database
+    image: mysql:latest
+    ports:
+      - 3309:3306
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p '123'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: dashboard
     networks:
       - kong-net
 
   geolocation_database:
     image: postgis/postgis
-    container_name: postgres_database
+    container_name: location_database
     restart: always
     environment:
       POSTGRES_PASSWORD: 123
@@ -151,7 +189,7 @@ services:
     ports:
       - 5432:5432
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "mikronet"]
       interval: 10s
       retries: 5
       start_period: 30s
@@ -159,18 +197,6 @@ services:
     volumes:
       - ./data/postgis:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - kong-net
-
-  rabbitmq:
-    image: rabbitmq:management
-    container_name: rabbitmq
-    environment:
-      - RABBITMQ_DEFAULT_USER=mikronet
-      - RABBITMQ_DEFAULT_PASS=123
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     networks:
       - kong-net
 

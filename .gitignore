@@ -5,8 +5,11 @@ mikronet-6cf58-firebase-adminsdk-prfvh-573a5582a6.json
 query
 data
 */tmp/
+*/.air.toml
 auth-config.env
 
-docker-compose.yaml
+docker-compose.development.yaml
 
-docker-compose-prod.yaml
+docker-compose.prod.yaml
+
+TODO.MD

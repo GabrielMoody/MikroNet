@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/handler"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/models"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/pb"
@@ -10,6 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
+	"os"
 )
 
 func main() {
@@ -29,15 +31,13 @@ func main() {
 
 	api := app.Group("/")
 
-	userConn, err := grpc.NewClient(":5005", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	userConn, err := grpc.NewClient(fmt.Sprintf("%s:5005", os.Getenv("GRPC_USER")), grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer userConn.Close()
-
-	driverConn, err := grpc.NewClient(":5006", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	driverConn, err := grpc.NewClient(fmt.Sprintf("%s:5006", os.Getenv("GRPC_DRIVER")), grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		log.Fatal(err)
@@ -50,7 +50,7 @@ func main() {
 
 	handler.DashboardHandler(api, db, driver, user)
 
-	err = app.Listen(":8030")
+	err = app.Listen("0.0.0.0:8030")
 	if err != nil {
 		return
 	}

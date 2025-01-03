@@ -10,21 +10,83 @@ import (
 
 type DashboardController interface {
 	RegisterBusinessOwner(c *fiber.Ctx) error
-	GetRatings(c *fiber.Ctx) error
-	GetStatus(c *fiber.Ctx) error
 	GetBusinessOwners(c *fiber.Ctx) error
+	GetBusinessOwnerDetails(c *fiber.Ctx) error
 	GetBlockedBusinessOwners(c *fiber.Ctx) error
 	GetUsers(c *fiber.Ctx) error
 	GetUserDetails(c *fiber.Ctx) error
 	GetDrivers(c *fiber.Ctx) error
 	GetDriverDetails(c *fiber.Ctx) error
 	BlockAccount(c *fiber.Ctx) error
+	GetReviews(c *fiber.Ctx) error
+	GetReviewByID(c *fiber.Ctx) error
 }
 
 type DashboardControllerImpl struct {
 	DashboardService service.DashboardService
 	PBDriver         pb.DriverServiceClient
 	PBUser           pb.UserServiceClient
+}
+
+func (a *DashboardControllerImpl) GetBusinessOwnerDetails(c *fiber.Ctx) error {
+	ctx := c.Context()
+	id := c.Params("id")
+
+	res, err := a.DashboardService.GetBusinessOwner(ctx, id)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Error",
+			"error":  err,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": "Success",
+		"data":   res,
+	})
+}
+
+func (a *DashboardControllerImpl) GetReviews(c *fiber.Ctx) error {
+	ctx := c.Context()
+
+	res, err := a.PBUser.GetReviews(ctx, &pb.Empty{})
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Error",
+			"error":  err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": "Success",
+		"data": fiber.Map{
+			"reviews": res.Reviews,
+			"count":   len(res.Reviews),
+		},
+	})
+}
+
+func (a *DashboardControllerImpl) GetReviewByID(c *fiber.Ctx) error {
+	ctx := c.Context()
+	id := c.Params("id")
+
+	res, err := a.PBUser.GetReviewsByID(ctx, &pb.GetByIDRequest{
+		Id: id,
+	})
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Error",
+			"error":  err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": "Success",
+		"data":   res,
+	})
 }
 
 func (a *DashboardControllerImpl) BlockAccount(c *fiber.Ctx) error {
@@ -160,7 +222,7 @@ func (a *DashboardControllerImpl) GetUsers(c *fiber.Ctx) error {
 func (a *DashboardControllerImpl) GetUserDetails(c *fiber.Ctx) error {
 	id := c.Params("id")
 
-	res, err := a.PBUser.GetUserDetails(c.Context(), &pb.GetUserDetailsRequest{
+	res, err := a.PBUser.GetUserDetails(c.Context(), &pb.GetByIDRequest{
 		Id: id,
 	})
 
@@ -200,65 +262,6 @@ func (a *DashboardControllerImpl) RegisterBusinessOwner(c *fiber.Ctx) error {
 	//return c.Status(fiber.StatusOK).JSON(fiber.Map{
 	//	"status": "Success",
 	//	"data":   res,
-	//})
-	return nil
-}
-
-func (a *DashboardControllerImpl) GetRatings(c *fiber.Ctx) error {
-	//	ownerId := c.Params("id")
-	//	ctx := c.Context()
-	//
-	//	res, err := a.OwnerService.GetRatings(ctx, ownerId)
-	//
-	//	if err != nil {
-	//		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-	//			"error": err,
-	//		})
-	//	}
-	//
-	//	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-	//		"data": res,
-	//	})
-	//}
-	//
-	//func (a *DashboardControllerImpl) RegisterNewDriver(c *fiber.Ctx) error {
-	//	var req dto.DriverRegistrationReq
-	//	ctx := c.Context()
-	//
-	//	if err := c.BodyParser(&req); err != nil {
-	//		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-	//			"error": err.Error(),
-	//		})
-	//	}
-	//
-	//	res, err := a.OwnerService.RegisterNewDriver(ctx, req)
-	//
-	//	if err != nil {
-	//		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-	//			"error": err.Err.Error(),
-	//		})
-	//	}
-
-	//return c.Status(fiber.StatusOK).JSON(fiber.Map{
-	//	"data": res,
-	//})
-	return nil
-}
-
-func (a *DashboardControllerImpl) GetStatus(c *fiber.Ctx) error {
-	//ctx := c.Context()
-	//id := c.Params("id")
-	//
-	//res, err := a.OwnerService.GetOwnerStatusVerified(ctx, id)
-	//
-	//if err != nil {
-	//	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-	//		"error": err,
-	//	})
-	//}
-	//
-	//return c.Status(fiber.StatusOK).JSON(fiber.Map{
-	//	"data": res,
 	//})
 	return nil
 }

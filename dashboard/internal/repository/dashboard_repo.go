@@ -8,6 +8,7 @@ import (
 
 type DashboardRepo interface {
 	GetBusinessOwners(c context.Context) ([]models.OwnerDetails, error)
+	GetBusinessOwner(c context.Context, id string) (models.OwnerDetails, error)
 	GetBlockedAccountRole(c context.Context, role string) ([]models.OwnerDetails, error)
 	GetAllBlockedAccount(c context.Context) ([]models.OwnerDetails, error)
 	BlockAccount(c context.Context, data models.BlockedAccount) (models.BlockedAccount, error)
@@ -15,6 +16,14 @@ type DashboardRepo interface {
 
 type DashboardRepoImpl struct {
 	db *gorm.DB
+}
+
+func (a *DashboardRepoImpl) GetBusinessOwner(c context.Context, id string) (res models.OwnerDetails, err error) {
+	if err := a.db.WithContext(c).Find(&res, "id = ?", id).Error; err != nil {
+		return res, err
+	}
+
+	return res, nil
 }
 
 func (a *DashboardRepoImpl) BlockAccount(c context.Context, data models.BlockedAccount) (res models.BlockedAccount, err error) {

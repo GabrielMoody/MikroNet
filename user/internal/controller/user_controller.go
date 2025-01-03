@@ -33,13 +33,16 @@ func (a *UserControllerImpl) GetUser(c *fiber.Ctx) error {
 		})
 	}
 
+	// Parse the input date string
+	formattedDate := res.DateOfBirth.Format("02-01-2006")
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "success",
 		"data": fiber.Map{
 			"first_name":    res.FirstName,
 			"last_name":     res.LastName,
 			"email":         res.Email,
-			"date_of_birth": res.DateOfBirth,
+			"date_of_birth": formattedDate,
 			"Age":           res.Age,
 			"Gender":        res.Gender,
 		},

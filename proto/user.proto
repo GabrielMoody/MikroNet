@@ -30,12 +30,26 @@ message Users {
   repeated User users = 1;
 }
 
-message GetUserDetailsRequest {
+message GetByIDRequest {
   string id = 1;
+}
+
+message Review {
+  string id = 1;
+  string user_id = 2;
+  string driver_id = 3;
+  string comment = 4;
+  uint32 star = 5;
+}
+
+message GetReviewsResponse {
+  repeated Review reviews = 1;
 }
 
 service UserService {
   rpc CreateUser (CreateUserRequest) returns (CreateUserResponse){}
   rpc GetUsers (Empty) returns (Users){}
-  rpc GetUserDetails (GetUserDetailsRequest) returns (User){}
+  rpc GetUserDetails (GetByIDRequest) returns (User){}
+  rpc GetReviews (Empty) returns (GetReviewsResponse){}
+  rpc GetReviewsByID (GetByIDRequest) returns (Review){}
 }

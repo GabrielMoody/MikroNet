@@ -22,6 +22,8 @@ const (
 	UserService_CreateUser_FullMethodName     = "/user.UserService/CreateUser"
 	UserService_GetUsers_FullMethodName       = "/user.UserService/GetUsers"
 	UserService_GetUserDetails_FullMethodName = "/user.UserService/GetUserDetails"
+	UserService_GetReviews_FullMethodName     = "/user.UserService/GetReviews"
+	UserService_GetReviewsByID_FullMethodName = "/user.UserService/GetReviewsByID"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -30,7 +32,9 @@ const (
 type UserServiceClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	GetUsers(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Users, error)
-	GetUserDetails(ctx context.Context, in *GetUserDetailsRequest, opts ...grpc.CallOption) (*User, error)
+	GetUserDetails(ctx context.Context, in *GetByIDRequest, opts ...grpc.CallOption) (*User, error)
+	GetReviews(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetReviewsResponse, error)
+	GetReviewsByID(ctx context.Context, in *GetByIDRequest, opts ...grpc.CallOption) (*Review, error)
 }
 
 type userServiceClient struct {
@@ -61,10 +65,30 @@ func (c *userServiceClient) GetUsers(ctx context.Context, in *Empty, opts ...grp
 	return out, nil
 }
 
-func (c *userServiceClient) GetUserDetails(ctx context.Context, in *GetUserDetailsRequest, opts ...grpc.CallOption) (*User, error) {
+func (c *userServiceClient) GetUserDetails(ctx context.Context, in *GetByIDRequest, opts ...grpc.CallOption) (*User, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(User)
 	err := c.cc.Invoke(ctx, UserService_GetUserDetails_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetReviews(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetReviewsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetReviewsResponse)
+	err := c.cc.Invoke(ctx, UserService_GetReviews_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetReviewsByID(ctx context.Context, in *GetByIDRequest, opts ...grpc.CallOption) (*Review, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Review)
+	err := c.cc.Invoke(ctx, UserService_GetReviewsByID_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +101,9 @@ func (c *userServiceClient) GetUserDetails(ctx context.Context, in *GetUserDetai
 type UserServiceServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	GetUsers(context.Context, *Empty) (*Users, error)
-	GetUserDetails(context.Context, *GetUserDetailsRequest) (*User, error)
+	GetUserDetails(context.Context, *GetByIDRequest) (*User, error)
+	GetReviews(context.Context, *Empty) (*GetReviewsResponse, error)
+	GetReviewsByID(context.Context, *GetByIDRequest) (*Review, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -94,8 +120,14 @@ func (UnimplementedUserServiceServer) CreateUser(context.Context, *CreateUserReq
 func (UnimplementedUserServiceServer) GetUsers(context.Context, *Empty) (*Users, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUsers not implemented")
 }
-func (UnimplementedUserServiceServer) GetUserDetails(context.Context, *GetUserDetailsRequest) (*User, error) {
+func (UnimplementedUserServiceServer) GetUserDetails(context.Context, *GetByIDRequest) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserDetails not implemented")
+}
+func (UnimplementedUserServiceServer) GetReviews(context.Context, *Empty) (*GetReviewsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReviews not implemented")
+}
+func (UnimplementedUserServiceServer) GetReviewsByID(context.Context, *GetByIDRequest) (*Review, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReviewsByID not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
@@ -155,7 +187,7 @@ func _UserService_GetUsers_Handler(srv interface{}, ctx context.Context, dec fun
 }
 
 func _UserService_GetUserDetails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserDetailsRequest)
+	in := new(GetByIDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -167,7 +199,43 @@ func _UserService_GetUserDetails_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: UserService_GetUserDetails_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GetUserDetails(ctx, req.(*GetUserDetailsRequest))
+		return srv.(UserServiceServer).GetUserDetails(ctx, req.(*GetByIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetReviews_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetReviews(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetReviews_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetReviews(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetReviewsByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetByIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetReviewsByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetReviewsByID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetReviewsByID(ctx, req.(*GetByIDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -190,6 +258,14 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserDetails",
 			Handler:    _UserService_GetUserDetails_Handler,
+		},
+		{
+			MethodName: "GetReviews",
+			Handler:    _UserService_GetReviews_Handler,
+		},
+		{
+			MethodName: "GetReviewsByID",
+			Handler:    _UserService_GetReviewsByID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
