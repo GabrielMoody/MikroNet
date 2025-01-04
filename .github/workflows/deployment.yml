@@ -49,4 +49,4 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: 22
           script: |
-            sudo docker-compose up -d --build
+            echo "${{ secrets.SSH_PASSWORD }}" | sudo -S docker-compose up -d --build
