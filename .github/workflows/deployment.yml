@@ -46,4 +46,4 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: 22
           script: |
-            echo "${{ secrets.SSH_PASSWORD }}" | sudo -S docker-compose up -d --pull always
+            echo "${{ secrets.SSH_PASSWORD }}" | sudo -S docker compose up -d --pull always

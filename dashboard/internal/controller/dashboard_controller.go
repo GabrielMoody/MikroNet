@@ -151,7 +151,7 @@ func (a *DashboardControllerImpl) GetReviewByID(c *fiber.Ctx) error {
 
 func (a *DashboardControllerImpl) BlockAccount(c *fiber.Ctx) error {
 	ctx := c.Context()
-	accountId := c.Params("accountId")
+	accountId := c.Params("id")
 
 	res, err := a.DashboardService.BlockAccount(ctx, accountId)
 

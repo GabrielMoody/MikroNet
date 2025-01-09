@@ -104,8 +104,18 @@ func (a *DashboardServiceImpl) BlockAccount(c context.Context, accountId string)
 	resRepo, errRepo := a.DashboardRepo.BlockAccount(c, data)
 
 	if errRepo != nil {
+		var code int
+		switch {
+		case errors.Is(errRepo, helper.ErrDuplicateEntry):
+			code = http.StatusConflict
+		case errors.Is(errRepo, helper.ErrNotFound):
+			code = http.StatusNotFound
+		default:
+			code = http.StatusInternalServerError
+		}
+
 		return res, &helper.ErrorStruct{
-			Code: http.StatusInternalServerError,
+			Code: code,
 			Err:  errRepo,
 		}
 	}

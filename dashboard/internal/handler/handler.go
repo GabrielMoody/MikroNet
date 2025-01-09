@@ -33,8 +33,8 @@ func DashboardHandler(r fiber.Router, db *gorm.DB, driver pb.DriverServiceClient
 
 	api.Put("/owners/verified/:id", controllerDashboard.SetStatusVerified)
 
-	api.Post("/block/:accountId", controllerDashboard.BlockAccount)
-	api.Delete("/block/:accountId", controllerDashboard.UnblockAccount)
+	api.Post("/block/:id", controllerDashboard.BlockAccount)
+	api.Delete("/block/:id", controllerDashboard.UnblockAccount)
 
 	api.Get("/reviews", controllerDashboard.GetReviews)
 	api.Get("/reviews/:id", controllerDashboard.GetReviewByID)

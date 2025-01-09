@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/helper"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/models"
+	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -82,6 +83,10 @@ func (a *DashboardRepoImpl) GetBusinessOwner(c context.Context, id string) (res 
 
 func (a *DashboardRepoImpl) BlockAccount(c context.Context, data models.BlockedAccount) (res models.BlockedAccount, err error) {
 	if err := a.db.WithContext(c).Create(&data).Error; err != nil {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
+			return res, helper.ErrDuplicateEntry
+		}
 		return res, helper.ErrDatabase
 	}
 

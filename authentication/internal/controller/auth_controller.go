@@ -154,7 +154,7 @@ func (a *AuthControllerImpl) CreateDriver(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "error",
-			"message": "Gagal memuat gambar",
+			"message": "error reading image",
 		})
 	}
 
@@ -174,7 +174,6 @@ func (a *AuthControllerImpl) CreateDriver(c *fiber.Ctx) error {
 	}
 	defer f.Close()
 
-	// Read the file data into a byte slice
 	fileData, err := io.ReadAll(f)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
