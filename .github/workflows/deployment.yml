@@ -10,6 +10,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    env:
+        folders: "authentication, dashboard, user, driver, geolocation_tracking"
     steps:
       - uses: actions/checkout@v4
 
@@ -20,13 +22,6 @@ jobs:
           password: ${{secrets.DOCKER_HUB_PASSWORD}}
         run: |
           docker login -u $username -p $password
-
-      - name: Get list of updated folders
-        id: changes
-        run: |
-          UPDATED_FOLDERS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | awk -F'/' '{print $1}' | sort -u)
-          echo "Updated folders: $UPDATED_FOLDERS"
-          echo "folders=$UPDATED_FOLDERS" >> $GITHUB_ENV
 
       - name: Build docker image
         id: build-docker-image
