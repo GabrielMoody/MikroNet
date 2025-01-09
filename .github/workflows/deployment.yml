@@ -11,7 +11,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     env:
-        folders: "authentication, dashboard, user, driver, geolocation_tracking"
+        folders: "authentication dashboard user driver geolocation_tracking"
     steps:
       - uses: actions/checkout@v4
 
