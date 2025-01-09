@@ -10,7 +10,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
 	"log"
+	"net"
 	"os"
 )
 
@@ -18,6 +20,7 @@ func main() {
 	app := fiber.New(fiber.Config{
 		StrictRouting: true,
 	})
+	grpcServer := grpc.NewServer()
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
@@ -28,6 +31,10 @@ func main() {
 	app.Use(logger.New())
 
 	db := models.DatabaseInit()
+
+	grpcHandler := handler.GRPCHandler(db)
+	pb.RegisterOwnerServiceServer(grpcServer, grpcHandler)
+	reflection.Register(grpcServer)
 
 	api := app.Group("/")
 
@@ -49,6 +56,18 @@ func main() {
 	user := pb.NewUserServiceClient(userConn)
 
 	handler.DashboardHandler(api, db, driver, user)
+
+	go func() {
+		fmt.Println("gRPC server running on 5007")
+		lis, err := net.Listen("tcp", "0.0.0.0:5007")
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
+
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+	}()
 
 	err = app.Listen("0.0.0.0:8030")
 	if err != nil {

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"github.com/GabrielMoody/mikroNet/driver/internal/helper"
 	"github.com/GabrielMoody/mikroNet/driver/internal/model"
 	"gorm.io/gorm"
 	"time"
@@ -14,8 +15,6 @@ type DriverRepo interface {
 	EditDriverDetails(c context.Context, user model.DriverDetails) (model.DriverDetails, error)
 	GetStatus(c context.Context, id string) (res interface{}, err error)
 	SetStatus(c context.Context, status string, id string) (res interface{}, err error)
-	GetRequest(c context.Context) (res interface{}, err error)
-	AcceptRequest(c context.Context) (res interface{}, err error)
 	GetAvailableSeats(c context.Context, id string) (res interface{}, err error)
 	SetAvailableSeats(c context.Context, data model.DriverDetails) (res interface{}, err error)
 	GetTripHistories(c context.Context, id string) (res interface{}, err error)
@@ -27,7 +26,7 @@ type DriverRepoImpl struct {
 
 func (a *DriverRepoImpl) CreateDriver(c context.Context, data model.DriverDetails) (res model.DriverDetails, err error) {
 	if err := a.db.WithContext(c).Create(&data).Error; err != nil {
-		return res, err
+		return res, helper.ErrDatabase
 	}
 
 	return data, nil
@@ -35,15 +34,15 @@ func (a *DriverRepoImpl) CreateDriver(c context.Context, data model.DriverDetail
 
 func (a *DriverRepoImpl) GetAllDrivers(c context.Context) (res []model.DriverDetails, err error) {
 	if err := a.db.WithContext(c).Find(&res).Error; err != nil {
-		return res, err
+		return res, helper.ErrDatabase
 	}
 
 	return res, nil
 }
 
 func (a *DriverRepoImpl) GetDriverDetails(c context.Context, id string) (res model.DriverDetails, err error) {
-	if err := a.db.WithContext(c).Find(&res, "id = ?", id).Error; err != nil {
-		return res, err
+	if err := a.db.WithContext(c).First(&res, "id = ?", id).Error; err != nil {
+		return res, helper.ErrNotFound
 	}
 
 	return res, nil
@@ -51,7 +50,7 @@ func (a *DriverRepoImpl) GetDriverDetails(c context.Context, id string) (res mod
 
 func (a *DriverRepoImpl) EditDriverDetails(c context.Context, user model.DriverDetails) (res model.DriverDetails, err error) {
 	if err := a.db.WithContext(c).Updates(&user).Error; err != nil {
-		return user, err
+		return user, helper.ErrDatabase
 	}
 
 	return user, nil
@@ -65,7 +64,7 @@ func (a *DriverRepoImpl) GetTripHistories(c context.Context, id string) (res int
 		Rows()
 
 	if err != nil {
-		return nil, err
+		return nil, helper.ErrDatabase
 	}
 
 	defer row.Close()
@@ -93,7 +92,7 @@ func (a *DriverRepoImpl) GetAvailableSeats(c context.Context, id string) (res in
 	var driver model.DriverDetails
 
 	if err := a.db.WithContext(c).Select("available_seats").Where("id = ?", id).Find(&driver).Error; err != nil {
-		return nil, err
+		return nil, helper.ErrDatabase
 	}
 
 	return driver.AvailableSeats, nil
@@ -101,7 +100,7 @@ func (a *DriverRepoImpl) GetAvailableSeats(c context.Context, id string) (res in
 
 func (a *DriverRepoImpl) SetAvailableSeats(c context.Context, data model.DriverDetails) (res interface{}, err error) {
 	if err := a.db.WithContext(c).Updates(&data).Error; err != nil {
-		return nil, err
+		return nil, helper.ErrDatabase
 	}
 
 	return data.AvailableSeats, nil
@@ -111,7 +110,7 @@ func (a *DriverRepoImpl) GetStatus(c context.Context, id string) (res interface{
 	var driver model.DriverDetails
 
 	if err := a.db.WithContext(c).Select("status").First(&driver, "id = ?", id).Error; err != nil {
-		return nil, err
+		return nil, helper.ErrDatabase
 	}
 
 	return driver.Status, nil
@@ -119,20 +118,10 @@ func (a *DriverRepoImpl) GetStatus(c context.Context, id string) (res interface{
 
 func (a *DriverRepoImpl) SetStatus(c context.Context, status string, id string) (res interface{}, err error) {
 	if err := a.db.WithContext(c).Where("id = ?", id).Updates(model.DriverDetails{Status: status}).Error; err != nil {
-		return nil, err
+		return nil, helper.ErrDatabase
 	}
 
 	return status, nil
-}
-
-func (a *DriverRepoImpl) GetRequest(c context.Context) (res interface{}, err error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (a *DriverRepoImpl) AcceptRequest(c context.Context) (res interface{}, err error) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func NewDriverRepo(db *gorm.DB) DriverRepo {

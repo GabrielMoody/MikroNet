@@ -2,9 +2,12 @@ package gRPC
 
 import (
 	"context"
+	"fmt"
 	"github.com/GabrielMoody/mikroNet/driver/internal/model"
 	"github.com/GabrielMoody/mikroNet/driver/internal/pb"
 	"github.com/GabrielMoody/mikroNet/driver/internal/repository"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -55,14 +58,21 @@ func (a *GRPC) GetDriverDetails(ctx context.Context, data *pb.ReqDriverDetails) 
 
 	formattedDate := resRepo.DateOfBirth.Format("02-01-2006")
 
+	image, err := os.ReadFile(resRepo.ProfilePicture)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &pb.Driver{
-		Id:          resRepo.ID,
-		FirstName:   resRepo.FirstName,
-		LastName:    resRepo.LastName,
-		Email:       resRepo.Email,
-		PhoneNumber: resRepo.PhoneNumber,
-		Age:         uint32(resRepo.Age),
-		DateOfBirth: formattedDate,
+		Id:             resRepo.ID,
+		FirstName:      resRepo.FirstName,
+		LastName:       resRepo.LastName,
+		Email:          resRepo.Email,
+		PhoneNumber:    resRepo.PhoneNumber,
+		Age:            uint32(resRepo.Age),
+		DateOfBirth:    formattedDate,
+		ProfilePicture: image,
 	}, nil
 }
 
@@ -70,16 +80,34 @@ func (a *GRPC) CreateDriver(ctx context.Context, data *pb.CreateDriverRequest) (
 	format := "02-01-2006"
 	date, _ := time.Parse(format, data.DateOfBirth)
 
+	saveDir := "./uploads"
+	if _, err := os.Stat(saveDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
+			return nil, err
+		}
+	}
+
+	// Save the photo to the file system
+	timestamp := time.Now().Format("20060102_150405")
+	fullPath := data.Id + "_" + timestamp + data.Filename
+	filePath := filepath.Join(saveDir, fullPath)
+	fmt.Println(data.ProfilePicture)
+	if err := os.WriteFile(filePath, data.ProfilePicture, 0644); err != nil {
+		return nil, err
+	}
+
+	fmt.Println(data.Id)
+
 	resRepo, err := a.repo.CreateDriver(ctx, model.DriverDetails{
-		ID:            data.Id,
-		FirstName:     data.FirstName,
-		LastName:      data.LastName,
-		Email:         data.Email,
-		PhoneNumber:   data.PhoneNumber,
-		Age:           int32(data.Age),
-		LicenseNumber: data.LicenseNumber,
-		DateOfBirth:   date,
-		RouteID:       20,
+		ID:             data.Id,
+		FirstName:      data.FirstName,
+		LastName:       data.LastName,
+		Email:          data.Email,
+		PhoneNumber:    data.PhoneNumber,
+		Age:            int32(data.Age),
+		LicenseNumber:  data.LicenseNumber,
+		DateOfBirth:    date,
+		ProfilePicture: filePath,
 	})
 
 	if err != nil {

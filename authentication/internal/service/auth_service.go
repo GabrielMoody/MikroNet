@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/helper"
@@ -16,6 +17,7 @@ import (
 type AuthService interface {
 	CreateUserService(c context.Context, data dto.UserRegistrationsReq, role string) (res string, err *helper.ErrorStruct)
 	CreateDriverService(c context.Context, data dto.DriverRegistrationsReq, role string) (res string, err *helper.ErrorStruct)
+	CreateOwnerService(c context.Context, data dto.OwnerRegistrationsReq, role string) (res string, err *helper.ErrorStruct)
 	LoginUserService(c context.Context, data dto.UserLoginReq) (res dto.UserRegistrationsResp, err *helper.ErrorStruct)
 	SendResetPasswordService(c context.Context, email dto.ForgotPasswordReq) (res string, err *helper.ErrorStruct)
 	ResetPassword(c context.Context, data dto.ResetPasswordReq, code string) (res string, err *helper.ErrorStruct)
@@ -24,6 +26,45 @@ type AuthService interface {
 
 type AuthServiceImpl struct {
 	AuthRepo repository.AuthRepo
+}
+
+func (a *AuthServiceImpl) CreateOwnerService(c context.Context, data dto.OwnerRegistrationsReq, role string) (res string, err *helper.ErrorStruct) {
+	if errValidate := helper.Validate.Struct(data); errValidate != nil {
+		return "", &helper.ErrorStruct{
+			Err:  errValidate,
+			Code: fiber.StatusBadRequest,
+		}
+	}
+
+	pw, errHash := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+
+	if errHash != nil {
+		return "", err
+	}
+
+	resRepo, errRepo := a.AuthRepo.CreateUser(c, models.User{
+		ID:       uuid.New().String(),
+		Email:    data.Email,
+		Password: string(pw),
+		Role:     role,
+	})
+
+	if errRepo != nil {
+		var code int
+		switch {
+		case errors.Is(errRepo, helper.ErrDuplicateEntry):
+			code = fiber.StatusConflict
+		default:
+			code = fiber.StatusInternalServerError
+		}
+
+		return res, &helper.ErrorStruct{
+			Err:  errRepo,
+			Code: code,
+		}
+	}
+
+	return resRepo, nil
 }
 
 func (a *AuthServiceImpl) CreateDriverService(c context.Context, data dto.DriverRegistrationsReq, role string) (res string, err *helper.ErrorStruct) {
@@ -48,9 +89,17 @@ func (a *AuthServiceImpl) CreateDriverService(c context.Context, data dto.Driver
 	})
 
 	if errRepo != nil {
+		var code int
+		switch {
+		case errors.Is(errRepo, helper.ErrDuplicateEntry):
+			code = fiber.StatusConflict
+		default:
+			code = fiber.StatusInternalServerError
+		}
+
 		return res, &helper.ErrorStruct{
 			Err:  errRepo,
-			Code: fiber.StatusInternalServerError,
+			Code: code,
 		}
 	}
 
@@ -70,9 +119,19 @@ func (a *AuthServiceImpl) ChangePasswordService(c context.Context, id string, da
 	resRepo, errRepo := a.AuthRepo.ChangePassword(c, data.OldPassword, string(hashedNewPassword), id)
 
 	if errRepo != nil {
+		var code int
+		switch {
+		case errors.Is(errRepo, helper.ErrNotFound):
+			code = fiber.StatusNotFound
+		case errors.Is(errRepo, helper.ErrPasswordIncorrect):
+			code = fiber.StatusUnauthorized
+		default:
+			code = fiber.StatusInternalServerError
+		}
+
 		return res, &helper.ErrorStruct{
 			Err:  errRepo,
-			Code: fiber.StatusInternalServerError,
+			Code: code,
 		}
 	}
 
@@ -101,9 +160,17 @@ func (a *AuthServiceImpl) CreateUserService(c context.Context, data dto.UserRegi
 	})
 
 	if errRepo != nil {
+		var code int
+		switch {
+		case errors.Is(errRepo, helper.ErrDuplicateEntry):
+			code = fiber.StatusConflict
+		default:
+			code = fiber.StatusInternalServerError
+		}
+
 		return res, &helper.ErrorStruct{
 			Err:  errRepo,
-			Code: fiber.StatusInternalServerError,
+			Code: code,
 		}
 	}
 
@@ -113,7 +180,7 @@ func (a *AuthServiceImpl) CreateUserService(c context.Context, data dto.UserRegi
 func (a *AuthServiceImpl) LoginUserService(c context.Context, data dto.UserLoginReq) (res dto.UserRegistrationsResp, err *helper.ErrorStruct) {
 	if err := helper.Validate.Struct(data); err != nil {
 		return res, &helper.ErrorStruct{
-			Err:  err,
+			Err:  helper.ErrBadRequest,
 			Code: fiber.StatusBadRequest,
 		}
 	}
@@ -121,9 +188,19 @@ func (a *AuthServiceImpl) LoginUserService(c context.Context, data dto.UserLogin
 	resRepo, errRepo := a.AuthRepo.LoginUser(c, data)
 
 	if errRepo != nil {
+		var code int
+		switch {
+		case errors.Is(errRepo, helper.ErrNotFound):
+			code = fiber.StatusNotFound
+		case errors.Is(errRepo, helper.ErrPasswordIncorrect):
+			code = fiber.StatusUnauthorized
+		default:
+			code = fiber.StatusInternalServerError
+		}
+
 		return res, &helper.ErrorStruct{
 			Err:  errRepo,
-			Code: fiber.StatusInternalServerError,
+			Code: code,
 		}
 	}
 
@@ -147,9 +224,17 @@ func (a *AuthServiceImpl) SendResetPasswordService(c context.Context, email dto.
 	resRepo, errRepo := a.AuthRepo.SendResetPassword(c, email.Email, code)
 
 	if errRepo != nil {
+		var code int
+		switch {
+		case errors.Is(errRepo, helper.ErrNotFound):
+			code = fiber.StatusNotFound
+		default:
+			code = fiber.StatusInternalServerError
+		}
+
 		return res, &helper.ErrorStruct{
 			Err:  errRepo,
-			Code: fiber.StatusInternalServerError,
+			Code: code,
 		}
 	}
 
@@ -217,9 +302,17 @@ func (a *AuthServiceImpl) ResetPassword(c context.Context, data dto.ResetPasswor
 	resRepo, errRepo := a.AuthRepo.ResetPassword(c, string(password), code)
 
 	if errRepo != nil {
-		return "", &helper.ErrorStruct{
+		var code int
+		switch {
+		case errors.Is(errRepo, helper.ErrNotFound):
+			code = fiber.StatusNotFound
+		default:
+			code = fiber.StatusInternalServerError
+		}
+
+		return res, &helper.ErrorStruct{
 			Err:  errRepo,
-			Code: fiber.StatusInternalServerError,
+			Code: code,
 		}
 	}
 

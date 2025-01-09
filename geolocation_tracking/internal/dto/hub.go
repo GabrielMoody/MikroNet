@@ -4,6 +4,7 @@ import "github.com/gofiber/contrib/websocket"
 
 type Message struct {
 	UserID string  `json:"user_id"`
+	Role   string  `json:"role"`
 	Lat    float64 `json:"lat"`
 	Lng    float64 `json:"lng"`
 }

@@ -13,19 +13,82 @@ type DashboardService interface {
 	GetBusinessOwners(c context.Context) (res []models.OwnerDetails, err *helper.ErrorStruct)
 	GetBusinessOwner(c context.Context, id string) (res models.OwnerDetails, err *helper.ErrorStruct)
 	GetBlockedBusinessOwners(c context.Context, role string) (res []models.OwnerDetails, err *helper.ErrorStruct)
+	GetUnverifiedBusinessOwners(c context.Context) (res []models.OwnerDetails, err *helper.ErrorStruct)
+	SetStatusVerified(c context.Context, id string) (res models.OwnerDetails, err *helper.ErrorStruct)
 	BlockAccount(c context.Context, accountId string) (res models.BlockedAccount, err *helper.ErrorStruct)
+	UnblockAccount(c context.Context, accountId string) (res string, err *helper.ErrorStruct)
 }
 
 type DashboardServiceImpl struct {
 	DashboardRepo repository.DashboardRepo
 }
 
-func (a *DashboardServiceImpl) GetBusinessOwner(c context.Context, id string) (res models.OwnerDetails, err *helper.ErrorStruct) {
-	resRepo, errRepo := a.DashboardRepo.GetBusinessOwner(c, id)
+func (a *DashboardServiceImpl) GetUnverifiedBusinessOwners(c context.Context) (res []models.OwnerDetails, err *helper.ErrorStruct) {
+	resRepo, errRepo := a.DashboardRepo.GetUnverifiedBusinessOwners(c)
 
 	if errRepo != nil {
 		return res, &helper.ErrorStruct{
 			Code: http.StatusInternalServerError,
+			Err:  errRepo,
+		}
+	}
+
+	return resRepo, nil
+}
+
+func (a *DashboardServiceImpl) SetStatusVerified(c context.Context, id string) (res models.OwnerDetails, err *helper.ErrorStruct) {
+	data := models.OwnerDetails{
+		ID:       id,
+		Verified: true,
+	}
+
+	resRepo, errRepo := a.DashboardRepo.SetOwnerVerified(c, data)
+
+	if errRepo != nil {
+		return res, &helper.ErrorStruct{
+			Code: http.StatusInternalServerError,
+			Err:  errRepo,
+		}
+	}
+
+	return resRepo, nil
+}
+
+func (a *DashboardServiceImpl) UnblockAccount(c context.Context, accountId string) (res string, err *helper.ErrorStruct) {
+	resRepo, errRepo := a.DashboardRepo.UnblockAccount(c, accountId)
+
+	if errRepo != nil {
+		var code int
+		switch {
+		case errors.Is(errRepo, helper.ErrNotFound):
+			code = http.StatusNotFound
+		default:
+			code = http.StatusInternalServerError
+		}
+
+		return res, &helper.ErrorStruct{
+			Code: code,
+			Err:  errRepo,
+		}
+	}
+
+	return resRepo, nil
+}
+
+func (a *DashboardServiceImpl) GetBusinessOwner(c context.Context, id string) (res models.OwnerDetails, err *helper.ErrorStruct) {
+	resRepo, errRepo := a.DashboardRepo.GetBusinessOwner(c, id)
+
+	if errRepo != nil {
+		var code int
+		switch {
+		case errors.Is(errRepo, helper.ErrNotFound):
+			code = http.StatusNotFound
+		default:
+			code = http.StatusInternalServerError
+		}
+
+		return res, &helper.ErrorStruct{
+			Code: code,
 			Err:  errRepo,
 		}
 	}

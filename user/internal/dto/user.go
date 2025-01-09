@@ -2,37 +2,17 @@ package dto
 
 type (
 	EditUserDetails struct {
-		FirstName   string `json:"first_name"`
-		LastName    string `json:"last_name"`
+		FirstName   string `json:"first_name" validate:"required"`
+		LastName    string `json:"last_name" validate:"required"`
 		DateOfBirth string `json:"date_of_birth"`
 		Age         int    `json:"age"`
 		Gender      string `json:"gender"`
 	}
 
-	OrderReq struct {
-		From      string `json:"from" validate:"required"`
-		To        string `json:"to" validate:"required"`
-		Passenger int    `json:"passenger" validate:"required"`
-	}
-
-	CarterReq struct {
-		PickUpPoint string `json:"pick_up_point" validate:"required"`
-		PickUpTime  string `json:"pick_up_time" validate:"required"`
-		Duration    string `json:"duration" validate:"required"`
-		Comments    string `json:"comments,omitempty"`
-	}
-
-	Orders struct {
-		Id                 string
-		FirstName          string
-		LastName           string
-		RegistrationNumber string
-		Distance           string
-	}
-
-	CurrLocation struct {
-		Lat string `json:"lat"`
-		Lon string `json:"lon"`
+	MessageLoc struct {
+		UserID string  `json:"user_id"`
+		Lat    float64 `json:"lat"`
+		Lng    float64 `json:"lng"`
 	}
 
 	ReviewReq struct {

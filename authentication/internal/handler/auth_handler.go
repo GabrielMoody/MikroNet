@@ -9,15 +9,16 @@ import (
 	"gorm.io/gorm"
 )
 
-func ProfileHandler(r fiber.Router, db *gorm.DB, user pb.UserServiceClient, driver pb.DriverServiceClient) {
+func AuthHandler(r fiber.Router, db *gorm.DB, user pb.UserServiceClient, driver pb.DriverServiceClient, dashboard pb.OwnerServiceClient) {
 	repo := repository.NewAuthRepo(db)
 	authService := service.NewAuthService(repo)
-	authController := controller.NewAuthController(authService, user, driver)
+	authController := controller.NewAuthController(authService, user, driver, dashboard)
 
 	authHandler := r.Group("/")
 
 	authHandler.Post("/register/user", authController.CreateUser)
 	authHandler.Post("/register/driver", authController.CreateDriver)
+	authHandler.Post("/register/owner", authController.CreateOwner)
 	authHandler.Post("/login", authController.LoginUser)
 	authHandler.Post("/reset-password", authController.SendResetPasswordLink)
 	authHandler.Put("/reset-password/:code", authController.ResetPassword)

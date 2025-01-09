@@ -2,21 +2,22 @@ package service
 
 import (
 	"context"
+	"errors"
 	"github.com/GabrielMoody/mikroNet/driver/internal/dto"
 	"github.com/GabrielMoody/mikroNet/driver/internal/helper"
 	"github.com/GabrielMoody/mikroNet/driver/internal/model"
 	"github.com/GabrielMoody/mikroNet/driver/internal/repository"
+	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"time"
 )
 
 type DriverService interface {
 	GetDriverDetails(c context.Context, id string) (res dto.GetDriverDetailsRes, err *helper.ErrorStruct)
+	GetDriverImage(c context.Context, id string) (res string, err *helper.ErrorStruct)
 	EditDriverDetails(c context.Context, id string, data dto.EditDriverReq) (res interface{}, err *helper.ErrorStruct)
 	GetStatus(c context.Context, id string) (res interface{}, err *helper.ErrorStruct)
 	SetStatus(c context.Context, id string, data dto.StatusReq) (res interface{}, err *helper.ErrorStruct)
-	GetRequest(c context.Context) (res interface{}, err *helper.ErrorStruct)
-	AcceptRequest(c context.Context) (res interface{}, err *helper.ErrorStruct)
 	GetAvailableSeats(c context.Context, id string) (res interface{}, err *helper.ErrorStruct)
 	SetAvailableSeats(c context.Context, data dto.SeatReq, id string) (res interface{}, err *helper.ErrorStruct)
 	GetTripHistories(c context.Context, id string) (res interface{}, err *helper.ErrorStruct)
@@ -26,13 +27,44 @@ type driverServiceImpl struct {
 	repo repository.DriverRepo
 }
 
+func (a *driverServiceImpl) GetDriverImage(c context.Context, id string) (res string, err *helper.ErrorStruct) {
+	resRepo, errRepo := a.repo.GetDriverDetails(c, id)
+
+	if errRepo != nil {
+		var code int
+
+		switch {
+		case errors.Is(errRepo, helper.ErrNotFound):
+			code = http.StatusNotFound
+		default:
+			code = http.StatusInternalServerError
+		}
+
+		return res, &helper.ErrorStruct{
+			Err:  errRepo,
+			Code: code,
+		}
+	}
+
+	return resRepo.ProfilePicture, nil
+}
+
 func (a *driverServiceImpl) GetDriverDetails(c context.Context, id string) (res dto.GetDriverDetailsRes, err *helper.ErrorStruct) {
 	resRepo, errRepo := a.repo.GetDriverDetails(c, id)
 
 	if errRepo != nil {
+		var code int
+
+		switch {
+		case errors.Is(errRepo, helper.ErrNotFound):
+			code = http.StatusNotFound
+		default:
+			code = http.StatusInternalServerError
+		}
+
 		return res, &helper.ErrorStruct{
 			Err:  errRepo,
-			Code: http.StatusInternalServerError,
+			Code: code,
 		}
 	}
 
@@ -45,10 +77,18 @@ func (a *driverServiceImpl) GetDriverDetails(c context.Context, id string) (res 
 		Email:              resRepo.Email,
 		RegistrationNumber: resRepo.LicenseNumber,
 		Gender:             resRepo.Gender,
+		ProfilePicture:     resRepo.ProfilePicture,
 	}, nil
 }
 
 func (a *driverServiceImpl) EditDriverDetails(c context.Context, id string, data dto.EditDriverReq) (res interface{}, err *helper.ErrorStruct) {
+	if err := helper.Validate.Struct(&data); err != nil {
+		return nil, &helper.ErrorStruct{
+			Code: fiber.StatusBadRequest,
+			Err:  err,
+		}
+	}
+
 	format := "02-01-2006"
 	date, _ := time.Parse(format, data.DateOfBirth)
 
@@ -100,6 +140,13 @@ func (a *driverServiceImpl) GetAvailableSeats(c context.Context, id string) (res
 }
 
 func (a *driverServiceImpl) SetAvailableSeats(c context.Context, data dto.SeatReq, id string) (res interface{}, err *helper.ErrorStruct) {
+	if err := helper.Validate.Struct(&data); err != nil {
+		return nil, &helper.ErrorStruct{
+			Code: fiber.StatusBadRequest,
+			Err:  err,
+		}
+	}
+
 	driver := model.DriverDetails{
 		ID:             id,
 		AvailableSeats: data.Seat,
@@ -130,6 +177,13 @@ func (a *driverServiceImpl) GetStatus(c context.Context, id string) (res interfa
 }
 
 func (a *driverServiceImpl) SetStatus(c context.Context, id string, data dto.StatusReq) (res interface{}, err *helper.ErrorStruct) {
+	if err := helper.Validate.Struct(&data); err != nil {
+		return nil, &helper.ErrorStruct{
+			Code: fiber.StatusBadRequest,
+			Err:  err,
+		}
+	}
+
 	resRepo, errRepo := a.repo.SetStatus(c, data.Status, id)
 
 	if errRepo != nil {
@@ -140,16 +194,6 @@ func (a *driverServiceImpl) SetStatus(c context.Context, id string, data dto.Sta
 	}
 
 	return resRepo, nil
-}
-
-func (a *driverServiceImpl) GetRequest(c context.Context) (res interface{}, err *helper.ErrorStruct) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (a *driverServiceImpl) AcceptRequest(c context.Context) (res interface{}, err *helper.ErrorStruct) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func NewDriverService(repo repository.DriverRepo) DriverService {

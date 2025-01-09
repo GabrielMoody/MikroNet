@@ -274,7 +274,7 @@ paths:
           content:
             application/json: {}
 
-  /015/sse/notification/{id}:
+  /sse/notification/{id}:
     get:
       tags:
         - Notification

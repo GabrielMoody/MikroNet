@@ -26,5 +26,4 @@ func NewWSHandler(r fiber.Router, db *gorm.DB) {
 	go wsLocation.Run()
 
 	api.Use("/ws/location", websocket.New(wsLocation.LocationTracking(ctx)))
-
 }

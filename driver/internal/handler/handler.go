@@ -17,13 +17,14 @@ func DriverHandler(r fiber.Router, db *gorm.DB) {
 
 	api := r.Group("/")
 
-	api.Get("/", middleware.CheckHeaderAuthorization, controllerDriver.GetDriver)
-	api.Put("/", middleware.CheckHeaderAuthorization, controllerDriver.EditDriver)
-	api.Get("/status/", middleware.CheckHeaderAuthorization, controllerDriver.GetStatus)
-	api.Put("/status/", middleware.CheckHeaderAuthorization, controllerDriver.SetStatus)
-	api.Get("/seats/", middleware.CheckHeaderAuthorization, controllerDriver.GetAvailableSeats)
-	api.Put("/seats/", middleware.CheckHeaderAuthorization, controllerDriver.SetAvailableSeats)
-	api.Get("/histories/", controllerDriver.GetTripHistories)
+	api.Use(middleware.ValidateDriverRole)
+
+	api.Get("/", controllerDriver.GetDriver)
+	api.Put("/", controllerDriver.EditDriver)
+	api.Get("/status/", controllerDriver.GetStatus)
+	api.Put("/status/", controllerDriver.SetStatus)
+	api.Get("/seats/", controllerDriver.GetAvailableSeats)
+	api.Put("/seats/", controllerDriver.SetAvailableSeats)
 }
 
 func GRPCHandler(db *gorm.DB) *gRPC.GRPC {

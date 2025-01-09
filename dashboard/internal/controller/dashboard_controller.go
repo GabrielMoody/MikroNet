@@ -1,23 +1,24 @@
 package controller
 
 import (
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/middleware"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/pb"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/service"
 	"github.com/gofiber/fiber/v2"
-	"os"
+	"net/http"
 )
 
 type DashboardController interface {
-	RegisterBusinessOwner(c *fiber.Ctx) error
 	GetBusinessOwners(c *fiber.Ctx) error
 	GetBusinessOwnerDetails(c *fiber.Ctx) error
 	GetBlockedBusinessOwners(c *fiber.Ctx) error
+	GetUnverifiedBusinessOwners(c *fiber.Ctx) error
+	SetStatusVerified(c *fiber.Ctx) error
 	GetUsers(c *fiber.Ctx) error
 	GetUserDetails(c *fiber.Ctx) error
 	GetDrivers(c *fiber.Ctx) error
 	GetDriverDetails(c *fiber.Ctx) error
 	BlockAccount(c *fiber.Ctx) error
+	UnblockAccount(c *fiber.Ctx) error
 	GetReviews(c *fiber.Ctx) error
 	GetReviewByID(c *fiber.Ctx) error
 }
@@ -28,6 +29,65 @@ type DashboardControllerImpl struct {
 	PBUser           pb.UserServiceClient
 }
 
+func (a *DashboardControllerImpl) SetStatusVerified(c *fiber.Ctx) error {
+	ctx := c.Context()
+	id := c.Params("id")
+
+	res, err := a.DashboardService.SetStatusVerified(ctx, id)
+
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"status": "Success",
+		"data":   res,
+	})
+}
+
+func (a *DashboardControllerImpl) GetUnverifiedBusinessOwners(c *fiber.Ctx) error {
+	ctx := c.Context()
+
+	res, err := a.DashboardService.GetUnverifiedBusinessOwners(ctx)
+
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": "Success",
+		"data": fiber.Map{
+			"count":  len(res),
+			"owners": res,
+		},
+	})
+}
+
+func (a *DashboardControllerImpl) UnblockAccount(c *fiber.Ctx) error {
+	ctx := c.Context()
+	accountId := c.Params("id")
+
+	res, err := a.DashboardService.UnblockAccount(ctx, accountId)
+
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": "Success",
+		"data":   res,
+	})
+}
+
 func (a *DashboardControllerImpl) GetBusinessOwnerDetails(c *fiber.Ctx) error {
 	ctx := c.Context()
 	id := c.Params("id")
@@ -35,9 +95,9 @@ func (a *DashboardControllerImpl) GetBusinessOwnerDetails(c *fiber.Ctx) error {
 	res, err := a.DashboardService.GetBusinessOwner(ctx, id)
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
 		})
 	}
 
@@ -54,8 +114,8 @@ func (a *DashboardControllerImpl) GetReviews(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err.Error(),
+			"status":  "Error",
+			"message": err.Error(),
 		})
 	}
 
@@ -78,8 +138,8 @@ func (a *DashboardControllerImpl) GetReviewByID(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err.Error(),
+			"status":  "Error",
+			"message": err.Error(),
 		})
 	}
 
@@ -93,26 +153,16 @@ func (a *DashboardControllerImpl) BlockAccount(c *fiber.Ctx) error {
 	ctx := c.Context()
 	accountId := c.Params("accountId")
 
-	token := c.Get("Authorization")
-	payload, _ := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
-
-	if payload["role"].(string) != "admin" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"status": "Error",
-			"error":  "Unauthorized",
-		})
-	}
-
 	res, err := a.DashboardService.BlockAccount(ctx, accountId)
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
 		})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "Success",
 		"data":   res,
 	})
@@ -125,9 +175,9 @@ func (a *DashboardControllerImpl) GetBlockedBusinessOwners(c *fiber.Ctx) error {
 	res, err := a.DashboardService.GetBlockedBusinessOwners(ctx, role)
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
 		})
 	}
 
@@ -146,9 +196,9 @@ func (a *DashboardControllerImpl) GetBusinessOwners(c *fiber.Ctx) error {
 	res, err := a.DashboardService.GetBusinessOwners(ctx)
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
 		})
 	}
 
@@ -170,8 +220,8 @@ func (a *DashboardControllerImpl) GetDriverDetails(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err.Error(),
+			"status":  "Error",
+			"message": err.Error(),
 		})
 	}
 
@@ -186,8 +236,8 @@ func (a *DashboardControllerImpl) GetDrivers(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err.Error(),
+			"status":  "Error",
+			"message": err.Error(),
 		})
 	}
 
@@ -205,8 +255,8 @@ func (a *DashboardControllerImpl) GetUsers(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err.Error(),
+			"status":  "Error",
+			"message": err.Error(),
 		})
 	}
 
@@ -227,9 +277,9 @@ func (a *DashboardControllerImpl) GetUserDetails(c *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err.Error(),
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err.Error(),
 		})
 	}
 
@@ -237,33 +287,6 @@ func (a *DashboardControllerImpl) GetUserDetails(c *fiber.Ctx) error {
 		"status": "Success",
 		"data":   res,
 	})
-}
-
-func (a *DashboardControllerImpl) RegisterBusinessOwner(c *fiber.Ctx) error {
-	//var req dto.OwnerRegistrationReq
-	//ctx := c.Context()
-	//
-	//if err := c.BodyParser(&req); err != nil {
-	//	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-	//		"status": "Error",
-	//		"error":  err.Error(),
-	//	})
-	//}
-	//
-	//res, err := a.OwnerService.RegisterBusinessOwner(ctx, req)
-	//
-	//if err != nil {
-	//	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-	//		"status": "Error",
-	//		"error":  err.Err.Error(),
-	//	})
-	//}
-	//
-	//return c.Status(fiber.StatusOK).JSON(fiber.Map{
-	//	"status": "Success",
-	//	"data":   res,
-	//})
-	return nil
 }
 
 func NewDashboardController(service service.DashboardService, driver pb.DriverServiceClient, user pb.UserServiceClient) DashboardController {

@@ -2,6 +2,8 @@ package handler
 
 import (
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/controller"
+	"github.com/GabrielMoody/mikroNet/dashboard/internal/gRPC"
+	"github.com/GabrielMoody/mikroNet/dashboard/internal/middleware"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/pb"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/repository"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/service"
@@ -16,6 +18,8 @@ func DashboardHandler(r fiber.Router, db *gorm.DB, driver pb.DriverServiceClient
 
 	api := r.Group("/")
 
+	api.Use(middleware.ValidateDashboardRole)
+
 	api.Get("/users", controllerDashboard.GetUsers)
 	api.Get("/users/:id", controllerDashboard.GetUserDetails)
 
@@ -23,13 +27,22 @@ func DashboardHandler(r fiber.Router, db *gorm.DB, driver pb.DriverServiceClient
 	api.Get("/drivers/:id", controllerDashboard.GetDriverDetails)
 
 	api.Get("/owners", controllerDashboard.GetBusinessOwners)
-	api.Get("/owners/:id", controllerDashboard.GetBusinessOwnerDetails)
 	api.Get("/owners/blocked", controllerDashboard.GetBlockedBusinessOwners)
+	api.Get("/owners/unverified", controllerDashboard.GetUnverifiedBusinessOwners)
+	api.Get("/owners/:id", controllerDashboard.GetBusinessOwnerDetails)
+
+	api.Put("/owners/verified/:id", controllerDashboard.SetStatusVerified)
 
 	api.Post("/block/:accountId", controllerDashboard.BlockAccount)
-
-	api.Post("/", controllerDashboard.RegisterBusinessOwner)
+	api.Delete("/block/:accountId", controllerDashboard.UnblockAccount)
 
 	api.Get("/reviews", controllerDashboard.GetReviews)
 	api.Get("/reviews/:id", controllerDashboard.GetReviewByID)
+}
+
+func GRPCHandler(db *gorm.DB) *gRPC.GRPC {
+	repo := repository.NewDashboardRepo(db)
+	grpc := gRPC.NewGRPC(repo)
+
+	return grpc
 }

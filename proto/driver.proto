@@ -13,6 +13,7 @@ message Driver {
   uint32 age = 7;
   string registration_number = 8;
   string route = 9;
+  bytes profile_picture = 10;
 }
 
 message CreateDriverRequest {
@@ -25,7 +26,9 @@ message CreateDriverRequest {
   string license_number = 7;
   string password = 8;
   string password_confirmation = 9;
-  string id = 10;
+  bytes profile_picture = 10;
+  string filename = 11;
+  string id = 12;
 }
 
 message Empty{}

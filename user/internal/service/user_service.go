@@ -85,7 +85,12 @@ func (a *userServiceImpl) ReviewOrder(c context.Context, data dto.ReviewReq, use
 		}
 	}
 
-	resRepo, errRepo := a.repo.ReviewOrder(c, data, userId, driverId)
+	resRepo, errRepo := a.repo.ReviewOrder(c, model.Review{
+		UserID:   userId,
+		DriverID: driverId,
+		Comment:  data.Comment,
+		Star:     data.Star,
+	})
 
 	if errRepo != nil {
 		return res, &helper.ErrorStruct{

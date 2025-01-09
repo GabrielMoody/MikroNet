@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package dashboard;
+option go_package = "github.com/GabrielMoody/MikroNet/dashboard/internal/pb";
+
+message CreateOwnerReq {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string phone_number = 5;
+  string nik = 6;
+}
+
+message IsBlockedReq {
+  string id = 1;
+}
+
+message IsBlockedRes {
+  bool is_blocked = 1;
+}
+
+service DashboardService {
+  rpc CreateOwner(CreateOwnerReq) returns (CreateOwnerReq){}
+  rpc IsBlocked(IsBlockedReq) returns (IsBlockedRes){}
+}
+

@@ -1,20 +1,21 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/GabrielMoody/mikroNet/driver/internal/dto"
 	"github.com/GabrielMoody/mikroNet/driver/internal/middleware"
 	"github.com/GabrielMoody/mikroNet/driver/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"os"
+	"path/filepath"
 )
 
 type DriverController interface {
 	GetDriver(c *fiber.Ctx) error
+	GetDriverImage(c *fiber.Ctx) error
 	EditDriver(c *fiber.Ctx) error
 	GetStatus(c *fiber.Ctx) error
 	SetStatus(c *fiber.Ctx) error
-	GetRequest(c *fiber.Ctx) error
-	AcceptRequest(c *fiber.Ctx) error
 	GetTripHistories(c *fiber.Ctx) error
 	GetAvailableSeats(c *fiber.Ctx) error
 	SetAvailableSeats(c *fiber.Ctx) error
@@ -24,8 +25,38 @@ type DriverControllerImpl struct {
 	service service.DriverService
 }
 
+func (a *DriverControllerImpl) GetDriverImage(c *fiber.Ctx) error {
+	token := c.Get("Authorization")
+
+	payload, _ := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
+	ctx := c.Context()
+
+	res, err := a.service.GetDriverImage(ctx, payload["id"].(string))
+
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
+		})
+	}
+
+	image, errI := os.ReadFile(res)
+
+	if errI != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "Error",
+			"message": errI,
+		})
+	}
+
+	c.Set("Content-Type", fmt.Sprintf("image/%s", filepath.Ext(res)[1:]))
+
+	return c.Status(fiber.StatusOK).SendString(fmt.Sprintf("data:image/%s;base64,%s", filepath.Ext(res)[1:], image))
+}
+
 func (a *DriverControllerImpl) GetDriver(c *fiber.Ctx) error {
 	token := c.Get("Authorization")
+	c.Set("Content-Type", "image/jpeg")
 
 	payload, _ := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
 	ctx := c.Context()
@@ -33,15 +64,36 @@ func (a *DriverControllerImpl) GetDriver(c *fiber.Ctx) error {
 	res, err := a.service.GetDriverDetails(ctx, payload["id"].(string))
 
 	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
+		})
+	}
+
+	image, errI := os.ReadFile(res.ProfilePicture)
+
+	if errI != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+			"status":  "Error",
+			"message": errI,
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "Success",
-		"data":   res,
+		"data": fiber.Map{
+			"id":             res.ID,
+			"first_name":     res.FirstName,
+			"last_name":      res.LastName,
+			"email":          res.Email,
+			"license_number": res.RegistrationNumber,
+			"age":            res.Age,
+			"date_of_birth":  res.DateOfBirth,
+			"image": fiber.Map{
+				"mime_type": fmt.Sprintf("image/%s", filepath.Ext(res.ProfilePicture)[1:]),
+				"data":      image,
+			},
+		},
 	})
 }
 
@@ -55,17 +107,17 @@ func (a *DriverControllerImpl) EditDriver(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+			"status":  "Error",
+			"message": err,
 		})
 	}
 
 	res, err := a.service.EditDriverDetails(ctx, payload["id"].(string), data)
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
 		})
 	}
 
@@ -84,9 +136,9 @@ func (a *DriverControllerImpl) GetTripHistories(c *fiber.Ctx) error {
 	res, err := a.service.GetTripHistories(ctx, payload["id"].(string))
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
 		})
 	}
 
@@ -105,9 +157,9 @@ func (a *DriverControllerImpl) GetAvailableSeats(c *fiber.Ctx) error {
 	res, err := a.service.GetAvailableSeats(ctx, payload["id"].(string))
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
 		})
 	}
 
@@ -128,17 +180,17 @@ func (a *DriverControllerImpl) SetAvailableSeats(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+			"status":  "Error",
+			"message": err,
 		})
 	}
 
 	res, err := a.service.SetAvailableSeats(ctx, data, payload["id"].(string))
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
 		})
 	}
 
@@ -159,9 +211,9 @@ func (a *DriverControllerImpl) GetStatus(c *fiber.Ctx) error {
 	res, err := a.service.GetStatus(ctx, payload["id"].(string))
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
 		})
 	}
 
@@ -182,17 +234,17 @@ func (a *DriverControllerImpl) SetStatus(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+			"status":  "Error",
+			"message": err,
 		})
 	}
 
 	res, err := a.service.SetStatus(ctx, payload["id"].(string), data)
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "Error",
-			"error":  err,
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err,
 		})
 	}
 
@@ -202,16 +254,6 @@ func (a *DriverControllerImpl) SetStatus(c *fiber.Ctx) error {
 			"status": res,
 		},
 	})
-}
-
-func (a *DriverControllerImpl) GetRequest(c *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (a *DriverControllerImpl) AcceptRequest(c *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
 }
 
 func NewDriverController(service service.DriverService) DriverController {

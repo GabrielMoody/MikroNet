@@ -5,17 +5,17 @@ import (
 )
 
 type User struct {
-	ID        string `gorm:"primaryKey"`
-	Email     string `gorm:"unique"`
+	ID        string `gorm:"primaryKey;type:varchar(36)"`
+	Email     string `gorm:"unique;type:varchar(255)"`
 	Password  string
-	Role      string
+	Role      string `gorm:"type:varchar(255)"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
 type ResetPassword struct {
 	ID     int    `gorm:"primaryKey"`
-	UserID string `gorm:"unique;size:191"`
+	UserID string `gorm:"unique;type:varchar(36)"`
 	User   User   `gorm:"foreignKey:UserID"`
-	Code   string
+	Code   string `gorm:"type:varchar(255)"`
 }

@@ -28,7 +28,7 @@ services:
       - GRPC_DRIVER=driver_service
       - EMAIL_PASSWORD=khzy wosb xckz aihb
       - JWT_SECRET=FV77z4uhQ9M
-      - JWT_ISS=PJxFwcJTAcNLDMVcV4AiVROZZ41NYfR8
+      - JWT_ISS=MikroNet
     networks:
       - kong-net
 
@@ -47,8 +47,9 @@ services:
       - DB_PASSWORD=123
       - DB_PORT=3306
       - DB_NAME=user
+      - GEOLOCATION_HOST=geolocation_tracking_service
       - JWT_SECRET=FV77z4uhQ9M
-      - JWT_ISS=PJxFwcJTAcNLDMVcV4AiVROZZ41NYfR8
+      - JWT_ISS=MikroNet
     networks:
       - kong-net
 
@@ -68,7 +69,7 @@ services:
       - DB_PORT=3306
       - DB_NAME=driver
       - JWT_SECRET=FV77z4uhQ9M
-      - JWT_ISS=PJxFwcJTAcNLDMVcV4AiVROZZ41NYfR8
+      - JWT_ISS=MikroNet
     networks:
       - kong-net
 
@@ -77,6 +78,7 @@ services:
     container_name: dashboard_service
     ports:
       - 8030:8030
+      - 5007:5007
     depends_on:
       dashboard_database:
         condition: service_healthy
@@ -89,7 +91,7 @@ services:
       - GRPC_USER=user_service
       - GRPC_DRIVER=driver_service
       - JWT_SECRET=FV77z4uhQ9M
-      - JWT_ISS=PJxFwcJTAcNLDMVcV4AiVROZZ41NYfR8
+      - JWT_ISS=MikroNet
     networks:
       - kong-net
 
@@ -108,7 +110,7 @@ services:
       - DB_PORT=5432
       - DB_NAME=mikronet
       - JWT_SECRET=FV77z4uhQ9M
-      - JWT_ISS=PJxFwcJTAcNLDMVcV4AiVROZZ41NYfR8
+      - JWT_ISS=MikroNet
     networks:
       - kong-net
 
@@ -134,8 +136,6 @@ services:
   user_database:
     container_name: user_database
     image: mysql:latest
-    ports:
-      - 3307:3306
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p '123'" ]
       interval: 10s

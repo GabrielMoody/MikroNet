@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	DriverService_CreateDriver_FullMethodName     = "/dashboard.DriverService/CreateDriver"
 	DriverService_GetDrivers_FullMethodName       = "/dashboard.DriverService/GetDrivers"
 	DriverService_GetDriverDetails_FullMethodName = "/dashboard.DriverService/GetDriverDetails"
 )
@@ -27,6 +28,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DriverServiceClient interface {
+	CreateDriver(ctx context.Context, in *CreateDriverRequest, opts ...grpc.CallOption) (*Driver, error)
 	GetDrivers(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Drivers, error)
 	GetDriverDetails(ctx context.Context, in *ReqDriverDetails, opts ...grpc.CallOption) (*Driver, error)
 }
@@ -37,6 +39,16 @@ type driverServiceClient struct {
 
 func NewDriverServiceClient(cc grpc.ClientConnInterface) DriverServiceClient {
 	return &driverServiceClient{cc}
+}
+
+func (c *driverServiceClient) CreateDriver(ctx context.Context, in *CreateDriverRequest, opts ...grpc.CallOption) (*Driver, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Driver)
+	err := c.cc.Invoke(ctx, DriverService_CreateDriver_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *driverServiceClient) GetDrivers(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Drivers, error) {
@@ -63,6 +75,7 @@ func (c *driverServiceClient) GetDriverDetails(ctx context.Context, in *ReqDrive
 // All implementations must embed UnimplementedDriverServiceServer
 // for forward compatibility.
 type DriverServiceServer interface {
+	CreateDriver(context.Context, *CreateDriverRequest) (*Driver, error)
 	GetDrivers(context.Context, *Empty) (*Drivers, error)
 	GetDriverDetails(context.Context, *ReqDriverDetails) (*Driver, error)
 	mustEmbedUnimplementedDriverServiceServer()
@@ -75,6 +88,9 @@ type DriverServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedDriverServiceServer struct{}
 
+func (UnimplementedDriverServiceServer) CreateDriver(context.Context, *CreateDriverRequest) (*Driver, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateDriver not implemented")
+}
 func (UnimplementedDriverServiceServer) GetDrivers(context.Context, *Empty) (*Drivers, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDrivers not implemented")
 }
@@ -100,6 +116,24 @@ func RegisterDriverServiceServer(s grpc.ServiceRegistrar, srv DriverServiceServe
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&DriverService_ServiceDesc, srv)
+}
+
+func _DriverService_CreateDriver_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateDriverRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DriverServiceServer).CreateDriver(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DriverService_CreateDriver_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DriverServiceServer).CreateDriver(ctx, req.(*CreateDriverRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _DriverService_GetDrivers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -145,6 +179,10 @@ var DriverService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "dashboard.DriverService",
 	HandlerType: (*DriverServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateDriver",
+			Handler:    _DriverService_CreateDriver_Handler,
+		},
 		{
 			MethodName: "GetDrivers",
 			Handler:    _DriverService_GetDrivers_Handler,

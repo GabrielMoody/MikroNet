@@ -35,17 +35,25 @@ func main() {
 		log.Fatal(err)
 	}
 
+	dashboardConn, err := grpc.NewClient(fmt.Sprintf("%s:5007", os.Getenv("GRPC_DASHBOARD")), grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	defer driverConn.Close()
 	defer userConn.Close()
+	defer dashboardConn.Close()
 
 	userPB := pb.NewUserServiceClient(userConn)
 	driverPB := pb.NewDriverServiceClient(driverConn)
+	dashboardPB := pb.NewOwnerServiceClient(dashboardConn)
 
 	db := models.DatabaseInit()
 
 	api := app.Group("/")
 
-	handler.ProfileHandler(api, db, userPB, driverPB)
+	handler.AuthHandler(api, db, userPB, driverPB, dashboardPB)
 
 	err = app.Listen(":8050")
 	if err != nil {

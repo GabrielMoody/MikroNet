@@ -4,11 +4,9 @@ import (
 	"context"
 	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/dto"
 	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/helper"
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/midleware"
 	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/repository"
 	"github.com/gofiber/contrib/websocket"
 	"log"
-	"os"
 	"sync"
 )
 
@@ -53,54 +51,71 @@ func (a *GeoTrackImpl) LocationTracking(ctx context.Context) func(*websocket.Con
 		}()
 
 		// Extract the JWT token from the query parameters
-		tokenString := c.Locals("token").([]string)
-		if tokenString == nil {
-			log.Fatal("Missing token")
-			return
-		}
-
-		// Validate the JWT token
-		claims, err := midleware.ValidateJWT(tokenString[0], os.Getenv("JWT_SECRET"))
-		if err != nil {
-			log.Fatal("Invalid token:", err)
-			return
-		}
-
-		// Authorize the user based on the token claims
-		userID := claims["id"].(string)
-		routeID := c.Query("route_id")
+		//tokenString := c.Locals("token").([]string)
+		//if tokenString == nil {
+		//	log.Fatal("Missing token")
+		//	return
+		//}
+		//
+		//// Validate the JWT token
+		//claims, err := midleware.ValidateJWT(tokenString[0], os.Getenv("JWT_SECRET"))
+		//if err != nil {
+		//	log.Fatal("Invalid token:", err)
+		//	return
+		//}
+		//
+		//// Authorize the user based on the token claims
+		//userID := claims["id"].(string)
+		//routeID := c.Query("route_id")
 
 		a.h.Register <- c
-		joinRoom(routeID, c)
-		defer leaveRoom(routeID, c)
+		//joinRoom(routeID, c)
+		//defer leaveRoom(routeID, c)
 
 		for {
+			select {
+			case <-ctx.Done():
+				log.Println("Connection closed")
+				return
+			default:
+
+			}
+
 			var msg dto.Message
 			err := c.ReadJSON(&msg)
 
-			if err = helper.Validate.Struct(&msg); err != nil {
-				log.Println(err)
-			}
-
 			if err != nil {
-				log.Fatal(err)
+				if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+					log.Println("WebSocket connection closed:", err)
+					return
+				}
+				log.Println("Error reading JSON:", err)
 				return
 			}
 
+			if err = helper.Validate.Struct(&msg); err != nil {
+				log.Println("Validation error:", err)
+				_ = c.WriteJSON(map[string]string{"error": "Invalid message format"})
+				continue
+			}
+
 			a.h.Broadcast <- dto.Message{
-				UserID: userID,
+				UserID: msg.UserID,
+				Role:   msg.Role,
 				Lat:    msg.Lat,
 				Lng:    msg.Lng,
 			}
 
 			_, err = a.repo.SaveCurrentDriverLocation(ctx, dto.Message{
-				UserID: userID,
+				UserID: msg.UserID,
 				Lat:    msg.Lat,
 				Lng:    msg.Lng,
 			})
 
 			if err != nil {
-				log.Println(err)
+				log.Println("Error saving driver location:", err)
+				_ = c.WriteJSON(map[string]string{"error": "Could not save location"})
+				continue
 			}
 		}
 	}
