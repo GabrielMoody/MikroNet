@@ -27,7 +27,7 @@ type (
 		DateOfBirth          string `json:"date_of_birth" form:"date_of_birth"`
 		Age                  int    `json:"age" form:"age"`
 		LicenseNumber        string `json:"license_number" form:"license_number" `
-		ProfilePicture       string `json:"profile_picture" form:"profile_picture" validate:"required"`
+		ProfilePicture       string `json:"profile_picture" form:"profile_picture"`
 		Password             string `json:"password" form:"password" validate:"required,min=8"`
 		PasswordConfirmation string `json:"password_confirmation" form:"password_confirmation" validate:"required,eqfield=Password"`
 	}
