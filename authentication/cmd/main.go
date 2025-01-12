@@ -51,7 +51,7 @@ func main() {
 
 	userPB := pb.NewUserServiceClient(userConn)
 	driverPB := pb.NewDriverServiceClient(driverConn)
-	dashboardPB := pb.NewOwnerServiceClient(dashboardConn)
+	dashboardPB := pb.NewDashboardServiceClient(dashboardConn)
 
 	db := models.DatabaseInit()
 

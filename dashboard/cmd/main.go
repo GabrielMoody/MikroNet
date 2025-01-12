@@ -36,7 +36,7 @@ func main() {
 	db := models.DatabaseInit()
 
 	grpcHandler := handler.GRPCHandler(db)
-	pb.RegisterOwnerServiceServer(grpcServer, grpcHandler)
+	pb.RegisterDashboardServiceServer(grpcServer, grpcHandler)
 	reflection.Register(grpcServer)
 
 	api := app.Group("/")

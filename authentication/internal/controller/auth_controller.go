@@ -1,13 +1,15 @@
 package controller
 
 import (
+	"errors"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/middleware"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/pb"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"io"
+	"mime/multipart"
+	"net/http"
 	"os"
 	"time"
 )
@@ -16,6 +18,7 @@ type AuthController interface {
 	CreateUser(c *fiber.Ctx) error
 	CreateDriver(c *fiber.Ctx) error
 	CreateOwner(c *fiber.Ctx) error
+	CreateGov(c *fiber.Ctx) error
 	LoginUser(c *fiber.Ctx) error
 	SendResetPasswordLink(c *fiber.Ctx) error
 	ResetPassword(c *fiber.Ctx) error
@@ -24,14 +27,78 @@ type AuthController interface {
 
 type AuthControllerImpl struct {
 	AuthService service.AuthService
-	pbUser      pb.UserServiceClient
-	pbDriver    pb.DriverServiceClient
-	pbDashboard pb.OwnerServiceClient
+}
+
+func readImage(image *multipart.FileHeader) ([]byte, error) {
+	f, err := image.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	fileData, err := io.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+
+	return fileData, nil
+}
+
+func (a *AuthControllerImpl) CreateGov(c *fiber.Ctx) error {
+	ctx := c.Context()
+	var req dto.GovRegistrationReq
+	image, err := c.FormFile("profile_picture")
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "Error",
+			"message": "gagal memuat gambar",
+		})
+	}
+
+	if err = c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err.Error(),
+		})
+	}
+
+	fileData, err := readImage(image)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err.Error(),
+		})
+	}
+
+	res, errService := a.AuthService.CreateGovService(ctx, req, "government", fileData)
+
+	if errService != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
+			"status":  "Error",
+			"message": errService.Err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"status": "Success",
+		"data":   res,
+	})
 }
 
 func (a *AuthControllerImpl) CreateOwner(c *fiber.Ctx) error {
 	var owner dto.OwnerRegistrationsReq
 	ctx := c.Context()
+
+	image, err := c.FormFile("profile_picture")
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "error",
+			"message": "error reading image",
+		})
+	}
 
 	if err := c.BodyParser(&owner); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -40,28 +107,20 @@ func (a *AuthControllerImpl) CreateOwner(c *fiber.Ctx) error {
 		})
 	}
 
-	res, err := a.AuthService.CreateOwnerService(ctx, owner, "owner")
-
+	fileData, err := readImage(image)
 	if err != nil {
-		return c.Status(err.Code).JSON(fiber.Map{
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
-			"message": err.Err.Error(),
+			"message": err.Error(),
 		})
 	}
 
-	_, errPb := a.pbDashboard.CreateOwner(ctx, &pb.CreateOwnerReq{
-		Id:          res,
-		FirstName:   owner.FirstName,
-		LastName:    owner.LastName,
-		Email:       owner.Email,
-		PhoneNumber: owner.PhoneNumber,
-		Nik:         owner.NIK,
-	})
+	res, errService := a.AuthService.CreateOwnerService(ctx, owner, "owner", fileData)
 
-	if errPb != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+	if errService != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
 			"status":  "error",
-			"message": errPb.Error(),
+			"message": errService.Err.Error(),
 		})
 	}
 
@@ -111,32 +170,12 @@ func (a *AuthControllerImpl) CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	res, err := a.AuthService.CreateUserService(ctx, user, "user")
+	res, errService := a.AuthService.CreateUserService(ctx, user, "user")
 
-	if err != nil {
-		return c.Status(err.Code).JSON(fiber.Map{
+	if errService != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
 			"status":  "error",
-			"message": err.Err.Error(),
-		})
-	}
-
-	_, errPb := a.pbUser.CreateUser(ctx, &pb.CreateUserRequest{
-		User: &pb.User{
-			Id:          res,
-			FirstName:   user.FirstName,
-			LastName:    user.LastName,
-			Email:       user.Email,
-			PhoneNumber: user.PhoneNumber,
-			Password:    user.Password,
-			DateOfBirth: user.DateOfBirth,
-			Age:         uint32(user.Age),
-		},
-	})
-
-	if errPb != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": errPb.Error(),
+			"message": errService.Err.Error(),
 		})
 	}
 
@@ -151,7 +190,7 @@ func (a *AuthControllerImpl) CreateDriver(c *fiber.Ctx) error {
 	ctx := c.Context()
 	image, err := c.FormFile("profile_picture")
 
-	if err != nil {
+	if err != nil && !errors.Is(err, http.ErrMissingFile) {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "error",
 			"message": "error reading image",
@@ -165,16 +204,7 @@ func (a *AuthControllerImpl) CreateDriver(c *fiber.Ctx) error {
 		})
 	}
 
-	f, err := image.Open()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
-		})
-	}
-	defer f.Close()
-
-	fileData, err := io.ReadAll(f)
+	fileData, err := readImage(image)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
@@ -182,33 +212,12 @@ func (a *AuthControllerImpl) CreateDriver(c *fiber.Ctx) error {
 		})
 	}
 
-	res, errService := a.AuthService.CreateDriverService(ctx, driver, "driver")
+	res, errService := a.AuthService.CreateDriverService(ctx, driver, "driver", fileData)
 
 	if errService != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status":  "error",
 			"message": errService.Err.Error(),
-		})
-	}
-
-	_, errPb := a.pbDriver.CreateDriver(ctx, &pb.CreateDriverRequest{
-		Id:             res,
-		FirstName:      driver.FirstName,
-		LastName:       driver.LastName,
-		Email:          driver.Email,
-		Password:       driver.Password,
-		Age:            uint32(driver.Age),
-		PhoneNumber:    driver.PhoneNumber,
-		DateOfBirth:    driver.DateOfBirth,
-		LicenseNumber:  driver.LicenseNumber,
-		ProfilePicture: fileData,
-		Filename:       image.Filename,
-	})
-
-	if errPb != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": errPb.Error(),
 		})
 	}
 
@@ -235,24 +244,6 @@ func (a *AuthControllerImpl) LoginUser(c *fiber.Ctx) error {
 		return c.Status(err.Code).JSON(fiber.Map{
 			"status":  "error",
 			"message": err.Err.Error(),
-		})
-	}
-
-	resPb, errPb := a.pbDashboard.IsBlocked(ctx, &pb.IsBlockedReq{
-		Id: res.ID,
-	})
-
-	if errPb != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": errPb.Error(),
-		})
-	}
-
-	if resPb.IsBlocked {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"status":  "error",
-			"message": "account is blocked",
 		})
 	}
 
@@ -335,11 +326,8 @@ func (a *AuthControllerImpl) ResetPassword(c *fiber.Ctx) error {
 	})
 }
 
-func NewAuthController(authService service.AuthService, user pb.UserServiceClient, driver pb.DriverServiceClient, dashboard pb.OwnerServiceClient) AuthController {
+func NewAuthController(authService service.AuthService) AuthController {
 	return &AuthControllerImpl{
 		AuthService: authService,
-		pbUser:      user,
-		pbDriver:    driver,
-		pbDashboard: dashboard,
 	}
 }

@@ -20,10 +20,19 @@ type DashboardRepo interface {
 	BlockAccount(c context.Context, data models.BlockedAccount) (models.BlockedAccount, error)
 	UnblockAccount(c context.Context, id string) (string, error)
 	IsBlocked(c context.Context, id string) (bool, error)
+	CreateGovernment(c context.Context, data models.GovDetails) (models.GovDetails, error)
 }
 
 type DashboardRepoImpl struct {
 	db *gorm.DB
+}
+
+func (a *DashboardRepoImpl) CreateGovernment(c context.Context, data models.GovDetails) (res models.GovDetails, err error) {
+	if err := a.db.WithContext(c).Create(&data).Error; err != nil {
+		return res, helper.ErrDatabase
+	}
+
+	return data, nil
 }
 
 func (a *DashboardRepoImpl) IsBlocked(c context.Context, id string) (bool, error) {

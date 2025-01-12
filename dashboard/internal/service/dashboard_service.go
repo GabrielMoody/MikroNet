@@ -3,9 +3,11 @@ package service
 import (
 	"context"
 	"errors"
+	"github.com/GabrielMoody/mikroNet/dashboard/internal/dto"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/helper"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/models"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/repository"
+	"github.com/google/uuid"
 	"net/http"
 )
 
@@ -17,10 +19,41 @@ type DashboardService interface {
 	SetStatusVerified(c context.Context, id string) (res models.OwnerDetails, err *helper.ErrorStruct)
 	BlockAccount(c context.Context, accountId string) (res models.BlockedAccount, err *helper.ErrorStruct)
 	UnblockAccount(c context.Context, accountId string) (res string, err *helper.ErrorStruct)
+	CreateGovernment(c context.Context, data dto.GovRegistrationReq) (res models.GovDetails, err *helper.ErrorStruct)
 }
 
 type DashboardServiceImpl struct {
 	DashboardRepo repository.DashboardRepo
+}
+
+func (a *DashboardServiceImpl) CreateGovernment(c context.Context, data dto.GovRegistrationReq) (res models.GovDetails, err *helper.ErrorStruct) {
+	dataModel := models.GovDetails{
+		ID:             uuid.NewString(),
+		FirstName:      data.FirstName,
+		LastName:       data.LastName,
+		Email:          data.Email,
+		NIP:            data.NIP,
+		ProfilePicture: data.ProfilePicture,
+	}
+
+	resRepo, errRepo := a.DashboardRepo.CreateGovernment(c, dataModel)
+
+	if errRepo != nil {
+		var code int
+		switch {
+		case errors.Is(errRepo, helper.ErrDuplicateEntry):
+			code = http.StatusConflict
+		default:
+			code = http.StatusInternalServerError
+		}
+
+		return res, &helper.ErrorStruct{
+			Code: code,
+			Err:  errRepo,
+		}
+	}
+
+	return resRepo, nil
 }
 
 func (a *DashboardServiceImpl) GetUnverifiedBusinessOwners(c context.Context) (res []models.OwnerDetails, err *helper.ErrorStruct) {

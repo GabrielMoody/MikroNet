@@ -1,25 +1,18 @@
 package dto
 
 type (
-	OwnerRegistrationReq struct {
-		FirstName       string `json:"first_name" validate:"required"`
-		LastName        string `json:"last_name" validate:"required"`
-		Email           string `json:"email" validate:"required,email"`
-		PhoneNumber     string `json:"phone_number" validate:"required"`
-		NIK             string `json:"nik" validate:"required"`
-		Mikrolet        string `json:"mikrolet" validate:"required"`
-		Password        string `json:"password" validate:"required,min=8"`
-		PasswordConfirm string `json:"password_confirm" validate:"required,eqfield=Password"`
+	GetDriverQuery struct {
+		Verified bool `query:"verified"`
 	}
 
-	DriverRegistrationReq struct {
-		FirstName          string `json:"first_name" validate:"required"`
-		LastName           string `json:"last_name" validate:"required"`
-		PhoneNumber        string `json:"phone_number" validate:"required"`
-		DateOfBirth        string `json:"date_of_birth" validate:"required"`
-		Age                int    `json:"age" validate:"required,number"`
-		RegistrationNumber string `json:"registration_number" validate:"required,eqfield=RegistrationNumber"`
-		Password           string `json:"password" validate:"required,min=8"`
-		PasswordConfirm    string `json:"password_confirm" validate:"required,eqfield=Password"`
+	GovRegistrationReq struct {
+		FirstName            string `json:"first_name" form:"first_name" validate:"required"`
+		LastName             string `json:"last_name" form:"last_name" validate:"required"`
+		Email                string `json:"email" form:"email" validate:"required,email"`
+		PhoneNumber          string `json:"phone_number" form:"phone_number" validate:"required"`
+		NIP                  string `json:"nip" form:"nip" validate:"required"`
+		Password             string `json:"password" form:"password" validate:"required"`
+		PasswordConfirmation string `json:"password_confirmation" form:"password_confirmation" validate:"required,eqfield=Password"`
+		ProfilePicture       string `json:"profile_picture" form:"profile_picture" validate:"required"`
 	}
 )

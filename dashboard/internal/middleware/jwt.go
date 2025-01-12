@@ -30,23 +30,28 @@ func GetJWTPayload(tokenString, secretKey string) (jwt.MapClaims, error) {
 	}
 }
 
-func ValidateDashboardRole(c *fiber.Ctx) error {
-	token := c.Get("Authorization")
-	payload, err := GetJWTPayload(token, os.Getenv("JWT_SECRET"))
+func ValidateDashboardRole(roles ...string) func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		token := c.Get("Authorization")
+		payload, err := GetJWTPayload(token, os.Getenv("JWT_SECRET"))
 
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Unauthorized",
-		})
-	}
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"status":  "error",
+				"message": "Unauthorized",
+			})
+		}
 
-	if payload["role"] != "admin" && payload["role"] != "owner" && payload["role"] != "government" {
+		for _, role := range roles {
+			if payload["role"] == role {
+				return c.Next()
+			}
+		}
+
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Forbidden access",
 		})
-	}
 
-	return c.Next()
+	}
 }

@@ -1,10 +1,17 @@
 package controller
 
 import (
+	"github.com/GabrielMoody/mikroNet/dashboard/internal/dto"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/pb"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/service"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
+	"time"
 )
 
 type DashboardController interface {
@@ -12,7 +19,8 @@ type DashboardController interface {
 	GetBusinessOwnerDetails(c *fiber.Ctx) error
 	GetBlockedBusinessOwners(c *fiber.Ctx) error
 	GetUnverifiedBusinessOwners(c *fiber.Ctx) error
-	SetStatusVerified(c *fiber.Ctx) error
+	SetOwnerStatusVerified(c *fiber.Ctx) error
+	SetDriverStatusVerified(c *fiber.Ctx) error
 	GetUsers(c *fiber.Ctx) error
 	GetUserDetails(c *fiber.Ctx) error
 	GetDrivers(c *fiber.Ctx) error
@@ -29,7 +37,58 @@ type DashboardControllerImpl struct {
 	PBUser           pb.UserServiceClient
 }
 
-func (a *DashboardControllerImpl) SetStatusVerified(c *fiber.Ctx) error {
+func saveImage(image *multipart.FileHeader) (string, error) {
+	saveDir := "./uploads"
+	if _, err := os.Stat(saveDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
+			return "", err
+		}
+	}
+
+	f, err := image.Open()
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	fileData, err := io.ReadAll(f)
+	if err != nil {
+		return "", err
+	}
+
+	timestamp := time.Now().Format("20060102_150405")
+	fullPath := uuid.NewString() + "_" + timestamp + image.Filename
+	filePath := filepath.Join(saveDir, fullPath)
+
+	if err := os.WriteFile(filePath, fileData, 0644); err != nil {
+		return "", err
+	}
+
+	return filePath, nil
+}
+
+func (a *DashboardControllerImpl) SetDriverStatusVerified(c *fiber.Ctx) error {
+	ctx := c.Context()
+	id := c.Params("id")
+
+	res, err := a.PBDriver.SetStatusVerified(ctx, &pb.ReqByID{
+		Id: id,
+	})
+
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": "Success",
+		"data":   res,
+	})
+}
+
+func (a *DashboardControllerImpl) SetOwnerStatusVerified(c *fiber.Ctx) error {
 	ctx := c.Context()
 	id := c.Params("id")
 
@@ -214,7 +273,7 @@ func (a *DashboardControllerImpl) GetBusinessOwners(c *fiber.Ctx) error {
 func (a *DashboardControllerImpl) GetDriverDetails(c *fiber.Ctx) error {
 	id := c.Params("id")
 
-	res, err := a.PBDriver.GetDriverDetails(c.Context(), &pb.ReqDriverDetails{
+	res, err := a.PBDriver.GetDriverDetails(c.Context(), &pb.ReqByID{
 		Id: id,
 	})
 
@@ -232,7 +291,16 @@ func (a *DashboardControllerImpl) GetDriverDetails(c *fiber.Ctx) error {
 }
 
 func (a *DashboardControllerImpl) GetDrivers(c *fiber.Ctx) error {
-	res, err := a.PBDriver.GetDrivers(c.Context(), &pb.Empty{})
+	var q dto.GetDriverQuery
+
+	if err := c.QueryParser(&q); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "Error",
+			"message": err.Error(),
+		})
+	}
+
+	res, err := a.PBDriver.GetDrivers(c.Context(), &pb.ReqDrivers{Verified: q.Verified})
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

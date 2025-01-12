@@ -18,26 +18,26 @@ func DashboardHandler(r fiber.Router, db *gorm.DB, driver pb.DriverServiceClient
 
 	api := r.Group("/")
 
-	api.Use(middleware.ValidateDashboardRole)
+	api.Get("/users", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetUsers)
+	api.Get("/users/:id", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetUserDetails)
 
-	api.Get("/users", controllerDashboard.GetUsers)
-	api.Get("/users/:id", controllerDashboard.GetUserDetails)
+	api.Get("/drivers", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetDrivers)
+	api.Get("/drivers/:id", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetDriverDetails)
+	api.Put("/drivers/verified/:id", middleware.ValidateDashboardRole("admin"), controllerDashboard.SetDriverStatusVerified)
 
-	api.Get("/drivers", controllerDashboard.GetDrivers)
-	api.Get("/drivers/:id", controllerDashboard.GetDriverDetails)
+	api.Get("/owners", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetBusinessOwners)
+	api.Get("/owners/blocked", middleware.ValidateDashboardRole("admin", "government"), controllerDashboard.GetBlockedBusinessOwners)
+	api.Get("/owners/unverified", middleware.ValidateDashboardRole("admin", "government"), controllerDashboard.GetUnverifiedBusinessOwners)
+	api.Get("/owners/:id", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetBusinessOwnerDetails)
+	api.Put("/owners/verified/:id", middleware.ValidateDashboardRole("admin"), controllerDashboard.SetOwnerStatusVerified)
 
-	api.Get("/owners", controllerDashboard.GetBusinessOwners)
-	api.Get("/owners/blocked", controllerDashboard.GetBlockedBusinessOwners)
-	api.Get("/owners/unverified", controllerDashboard.GetUnverifiedBusinessOwners)
-	api.Get("/owners/:id", controllerDashboard.GetBusinessOwnerDetails)
+	api.Post("/block/:id", middleware.ValidateDashboardRole("admin"), controllerDashboard.BlockAccount)
+	api.Delete("/block/:id", middleware.ValidateDashboardRole("admin"), controllerDashboard.UnblockAccount)
 
-	api.Put("/owners/verified/:id", controllerDashboard.SetStatusVerified)
+	api.Get("/reviews", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetReviews)
+	api.Get("/reviews/:id", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetReviewByID)
 
-	api.Post("/block/:id", controllerDashboard.BlockAccount)
-	api.Delete("/block/:id", controllerDashboard.UnblockAccount)
-
-	api.Get("/reviews", controllerDashboard.GetReviews)
-	api.Get("/reviews/:id", controllerDashboard.GetReviewByID)
+	api.Post("/register/gov", middleware.ValidateDashboardRole("admin"), controllerDashboard.CreateGov)
 }
 
 func GRPCHandler(db *gorm.DB) *gRPC.GRPC {

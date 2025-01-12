@@ -8,13 +8,7 @@ type (
 	}
 
 	UserRegistrationsReq struct {
-		FirstName            string `json:"first_name" form:"first_name"`
-		LastName             string `json:"last_name" form:"last_name"`
 		Email                string `json:"email" validate:"required,email" form:"email"`
-		PhoneNumber          string `json:"phone_number" form:"phone_number"`
-		DateOfBirth          string `json:"date_of_birth" form:"date_of_birth" validate:"required"`
-		Age                  int    `json:"age" form:"age"`
-		ProfilePicture       string `json:"profile_picture" form:"profile_picture" form:"profile_picture"`
 		Password             string `json:"password" form:"password" validate:"required,min=8"`
 		PasswordConfirmation string `json:"password_confirmation" form:"password_confirmation" validate:"required,eqfield=Password"`
 	}
@@ -26,7 +20,7 @@ type (
 		PhoneNumber          string `json:"phone_number" form:"phone_number"`
 		DateOfBirth          string `json:"date_of_birth" form:"date_of_birth"`
 		Age                  int    `json:"age" form:"age"`
-		LicenseNumber        string `json:"license_number" form:"license_number" `
+		LicenseNumber        string `json:"license_number" form:"license_number"`
 		ProfilePicture       string `json:"profile_picture" form:"profile_picture"`
 		Password             string `json:"password" form:"password" validate:"required,min=8"`
 		PasswordConfirmation string `json:"password_confirmation" form:"password_confirmation" validate:"required,eqfield=Password"`
@@ -38,8 +32,20 @@ type (
 		Email                string `json:"email" validate:"required,email"`
 		PhoneNumber          string `json:"phone_number"`
 		NIK                  string `json:"nik"`
+		ProfilePicture       string `json:"profile_picture" form:"profile_picture" form:"profile_picture"`
 		Password             string `json:"password" validate:"required,min=8"`
 		PasswordConfirmation string `json:"password_confirmation" validate:"required,eqfield=Password"`
+	}
+
+	GovRegistrationReq struct {
+		FirstName            string `json:"first_name" form:"first_name" validate:"required"`
+		LastName             string `json:"last_name" form:"last_name" validate:"required"`
+		Email                string `json:"email" form:"email" validate:"required,email"`
+		PhoneNumber          string `json:"phone_number" form:"phone_number" validate:"required"`
+		NIP                  string `json:"nip" form:"nip" validate:"required"`
+		Password             string `json:"password" form:"password" validate:"required"`
+		PasswordConfirmation string `json:"password_confirmation" form:"password_confirmation" validate:"required,eqfield=Password"`
+		ProfilePicture       string `json:"profile_picture" form:"profile_picture" validate:"required"`
 	}
 
 	UserRegistrationsResp struct {

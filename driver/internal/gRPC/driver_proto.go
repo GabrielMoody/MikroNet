@@ -2,7 +2,6 @@ package gRPC
 
 import (
 	"context"
-	"fmt"
 	"github.com/GabrielMoody/mikroNet/driver/internal/model"
 	"github.com/GabrielMoody/mikroNet/driver/internal/pb"
 	"github.com/GabrielMoody/mikroNet/driver/internal/repository"
@@ -22,8 +21,8 @@ func NewgRPC(repo repository.DriverRepo) *GRPC {
 	}
 }
 
-func (a *GRPC) GetDrivers(ctx context.Context, _ *pb.Empty) (res *pb.Drivers, err error) {
-	resRepo, err := a.repo.GetAllDrivers(ctx)
+func (a *GRPC) GetDrivers(ctx context.Context, req *pb.ReqDrivers) (res *pb.Drivers, err error) {
+	resRepo, err := a.repo.GetAllDrivers(ctx, &req.Verified)
 
 	if err != nil {
 		return nil, err
@@ -49,7 +48,7 @@ func (a *GRPC) GetDrivers(ctx context.Context, _ *pb.Empty) (res *pb.Drivers, er
 	}, nil
 }
 
-func (a *GRPC) GetDriverDetails(ctx context.Context, data *pb.ReqDriverDetails) (res *pb.Driver, err error) {
+func (a *GRPC) GetDriverDetails(ctx context.Context, data *pb.ReqByID) (res *pb.Driver, err error) {
 	resRepo, err := a.repo.GetDriverDetails(ctx, data.Id)
 
 	if err != nil {
@@ -78,6 +77,9 @@ func (a *GRPC) GetDriverDetails(ctx context.Context, data *pb.ReqDriverDetails) 
 
 func (a *GRPC) CreateDriver(ctx context.Context, data *pb.CreateDriverRequest) (res *pb.Driver, err error) {
 	format := "02-01-2006"
+	if data.DateOfBirth == "" {
+		data.DateOfBirth = "02-01-2000"
+	}
 	date, _ := time.Parse(format, data.DateOfBirth)
 
 	saveDir := "./uploads"
@@ -87,16 +89,12 @@ func (a *GRPC) CreateDriver(ctx context.Context, data *pb.CreateDriverRequest) (
 		}
 	}
 
-	// Save the photo to the file system
 	timestamp := time.Now().Format("20060102_150405")
 	fullPath := data.Id + "_" + timestamp + data.Filename
 	filePath := filepath.Join(saveDir, fullPath)
-	fmt.Println(data.ProfilePicture)
 	if err := os.WriteFile(filePath, data.ProfilePicture, 0644); err != nil {
 		return nil, err
 	}
-
-	fmt.Println(data.Id)
 
 	resRepo, err := a.repo.CreateDriver(ctx, model.DriverDetails{
 		ID:             data.Id,
@@ -122,5 +120,21 @@ func (a *GRPC) CreateDriver(ctx context.Context, data *pb.CreateDriverRequest) (
 		PhoneNumber:        resRepo.PhoneNumber,
 		Age:                uint32(resRepo.Age),
 		RegistrationNumber: resRepo.LicenseNumber,
+	}, nil
+}
+
+func (a *GRPC) SetStatusVerified(ctx context.Context, data *pb.ReqByID) (res *pb.Driver, err error) {
+	resRepo, err := a.repo.SetVerified(ctx, model.DriverDetails{
+		ID:       data.Id,
+		Verified: true,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.Driver{
+		Id:       resRepo.ID,
+		Verified: resRepo.Verified,
 	}, nil
 }

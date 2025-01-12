@@ -7,7 +7,6 @@ import (
 	"github.com/GabrielMoody/mikroNet/user/internal/model"
 	"github.com/GabrielMoody/mikroNet/user/internal/repository"
 	"net/http"
-	"time"
 )
 
 type UserService interface {
@@ -42,16 +41,10 @@ func (a *userServiceImpl) EditUserDetails(c context.Context, id string, data dto
 		}
 	}
 
-	format := "02-01-2006"
-	date, _ := time.Parse(format, data.DateOfBirth)
-
 	resRepo, errRepo := a.repo.EditUserDetails(c, model.UserDetails{
-		ID:          id,
-		FirstName:   data.FirstName,
-		LastName:    data.LastName,
-		DateOfBirth: date,
-		Gender:      data.Gender,
-		Age:         int32(data.Age),
+		ID:        id,
+		FirstName: data.FirstName,
+		LastName:  data.LastName,
 	})
 
 	if errRepo != nil {

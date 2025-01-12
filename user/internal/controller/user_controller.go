@@ -98,17 +98,12 @@ func (a *UserControllerImpl) GetUser(c *fiber.Ctx) error {
 		})
 	}
 
-	formattedDate := res.DateOfBirth.Format("02-01-2006")
-
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "success",
 		"data": fiber.Map{
-			"first_name":    res.FirstName,
-			"last_name":     res.LastName,
-			"email":         res.Email,
-			"date_of_birth": formattedDate,
-			"Age":           res.Age,
-			"Gender":        res.Gender,
+			"first_name": res.FirstName,
+			"last_name":  res.LastName,
+			"email":      res.Email,
 		},
 	})
 }
@@ -147,11 +142,8 @@ func (a *UserControllerImpl) EditUser(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "success",
 		"data": fiber.Map{
-			"first_name":    res.FirstName,
-			"last_name":     res.LastName,
-			"date_of_birth": res.DateOfBirth,
-			"Age":           res.Age,
-			"Gender":        res.Gender,
+			"first_name": res.FirstName,
+			"last_name":  res.LastName,
 		},
 	})
 }

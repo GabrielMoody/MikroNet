@@ -10,6 +10,19 @@ message CreateOwnerReq {
   string email = 4;
   string phone_number = 5;
   string nik = 6;
+  bytes profile_picture = 7;
+  string filename = 8;
+}
+
+message CreateGovReq {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string phone_number = 5;
+  string nip = 6;
+  bytes profile_picture = 7;
+  string filename = 8;
 }
 
 message IsBlockedReq {
@@ -22,6 +35,7 @@ message IsBlockedRes {
 
 service DashboardService {
   rpc CreateOwner(CreateOwnerReq) returns (CreateOwnerReq){}
+  rpc CreateGov(CreateGovReq) returns (CreateGovReq){}
   rpc IsBlocked(IsBlockedReq) returns (IsBlockedRes){}
 }
 

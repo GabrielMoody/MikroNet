@@ -8,6 +8,8 @@ data
 */.air.toml
 auth-config.env
 */uploads
+./init
+./init.sql
 
 docker-compose.development.yaml
 docker-compose.prod.yaml

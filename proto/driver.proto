@@ -13,7 +13,8 @@ message Driver {
   uint32 age = 7;
   string registration_number = 8;
   string route = 9;
-  bytes profile_picture = 10;
+  bool verified = 10;
+  bytes profile_picture = 11;
 }
 
 message CreateDriverRequest {
@@ -24,16 +25,15 @@ message CreateDriverRequest {
   string date_of_birth = 5;
   uint32 age = 6;
   string license_number = 7;
-  string password = 8;
-  string password_confirmation = 9;
-  bytes profile_picture = 10;
-  string filename = 11;
-  string id = 12;
+  bytes profile_picture = 8;
+  string id = 9;
 }
 
-message Empty{}
+message ReqDrivers{
+  bool  verified = 1;
+}
 
-message ReqDriverDetails {
+message ReqByID {
   string id = 1;
 }
 
@@ -43,6 +43,7 @@ message Drivers {
 
 service DriverService {
   rpc CreateDriver(CreateDriverRequest) returns (Driver){}
-  rpc GetDrivers (Empty) returns (Drivers){}
-  rpc GetDriverDetails (ReqDriverDetails) returns (Driver){}
+  rpc GetDrivers (ReqDrivers) returns (Drivers){}
+  rpc GetDriverDetails (ReqByID) returns (Driver){}
+  rpc SetStatusVerified (ReqByID) returns (Driver){}
 }

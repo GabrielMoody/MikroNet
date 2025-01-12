@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/helper"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/models"
@@ -11,7 +12,7 @@ import (
 )
 
 type AuthRepo interface {
-	CreateUser(c context.Context, data models.User) (res string, err error)
+	CreateUser(c context.Context, data models.User) (tx *gorm.DB, res string, err error)
 	LoginUser(c context.Context, data dto.UserLoginReq) (res models.User, err error)
 	SendResetPassword(c context.Context, email string, code string) (data models.ResetPassword, err error)
 	ResetPassword(c context.Context, password string, code string) (res string, err error)
@@ -54,15 +55,28 @@ func (a *AuthRepoImpl) LoginUser(c context.Context, data dto.UserLoginReq) (res 
 	return user, nil
 }
 
-func (a *AuthRepoImpl) CreateUser(c context.Context, data models.User) (res string, err error) {
-	if err := a.db.WithContext(c).Create(&data).Error; err != nil {
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == 1062 {
-			return "", helper.ErrDuplicateEntry
+func (a *AuthRepoImpl) CreateUser(c context.Context, data models.User) (tx *gorm.DB, res string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
 		}
-		return "", helper.ErrDatabase
+	}()
+
+	tx = a.db.WithContext(c).Begin()
+
+	if err := tx.Create(&data).Error; err != nil {
+		tx.Rollback()
+
+		var mysqlErr *mysql.MySQLError
+
+		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
+			return nil, "", helper.ErrDuplicateEntry
+		}
+
+		return nil, "", helper.ErrDatabase
 	}
 
-	return data.ID, nil
+	return tx, data.ID, nil
 }
 
 func (a *AuthRepoImpl) SendResetPassword(c context.Context, email string, code string) (data models.ResetPassword, err error) {

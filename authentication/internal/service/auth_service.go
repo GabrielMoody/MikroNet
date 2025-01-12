@@ -7,6 +7,7 @@ import (
 	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/helper"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/models"
+	"github.com/GabrielMoody/MikroNet/authentication/internal/pb"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/repository"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -16,8 +17,9 @@ import (
 
 type AuthService interface {
 	CreateUserService(c context.Context, data dto.UserRegistrationsReq, role string) (res string, err *helper.ErrorStruct)
-	CreateDriverService(c context.Context, data dto.DriverRegistrationsReq, role string) (res string, err *helper.ErrorStruct)
-	CreateOwnerService(c context.Context, data dto.OwnerRegistrationsReq, role string) (res string, err *helper.ErrorStruct)
+	CreateDriverService(c context.Context, data dto.DriverRegistrationsReq, role string, image []byte) (res string, err *helper.ErrorStruct)
+	CreateOwnerService(c context.Context, data dto.OwnerRegistrationsReq, role string, image []byte) (res string, err *helper.ErrorStruct)
+	CreateGovService(c context.Context, data dto.GovRegistrationReq, role string, image []byte) (res string, err *helper.ErrorStruct)
 	LoginUserService(c context.Context, data dto.UserLoginReq) (res dto.UserRegistrationsResp, err *helper.ErrorStruct)
 	SendResetPasswordService(c context.Context, email dto.ForgotPasswordReq) (res string, err *helper.ErrorStruct)
 	ResetPassword(c context.Context, data dto.ResetPasswordReq, code string) (res string, err *helper.ErrorStruct)
@@ -25,10 +27,13 @@ type AuthService interface {
 }
 
 type AuthServiceImpl struct {
-	AuthRepo repository.AuthRepo
+	AuthRepo    repository.AuthRepo
+	pbUser      pb.UserServiceClient
+	pbDriver    pb.DriverServiceClient
+	pbDashboard pb.DashboardServiceClient
 }
 
-func (a *AuthServiceImpl) CreateOwnerService(c context.Context, data dto.OwnerRegistrationsReq, role string) (res string, err *helper.ErrorStruct) {
+func (a *AuthServiceImpl) CreateGovService(c context.Context, data dto.GovRegistrationReq, role string, image []byte) (res string, err *helper.ErrorStruct) {
 	if errValidate := helper.Validate.Struct(data); errValidate != nil {
 		return "", &helper.ErrorStruct{
 			Err:  errValidate,
@@ -36,38 +41,46 @@ func (a *AuthServiceImpl) CreateOwnerService(c context.Context, data dto.OwnerRe
 		}
 	}
 
-	pw, errHash := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+	hashed, errBcrypt := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 
-	if errHash != nil {
-		return "", err
+	if errBcrypt != nil {
+		return "", &helper.ErrorStruct{
+			Code: fiber.StatusInternalServerError,
+			Err:  errBcrypt,
+		}
 	}
 
-	resRepo, errRepo := a.AuthRepo.CreateUser(c, models.User{
+	tx, resRepo, errRepo := a.AuthRepo.CreateUser(c, models.User{
 		ID:       uuid.New().String(),
 		Email:    data.Email,
-		Password: string(pw),
+		Password: string(hashed),
 		Role:     role,
 	})
 
 	if errRepo != nil {
-		var code int
-		switch {
-		case errors.Is(errRepo, helper.ErrDuplicateEntry):
-			code = fiber.StatusConflict
-		default:
-			code = fiber.StatusInternalServerError
-		}
-
-		return res, &helper.ErrorStruct{
-			Err:  errRepo,
-			Code: code,
-		}
+		return res, helper.CheckError(errRepo)
 	}
+
+	_, errPb := a.pbDashboard.CreateGov(c, &pb.CreateGovReq{
+		Id:             resRepo,
+		FirstName:      data.FirstName,
+		LastName:       data.LastName,
+		Email:          data.Email,
+		PhoneNumber:    data.PhoneNumber,
+		ProfilePicture: image,
+	})
+
+	if errPb != nil {
+		tx.Rollback()
+		return res, helper.CheckError(errPb)
+	}
+
+	tx.Commit()
 
 	return resRepo, nil
 }
 
-func (a *AuthServiceImpl) CreateDriverService(c context.Context, data dto.DriverRegistrationsReq, role string) (res string, err *helper.ErrorStruct) {
+func (a *AuthServiceImpl) CreateOwnerService(c context.Context, data dto.OwnerRegistrationsReq, role string, image []byte) (res string, err *helper.ErrorStruct) {
 	if errValidate := helper.Validate.Struct(data); errValidate != nil {
 		return "", &helper.ErrorStruct{
 			Err:  errValidate,
@@ -75,33 +88,91 @@ func (a *AuthServiceImpl) CreateDriverService(c context.Context, data dto.Driver
 		}
 	}
 
-	pw, errHash := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+	hashed, errBcrypt := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 
-	if errHash != nil {
-		return "", err
+	if errBcrypt != nil {
+		return "", &helper.ErrorStruct{
+			Code: fiber.StatusInternalServerError,
+			Err:  errBcrypt,
+		}
 	}
 
-	resRepo, errRepo := a.AuthRepo.CreateUser(c, models.User{
+	tx, resRepo, errRepo := a.AuthRepo.CreateUser(c, models.User{
 		ID:       uuid.New().String(),
 		Email:    data.Email,
-		Password: string(pw),
+		Password: string(hashed),
 		Role:     role,
 	})
 
 	if errRepo != nil {
-		var code int
-		switch {
-		case errors.Is(errRepo, helper.ErrDuplicateEntry):
-			code = fiber.StatusConflict
-		default:
-			code = fiber.StatusInternalServerError
-		}
+		return res, helper.CheckError(errRepo)
+	}
 
-		return res, &helper.ErrorStruct{
-			Err:  errRepo,
-			Code: code,
+	_, errPb := a.pbDashboard.CreateOwner(c, &pb.CreateOwnerReq{
+		Id:             resRepo,
+		FirstName:      data.FirstName,
+		LastName:       data.LastName,
+		Email:          data.Email,
+		PhoneNumber:    data.PhoneNumber,
+		Nik:            data.NIK,
+		ProfilePicture: image,
+	})
+
+	if errPb != nil {
+		tx.Rollback()
+		return res, helper.CheckError(errPb)
+	}
+
+	tx.Commit()
+
+	return resRepo, nil
+}
+
+func (a *AuthServiceImpl) CreateDriverService(c context.Context, data dto.DriverRegistrationsReq, role string, image []byte) (res string, err *helper.ErrorStruct) {
+	if errValidate := helper.Validate.Struct(data); errValidate != nil {
+		return "", &helper.ErrorStruct{
+			Err:  errValidate,
+			Code: fiber.StatusBadRequest,
 		}
 	}
+
+	hashed, errHash := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+
+	if errHash != nil {
+		return "", &helper.ErrorStruct{
+			Err:  errHash,
+			Code: fiber.StatusInternalServerError,
+		}
+	}
+
+	tx, resRepo, errRepo := a.AuthRepo.CreateUser(c, models.User{
+		ID:       uuid.New().String(),
+		Email:    data.Email,
+		Password: string(hashed),
+		Role:     role,
+	})
+
+	if errRepo != nil {
+		return res, helper.CheckError(errRepo)
+	}
+
+	_, errPb := a.pbDriver.CreateDriver(c, &pb.CreateDriverRequest{
+		Id:             resRepo,
+		FirstName:      data.FirstName,
+		LastName:       data.LastName,
+		Email:          data.Email,
+		PhoneNumber:    data.PhoneNumber,
+		DateOfBirth:    data.DateOfBirth,
+		LicenseNumber:  data.LicenseNumber,
+		ProfilePicture: image,
+	})
+
+	if errPb != nil {
+		tx.Rollback()
+		return res, helper.CheckError(errPb)
+	}
+
+	tx.Commit()
 
 	return resRepo, nil
 }
@@ -146,31 +217,42 @@ func (a *AuthServiceImpl) CreateUserService(c context.Context, data dto.UserRegi
 		}
 	}
 
-	pw, errHash := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+	hashed, errHash := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 
 	if errHash != nil {
-		return "", err
+		return "", &helper.ErrorStruct{
+			Err:  errHash,
+			Code: fiber.StatusInternalServerError,
+		}
 	}
 
-	resRepo, errRepo := a.AuthRepo.CreateUser(c, models.User{
+	tx, resRepo, errRepo := a.AuthRepo.CreateUser(c, models.User{
 		ID:       uuid.New().String(),
 		Email:    data.Email,
-		Password: string(pw),
+		Password: string(hashed),
 		Role:     role,
 	})
 
 	if errRepo != nil {
-		var code int
-		switch {
-		case errors.Is(errRepo, helper.ErrDuplicateEntry):
-			code = fiber.StatusConflict
-		default:
-			code = fiber.StatusInternalServerError
-		}
+		return res, helper.CheckError(errRepo)
+	}
 
+	_, errPb := a.pbUser.CreateUser(c, &pb.CreateUserRequest{
+		User: &pb.User{
+			Id:    resRepo,
+			Email: data.Email,
+		},
+	})
+
+	if errPb != nil {
+		tx.Rollback()
+		return res, helper.CheckError(errPb)
+	}
+
+	if err := tx.Commit().Error; err != nil {
 		return res, &helper.ErrorStruct{
-			Err:  errRepo,
-			Code: code,
+			Err:  err,
+			Code: fiber.StatusInternalServerError,
 		}
 	}
 
@@ -185,23 +267,25 @@ func (a *AuthServiceImpl) LoginUserService(c context.Context, data dto.UserLogin
 		}
 	}
 
+	resPb, errPb := a.pbDashboard.IsBlocked(c, &pb.IsBlockedReq{
+		Id: res.ID,
+	})
+
+	if errPb != nil {
+		return res, helper.CheckError(errPb)
+	}
+
+	if resPb.IsBlocked {
+		return res, &helper.ErrorStruct{
+			Err:  helper.ErrBlocked,
+			Code: fiber.StatusForbidden,
+		}
+	}
+
 	resRepo, errRepo := a.AuthRepo.LoginUser(c, data)
 
 	if errRepo != nil {
-		var code int
-		switch {
-		case errors.Is(errRepo, helper.ErrNotFound):
-			code = fiber.StatusNotFound
-		case errors.Is(errRepo, helper.ErrPasswordIncorrect):
-			code = fiber.StatusUnauthorized
-		default:
-			code = fiber.StatusInternalServerError
-		}
-
-		return res, &helper.ErrorStruct{
-			Err:  errRepo,
-			Code: code,
-		}
+		return res, helper.CheckError(errRepo)
 	}
 
 	return dto.UserRegistrationsResp{
@@ -319,8 +403,11 @@ func (a *AuthServiceImpl) ResetPassword(c context.Context, data dto.ResetPasswor
 	return resRepo, nil
 }
 
-func NewAuthService(authRepo repository.AuthRepo) AuthService {
+func NewAuthService(authRepo repository.AuthRepo, user pb.UserServiceClient, driver pb.DriverServiceClient, dashboard pb.DashboardServiceClient) AuthService {
 	return &AuthServiceImpl{
-		AuthRepo: authRepo,
+		AuthRepo:    authRepo,
+		pbUser:      user,
+		pbDriver:    driver,
+		pbDashboard: dashboard,
 	}
 }

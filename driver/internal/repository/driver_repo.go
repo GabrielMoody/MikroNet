@@ -10,11 +10,12 @@ import (
 
 type DriverRepo interface {
 	CreateDriver(c context.Context, data model.DriverDetails) (model.DriverDetails, error)
-	GetAllDrivers(c context.Context) ([]model.DriverDetails, error)
+	GetAllDrivers(c context.Context, verified *bool) ([]model.DriverDetails, error)
 	GetDriverDetails(c context.Context, id string) (model.DriverDetails, error)
 	EditDriverDetails(c context.Context, user model.DriverDetails) (model.DriverDetails, error)
 	GetStatus(c context.Context, id string) (res interface{}, err error)
 	SetStatus(c context.Context, status string, id string) (res interface{}, err error)
+	SetVerified(c context.Context, data model.DriverDetails) (res model.DriverDetails, err error)
 	GetAvailableSeats(c context.Context, id string) (res interface{}, err error)
 	SetAvailableSeats(c context.Context, data model.DriverDetails) (res interface{}, err error)
 	GetTripHistories(c context.Context, id string) (res interface{}, err error)
@@ -22,6 +23,14 @@ type DriverRepo interface {
 
 type DriverRepoImpl struct {
 	db *gorm.DB
+}
+
+func (a *DriverRepoImpl) SetVerified(c context.Context, data model.DriverDetails) (res model.DriverDetails, err error) {
+	if err := a.db.WithContext(c).Updates(&data).Error; err != nil {
+		return res, helper.ErrDatabase
+	}
+
+	return data, nil
 }
 
 func (a *DriverRepoImpl) CreateDriver(c context.Context, data model.DriverDetails) (res model.DriverDetails, err error) {
@@ -32,9 +41,15 @@ func (a *DriverRepoImpl) CreateDriver(c context.Context, data model.DriverDetail
 	return data, nil
 }
 
-func (a *DriverRepoImpl) GetAllDrivers(c context.Context) (res []model.DriverDetails, err error) {
-	if err := a.db.WithContext(c).Find(&res).Error; err != nil {
-		return res, helper.ErrDatabase
+func (a *DriverRepoImpl) GetAllDrivers(c context.Context, verified *bool) (res []model.DriverDetails, err error) {
+	if verified != nil {
+		if err := a.db.WithContext(c).Find(&res, "verified = ?", verified).Error; err != nil {
+			return res, helper.ErrDatabase
+		}
+	} else {
+		if err := a.db.WithContext(c).Find(&res).Error; err != nil {
+			return res, helper.ErrDatabase
+		}
 	}
 
 	return res, nil

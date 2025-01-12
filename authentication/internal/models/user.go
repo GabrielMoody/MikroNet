@@ -8,7 +8,7 @@ type User struct {
 	ID        string `gorm:"primaryKey;type:varchar(36)"`
 	Email     string `gorm:"unique;type:varchar(255)"`
 	Password  string
-	Role      string `gorm:"type:varchar(255)"`
+	Role      string `gorm:"type:enum('admin','user','driver','owner','government')"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
