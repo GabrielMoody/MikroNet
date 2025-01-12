@@ -11,8 +11,6 @@ type UserRepo interface {
 	CreateUser(c context.Context, user model.UserDetails) (model.UserDetails, error)
 	GetUserDetails(c context.Context, id string) (model.UserDetails, error)
 	GetAllUsers(c context.Context) ([]model.UserDetails, error)
-	EditUserDetails(c context.Context, user model.UserDetails) (model.UserDetails, error)
-	DeleteUserDetails(c context.Context, id string) error
 	GetAllReviews(c context.Context) ([]model.Review, error)
 	GetReviewsByID(c context.Context, id string) (model.Review, error)
 	ReviewOrder(c context.Context, data model.Review) (model.Review, error)
@@ -52,22 +50,6 @@ func (a *UserRepoImpl) GetUserDetails(c context.Context, id string) (res model.U
 	}
 
 	return res, nil
-}
-
-func (a *UserRepoImpl) EditUserDetails(c context.Context, user model.UserDetails) (model.UserDetails, error) {
-	if err := a.db.WithContext(c).Updates(&user).Error; err != nil {
-		return user, helper.ErrDatabase
-	}
-
-	return user, nil
-}
-
-func (a *UserRepoImpl) DeleteUserDetails(c context.Context, id string) error {
-	if err := a.db.WithContext(c).Delete(&model.UserDetails{}, "id = ?", id).Error; err != nil {
-		return helper.ErrDatabase
-	}
-
-	return nil
 }
 
 func (a *UserRepoImpl) CreateUser(c context.Context, user model.UserDetails) (res model.UserDetails, err error) {

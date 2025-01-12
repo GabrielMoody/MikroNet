@@ -13,8 +13,6 @@ import (
 
 type UserController interface {
 	GetUser(c *fiber.Ctx) error
-	EditUser(c *fiber.Ctx) error
-	DeleteUser(c *fiber.Ctx) error
 	Order(c *fiber.Ctx) error
 	ReviewOrder(c *fiber.Ctx) error
 }
@@ -55,7 +53,6 @@ func (a *UserControllerImpl) Order(c *fiber.Ctx) error {
 
 	defer conn.Close()
 
-	// Send user's location
 	location := map[string]interface{}{
 		"user_id": payload["id"].(string),
 		"role":    payload["role"].(string),
@@ -100,74 +97,9 @@ func (a *UserControllerImpl) GetUser(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "success",
-		"data": fiber.Map{
-			"first_name": res.FirstName,
-			"last_name":  res.LastName,
-			"email":      res.Email,
-		},
+		"data":   res,
 	})
 }
-
-func (a *UserControllerImpl) EditUser(c *fiber.Ctx) error {
-	token := c.Get("Authorization")
-	ctx := c.Context()
-
-	payload, err := middleware.GetJWTPayload(token, os.Getenv("JWT_SECRET"))
-
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Unauthorized",
-		})
-	}
-
-	var data dto.EditUserDetails
-
-	if err = c.BodyParser(&data); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
-		})
-	}
-
-	res, errService := a.service.EditUserDetails(ctx, payload["id"].(string), data)
-
-	if errService != nil {
-		return c.Status(errService.Code).JSON(fiber.Map{
-			"status":  "error",
-			"message": errService.Err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status": "success",
-		"data": fiber.Map{
-			"first_name": res.FirstName,
-			"last_name":  res.LastName,
-		},
-	})
-}
-
-func (a *UserControllerImpl) DeleteUser(c *fiber.Ctx) error {
-	token := c.Get("Authorization")
-	payload, _ := middleware.GetJWTPayload(token, os.Getenv("JWT_SECRET"))
-	ctx := c.Context()
-
-	err := a.service.DeleteUserDetails(ctx, payload["id"].(string))
-
-	if err != nil {
-		return c.Status(err.Code).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Err,
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status": "success",
-		"data":   nil,
-	})
-}
-
 func (a *UserControllerImpl) ReviewOrder(c *fiber.Ctx) error {
 	ctx := c.Context()
 	driverId := c.Params("driverId")

@@ -20,8 +20,6 @@ func UserHandler(r fiber.Router, db *gorm.DB) {
 	api.Use(middleware.ValidateUserRole)
 
 	api.Get("/", controllerUser.GetUser)
-	api.Put("/", controllerUser.EditUser)
-	api.Delete("/", controllerUser.DeleteUser)
 
 	api.Post("/order", controllerUser.Order)
 	api.Post("/review/:driverId", controllerUser.ReviewOrder)

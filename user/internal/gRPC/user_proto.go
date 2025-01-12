@@ -5,10 +5,7 @@ import (
 	"github.com/GabrielMoody/mikroNet/user/internal/model"
 	"github.com/GabrielMoody/mikroNet/user/internal/pb"
 	"github.com/GabrielMoody/mikroNet/user/internal/repository"
-	"os"
-	"path/filepath"
 	"strconv"
-	"time"
 )
 
 type GRPC struct {
@@ -23,28 +20,9 @@ func NewgRPC(repo repository.UserRepo) *GRPC {
 }
 
 func (a *GRPC) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (res *pb.CreateUserResponse, err error) {
-	saveDir := "./uploads"
-	if _, err := os.Stat(saveDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
-			return nil, err
-		}
-	}
-
-	timestamp := time.Now().Format("20060102_150405")
-	fullPath := req.User.Id + "_" + timestamp + req.User.Filename
-	filePath := filepath.Join(saveDir, fullPath)
-
-	if err := os.WriteFile(filePath, req.User.ProfilePicture, 0644); err != nil {
-		return nil, err
-	}
-
 	data := model.UserDetails{
-		ID:             req.User.Id,
-		FirstName:      req.User.FirstName,
-		LastName:       req.User.LastName,
-		Email:          req.User.Email,
-		PhoneNumber:    req.User.PhoneNumber,
-		ProfilePicture: filePath,
+		ID:    req.User.Id,
+		Email: req.User.Email,
 	}
 
 	resRepo, err := a.repo.CreateUser(ctx, data)
@@ -69,11 +47,8 @@ func (a *GRPC) GetUsers(ctx context.Context, _ *pb.Empty) (res *pb.Users, err er
 
 	for _, v := range resRepo {
 		users = append(users, &pb.User{
-			Id:          v.ID,
-			FirstName:   v.FirstName,
-			LastName:    v.LastName,
-			Email:       v.Email,
-			PhoneNumber: v.PhoneNumber,
+			Id:    v.ID,
+			Email: v.Email,
 		})
 	}
 
@@ -90,11 +65,8 @@ func (a *GRPC) GetUserDetails(ctx context.Context, req *pb.GetByIDRequest) (res 
 	}
 
 	return &pb.User{
-		Id:          resRepo.ID,
-		FirstName:   resRepo.FirstName,
-		LastName:    resRepo.LastName,
-		Email:       resRepo.Email,
-		PhoneNumber: resRepo.PhoneNumber,
+		Id:    resRepo.ID,
+		Email: resRepo.Email,
 	}, nil
 }
 

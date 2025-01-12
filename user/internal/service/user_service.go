@@ -11,8 +11,6 @@ import (
 
 type UserService interface {
 	GetUserDetails(c context.Context, id string) (res model.UserDetails, err *helper.ErrorStruct)
-	EditUserDetails(c context.Context, id string, data dto.EditUserDetails) (res model.UserDetails, err *helper.ErrorStruct)
-	DeleteUserDetails(c context.Context, id string) (err *helper.ErrorStruct)
 	ReviewOrder(c context.Context, data dto.ReviewReq, userId string, driverId string) (res interface{}, err *helper.ErrorStruct)
 }
 
@@ -31,43 +29,6 @@ func (a *userServiceImpl) GetUserDetails(c context.Context, id string) (res mode
 	}
 
 	return resRepo, nil
-}
-
-func (a *userServiceImpl) EditUserDetails(c context.Context, id string, data dto.EditUserDetails) (res model.UserDetails, err *helper.ErrorStruct) {
-	if err := helper.Validate.Struct(data); err != nil {
-		return res, &helper.ErrorStruct{
-			Code: http.StatusBadRequest,
-			Err:  err,
-		}
-	}
-
-	resRepo, errRepo := a.repo.EditUserDetails(c, model.UserDetails{
-		ID:        id,
-		FirstName: data.FirstName,
-		LastName:  data.LastName,
-	})
-
-	if errRepo != nil {
-		return res, &helper.ErrorStruct{
-			Code: http.StatusInternalServerError,
-			Err:  errRepo,
-		}
-	}
-
-	return resRepo, nil
-}
-
-func (a *userServiceImpl) DeleteUserDetails(c context.Context, id string) (err *helper.ErrorStruct) {
-	errRepo := a.repo.DeleteUserDetails(c, id)
-
-	if errRepo != nil {
-		return &helper.ErrorStruct{
-			Code: http.StatusInternalServerError,
-			Err:  errRepo,
-		}
-	}
-
-	return nil
 }
 
 func (a *userServiceImpl) ReviewOrder(c context.Context, data dto.ReviewReq, userId string, driverId string) (res interface{}, err *helper.ErrorStruct) {
