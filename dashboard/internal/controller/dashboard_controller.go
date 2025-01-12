@@ -5,13 +5,7 @@ import (
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/pb"
 	"github.com/GabrielMoody/mikroNet/dashboard/internal/service"
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
-	"io"
-	"mime/multipart"
 	"net/http"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 type DashboardController interface {
@@ -35,36 +29,6 @@ type DashboardControllerImpl struct {
 	DashboardService service.DashboardService
 	PBDriver         pb.DriverServiceClient
 	PBUser           pb.UserServiceClient
-}
-
-func saveImage(image *multipart.FileHeader) (string, error) {
-	saveDir := "./uploads"
-	if _, err := os.Stat(saveDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
-			return "", err
-		}
-	}
-
-	f, err := image.Open()
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-
-	fileData, err := io.ReadAll(f)
-	if err != nil {
-		return "", err
-	}
-
-	timestamp := time.Now().Format("20060102_150405")
-	fullPath := uuid.NewString() + "_" + timestamp + image.Filename
-	filePath := filepath.Join(saveDir, fullPath)
-
-	if err := os.WriteFile(filePath, fileData, 0644); err != nil {
-		return "", err
-	}
-
-	return filePath, nil
 }
 
 func (a *DashboardControllerImpl) SetDriverStatusVerified(c *fiber.Ctx) error {

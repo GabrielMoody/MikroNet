@@ -36,8 +36,6 @@ func DashboardHandler(r fiber.Router, db *gorm.DB, driver pb.DriverServiceClient
 
 	api.Get("/reviews", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetReviews)
 	api.Get("/reviews/:id", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetReviewByID)
-
-	api.Post("/register/gov", middleware.ValidateDashboardRole("admin"), controllerDashboard.CreateGov)
 }
 
 func GRPCHandler(db *gorm.DB) *gRPC.GRPC {
