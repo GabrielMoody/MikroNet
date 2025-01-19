@@ -7,10 +7,6 @@ type (
 		Status string `json:"status" validate:"required"`
 	}
 
-	SeatReq struct {
-		Seat int32 `json:"seat" validate:"required"`
-	}
-
 	GetDriverDetailsRes struct {
 		ID                 string    `json:"id"`
 		FirstName          string    `json:"first_name"`

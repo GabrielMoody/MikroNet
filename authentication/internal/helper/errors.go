@@ -16,8 +16,39 @@ var (
 )
 
 type ErrorStruct struct {
-	Err  error
-	Code int
+	Err              error
+	Code             int
+	ValidationErrors map[string]string
+}
+
+var errorMessages = map[string]string{
+	"required": "is required",
+	"email":    "must be a valid email address",
+	"min":      "must be greater than %s characters",
+	"eqfield":  "must be the same with %s",
+}
+
+func translateError(err validator.FieldError) string {
+	msg, ok := errorMessages[err.Tag()]
+	if !ok {
+		return err.Tag()
+	}
+
+	if err.Param() != "" {
+		return fmt.Sprintf(msg, err.Param())
+	}
+	return msg
+}
+
+func ValidationError(err error) map[string]string {
+	errField := make(map[string]string)
+
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			errField[err.Field()] = fmt.Sprintf("%s %s", err.Field(), translateError(err))
+		}
+	}
+	return errField
 }
 
 func CheckError(err error) *ErrorStruct {

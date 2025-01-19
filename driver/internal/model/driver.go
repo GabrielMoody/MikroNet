@@ -18,7 +18,6 @@ type DriverDetails struct {
 	Route          Route
 	LicenseNumber  string `gorm:"column:license_number;type:varchar(255)" json:"license_number" form:"license_number"`
 	Status         string `gorm:"column:status;type:varchar(255)" json:"status" form:"status"`
-	AvailableSeats int32  `gorm:"column:available_seats" json:"available_seats" form:"available_seats"`
 	Verified       bool   `gorm:"column:verified;default:false" json:"verified" form:"verified"`
 	ProfilePicture string `gorm:"column:profile_picture" json:"profile_picture" form:"photo"`
 }

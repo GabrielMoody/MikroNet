@@ -27,16 +27,16 @@ func (a *UserControllerImpl) Order(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Unauthorized",
+			"status": "error",
+			"errors": "Unauthorized",
 		})
 	}
 
 	var data dto.MessageLoc
 	if err = c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
@@ -46,8 +46,8 @@ func (a *UserControllerImpl) Order(c *fiber.Ctx) error {
 	conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s:8040/ws/location", os.Getenv("GEOLOCATION_HOST")), headers)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Failed to connect to WebSocket",
+			"status": "error",
+			"errors": "Failed to connect to WebSocket",
 		})
 	}
 
@@ -62,16 +62,16 @@ func (a *UserControllerImpl) Order(c *fiber.Ctx) error {
 
 	if err := conn.WriteJSON(location); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Failed to send location",
+			"status": "error",
+			"errors": "Failed to send location",
 		})
 	}
 
 	// Close the WebSocket connection
 	if err := conn.Close(); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Failed to close WebSocket connection",
+			"status": "error",
+			"errors": "Failed to close WebSocket connection",
 		})
 	}
 
@@ -90,8 +90,8 @@ func (a *UserControllerImpl) GetUser(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Err,
+			"status": "error",
+			"errors": err.Err,
 		})
 	}
 
@@ -111,8 +111,8 @@ func (a *UserControllerImpl) ReviewOrder(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err.Error(),
+			"status": "Error",
+			"errors": err.Error(),
 		})
 	}
 
@@ -120,8 +120,8 @@ func (a *UserControllerImpl) ReviewOrder(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err,
+			"status": "Error",
+			"errors": err,
 		})
 	}
 

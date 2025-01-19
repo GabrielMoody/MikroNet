@@ -23,8 +23,6 @@ func DriverHandler(r fiber.Router, db *gorm.DB) {
 	api.Put("/", controllerDriver.EditDriver)
 	api.Get("/status/", controllerDriver.GetStatus)
 	api.Put("/status/", controllerDriver.SetStatus)
-	api.Get("/seats/", controllerDriver.GetAvailableSeats)
-	api.Put("/seats/", controllerDriver.SetAvailableSeats)
 }
 
 func GRPCHandler(db *gorm.DB) *gRPC.GRPC {
