@@ -74,14 +74,14 @@ func (a *AuthControllerImpl) CreateGov(c *fiber.Ctx) error {
 
 	res, errService := a.AuthService.CreateGovService(ctx, req, "government", fileData)
 
-	if errService.ValidationErrors != nil {
+	if errService != nil && errService.ValidationErrors != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.ValidationErrors,
 		})
 	}
 
-	if errService.Err != nil {
+	if errService != nil && errService.Err != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.Err.Error(),
@@ -124,14 +124,14 @@ func (a *AuthControllerImpl) CreateOwner(c *fiber.Ctx) error {
 
 	res, errService := a.AuthService.CreateOwnerService(ctx, owner, "owner", fileData)
 
-	if errService.ValidationErrors != nil {
+	if errService != nil && errService.ValidationErrors != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.ValidationErrors,
 		})
 	}
 
-	if errService.Err != nil {
+	if errService != nil && errService.Err != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.Err.Error(),
@@ -160,14 +160,14 @@ func (a *AuthControllerImpl) ChangePassword(c *fiber.Ctx) error {
 
 	res, errService := a.AuthService.ChangePasswordService(ctx, payload["id"].(string), user)
 
-	if errService.ValidationErrors != nil {
+	if errService != nil && errService.ValidationErrors != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.ValidationErrors,
 		})
 	}
 
-	if errService.Err != nil {
+	if errService != nil && errService.Err != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.Err.Error(),
@@ -193,14 +193,14 @@ func (a *AuthControllerImpl) CreateUser(c *fiber.Ctx) error {
 
 	res, errService := a.AuthService.CreateUserService(ctx, user, "user")
 
-	if errService.ValidationErrors != nil {
+	if errService != nil && errService.ValidationErrors != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.ValidationErrors,
 		})
 	}
 
-	if errService.Err != nil {
+	if errService != nil && errService.Err != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.Err.Error(),
@@ -242,14 +242,14 @@ func (a *AuthControllerImpl) CreateDriver(c *fiber.Ctx) error {
 
 	res, errService := a.AuthService.CreateDriverService(ctx, driver, "driver", fileData)
 
-	if errService.ValidationErrors != nil {
+	if errService != nil && errService.ValidationErrors != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.ValidationErrors,
 		})
 	}
 
-	if errService.Err != nil {
+	if errService != nil && errService.Err != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.Err.Error(),
@@ -275,14 +275,14 @@ func (a *AuthControllerImpl) LoginUser(c *fiber.Ctx) error {
 
 	res, errService := a.AuthService.LoginUserService(ctx, user)
 
-	if errService.ValidationErrors != nil {
+	if errService != nil && errService.ValidationErrors != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.ValidationErrors,
 		})
 	}
 
-	if errService.Err != nil {
+	if errService != nil && errService.Err != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.Err.Error(),
@@ -355,14 +355,14 @@ func (a *AuthControllerImpl) ResetPassword(c *fiber.Ctx) error {
 
 	res, errService := a.AuthService.ResetPassword(ctx, rp, code)
 
-	if errService.ValidationErrors != nil {
+	if errService != nil && errService.ValidationErrors != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.ValidationErrors,
 		})
 	}
 
-	if errService.Err != nil {
+	if errService != nil && errService.Err != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": errService.Err.Error(),
