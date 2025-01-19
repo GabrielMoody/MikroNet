@@ -18,8 +18,6 @@ type DriverService interface {
 	EditDriverDetails(c context.Context, id string, data dto.EditDriverReq) (res interface{}, err *helper.ErrorStruct)
 	GetStatus(c context.Context, id string) (res interface{}, err *helper.ErrorStruct)
 	SetStatus(c context.Context, id string, data dto.StatusReq) (res interface{}, err *helper.ErrorStruct)
-	GetAvailableSeats(c context.Context, id string) (res interface{}, err *helper.ErrorStruct)
-	SetAvailableSeats(c context.Context, data dto.SeatReq, id string) (res interface{}, err *helper.ErrorStruct)
 	GetTripHistories(c context.Context, id string) (res interface{}, err *helper.ErrorStruct)
 }
 
@@ -115,43 +113,6 @@ func (a *driverServiceImpl) EditDriverDetails(c context.Context, id string, data
 
 func (a *driverServiceImpl) GetTripHistories(c context.Context, id string) (res interface{}, err *helper.ErrorStruct) {
 	resRepo, errRepo := a.repo.GetTripHistories(c, id)
-
-	if errRepo != nil {
-		return nil, &helper.ErrorStruct{
-			Err:  errRepo,
-			Code: http.StatusInternalServerError,
-		}
-	}
-
-	return resRepo, nil
-}
-
-func (a *driverServiceImpl) GetAvailableSeats(c context.Context, id string) (res interface{}, err *helper.ErrorStruct) {
-	resRepo, errRepo := a.repo.GetAvailableSeats(c, id)
-
-	if errRepo != nil {
-		return nil, &helper.ErrorStruct{
-			Err:  errRepo,
-			Code: http.StatusInternalServerError,
-		}
-	}
-
-	return resRepo, nil
-}
-
-func (a *driverServiceImpl) SetAvailableSeats(c context.Context, data dto.SeatReq, id string) (res interface{}, err *helper.ErrorStruct) {
-	if err := helper.Validate.Struct(&data); err != nil {
-		return nil, &helper.ErrorStruct{
-			Code: fiber.StatusBadRequest,
-			Err:  err,
-		}
-	}
-
-	driver := model.DriverDetails{
-		ID:             id,
-		AvailableSeats: data.Seat,
-	}
-	resRepo, errRepo := a.repo.SetAvailableSeats(c, driver)
 
 	if errRepo != nil {
 		return nil, &helper.ErrorStruct{

@@ -41,8 +41,8 @@ func (a *DashboardControllerImpl) SetDriverStatusVerified(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
@@ -60,8 +60,8 @@ func (a *DashboardControllerImpl) SetOwnerStatusVerified(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err,
+			"status": "error",
+			"errors": err,
 		})
 	}
 
@@ -78,8 +78,8 @@ func (a *DashboardControllerImpl) GetUnverifiedBusinessOwners(c *fiber.Ctx) erro
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err,
+			"status": "error",
+			"errors": err,
 		})
 	}
 
@@ -100,8 +100,8 @@ func (a *DashboardControllerImpl) UnblockAccount(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err,
+			"status": "error",
+			"errors": err,
 		})
 	}
 
@@ -119,8 +119,8 @@ func (a *DashboardControllerImpl) GetBusinessOwnerDetails(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err,
+			"status": "error",
+			"errors": err,
 		})
 	}
 
@@ -137,8 +137,8 @@ func (a *DashboardControllerImpl) GetReviews(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
@@ -161,8 +161,8 @@ func (a *DashboardControllerImpl) GetReviewByID(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
@@ -180,8 +180,8 @@ func (a *DashboardControllerImpl) BlockAccount(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err,
+			"status": "error",
+			"errors": err,
 		})
 	}
 
@@ -199,8 +199,8 @@ func (a *DashboardControllerImpl) GetBlockedBusinessOwners(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err,
+			"status": "error",
+			"errors": err,
 		})
 	}
 
@@ -220,8 +220,8 @@ func (a *DashboardControllerImpl) GetBusinessOwners(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err,
+			"status": "error",
+			"errors": err,
 		})
 	}
 
@@ -243,14 +243,24 @@ func (a *DashboardControllerImpl) GetDriverDetails(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "Success",
-		"data":   res,
+		"data": fiber.Map{
+			"id":            res.Id,
+			"first_name":    res.FirstName,
+			"last_name":     res.LastName,
+			"email":         res.Email,
+			"date_of_birth": res.DateOfBirth,
+			"image": fiber.Map{
+				"mime_type": http.DetectContentType(res.ProfilePicture),
+				"image":     res.ProfilePicture,
+			},
+		},
 	})
 }
 
@@ -259,8 +269,8 @@ func (a *DashboardControllerImpl) GetDrivers(c *fiber.Ctx) error {
 
 	if err := c.QueryParser(&q); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
@@ -268,8 +278,8 @@ func (a *DashboardControllerImpl) GetDrivers(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
@@ -287,8 +297,8 @@ func (a *DashboardControllerImpl) GetUsers(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
@@ -310,8 +320,8 @@ func (a *DashboardControllerImpl) GetUserDetails(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 

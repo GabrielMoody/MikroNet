@@ -51,15 +51,15 @@ func (a *AuthControllerImpl) CreateGov(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "Error",
-			"message": "gagal memuat gambar",
+			"status": "Error",
+			"errors": "gagal memuat gambar",
 		})
 	}
 
 	if err = c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err.Error(),
+			"status": "Error",
+			"errors": err.Error(),
 		})
 	}
 
@@ -67,17 +67,24 @@ func (a *AuthControllerImpl) CreateGov(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "Error",
-			"message": err.Error(),
+			"status": "Error",
+			"errors": err.Error(),
 		})
 	}
 
 	res, errService := a.AuthService.CreateGovService(ctx, req, "government", fileData)
 
-	if errService != nil {
+	if errService.ValidationErrors != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
-			"status":  "Error",
-			"message": errService.Err.Error(),
+			"status": "error",
+			"errors": errService.ValidationErrors,
+		})
+	}
+
+	if errService.Err != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": errService.Err.Error(),
 		})
 	}
 
@@ -95,32 +102,39 @@ func (a *AuthControllerImpl) CreateOwner(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": "error reading image",
+			"status": "error",
+			"errors": "error reading image",
 		})
 	}
 
 	if err := c.BodyParser(&owner); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
 	fileData, err := readImage(image)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
 	res, errService := a.AuthService.CreateOwnerService(ctx, owner, "owner", fileData)
 
-	if errService != nil {
+	if errService.ValidationErrors != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
-			"status":  "error",
-			"message": errService.Err.Error(),
+			"status": "error",
+			"errors": errService.ValidationErrors,
+		})
+	}
+
+	if errService.Err != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": errService.Err.Error(),
 		})
 	}
 
@@ -139,17 +153,24 @@ func (a *AuthControllerImpl) ChangePassword(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
-	res, err := a.AuthService.ChangePasswordService(ctx, payload["id"].(string), user)
+	res, errService := a.AuthService.ChangePasswordService(ctx, payload["id"].(string), user)
 
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Err.Error(),
+	if errService.ValidationErrors != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": errService.ValidationErrors,
+		})
+	}
+
+	if errService.Err != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": errService.Err.Error(),
 		})
 	}
 
@@ -165,17 +186,24 @@ func (a *AuthControllerImpl) CreateUser(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
 	res, errService := a.AuthService.CreateUserService(ctx, user, "user")
 
-	if errService != nil {
+	if errService.ValidationErrors != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
-			"status":  "error",
-			"message": errService.Err.Error(),
+			"status": "error",
+			"errors": errService.ValidationErrors,
+		})
+	}
+
+	if errService.Err != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": errService.Err.Error(),
 		})
 	}
 
@@ -192,32 +220,39 @@ func (a *AuthControllerImpl) CreateDriver(c *fiber.Ctx) error {
 
 	if err != nil && !errors.Is(err, http.ErrMissingFile) {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": "error reading image",
+			"status": "error",
+			"errors": "error reading image",
 		})
 	}
 
 	if err := c.BodyParser(&driver); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
 	fileData, err := readImage(image)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
 	res, errService := a.AuthService.CreateDriverService(ctx, driver, "driver", fileData)
 
-	if errService != nil {
+	if errService.ValidationErrors != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
-			"status":  "error",
-			"message": errService.Err.Error(),
+			"status": "error",
+			"errors": errService.ValidationErrors,
+		})
+	}
+
+	if errService.Err != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": errService.Err.Error(),
 		})
 	}
 
@@ -233,17 +268,24 @@ func (a *AuthControllerImpl) LoginUser(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
-	res, err := a.AuthService.LoginUserService(ctx, user)
+	res, errService := a.AuthService.LoginUserService(ctx, user)
 
-	if err != nil {
-		return c.Status(err.Code).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Err.Error(),
+	if errService.ValidationErrors != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": errService.ValidationErrors,
+		})
+	}
+
+	if errService.Err != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": errService.Err.Error(),
 		})
 	}
 
@@ -260,8 +302,8 @@ func (a *AuthControllerImpl) LoginUser(c *fiber.Ctx) error {
 
 	if errToken != nil {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Invalid token",
+			"status": "error",
+			"errors": "Invalid token",
 		})
 	}
 
@@ -279,8 +321,8 @@ func (a *AuthControllerImpl) SendResetPasswordLink(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&email); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
@@ -289,7 +331,7 @@ func (a *AuthControllerImpl) SendResetPasswordLink(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
 			"status": "error",
-			"err":    err.Err.Error(),
+			"errors": err.Err.Error(),
 		})
 	}
 
@@ -306,17 +348,24 @@ func (a *AuthControllerImpl) ResetPassword(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&rp); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
+			"status": "error",
+			"errors": err.Error(),
 		})
 	}
 
-	res, err := a.AuthService.ResetPassword(ctx, rp, code)
+	res, errService := a.AuthService.ResetPassword(ctx, rp, code)
 
-	if err != nil {
-		return c.Status(err.Code).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Err.Error(),
+	if errService.ValidationErrors != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": errService.ValidationErrors,
+		})
+	}
+
+	if errService.Err != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": errService.Err.Error(),
 		})
 	}
 

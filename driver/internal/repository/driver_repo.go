@@ -16,8 +16,6 @@ type DriverRepo interface {
 	GetStatus(c context.Context, id string) (res interface{}, err error)
 	SetStatus(c context.Context, status string, id string) (res interface{}, err error)
 	SetVerified(c context.Context, data model.DriverDetails) (res model.DriverDetails, err error)
-	GetAvailableSeats(c context.Context, id string) (res interface{}, err error)
-	SetAvailableSeats(c context.Context, data model.DriverDetails) (res interface{}, err error)
 	GetTripHistories(c context.Context, id string) (res interface{}, err error)
 }
 
@@ -101,24 +99,6 @@ func (a *DriverRepoImpl) GetTripHistories(c context.Context, id string) (res int
 	}
 
 	return trip, nil
-}
-
-func (a *DriverRepoImpl) GetAvailableSeats(c context.Context, id string) (res interface{}, err error) {
-	var driver model.DriverDetails
-
-	if err := a.db.WithContext(c).Select("available_seats").Where("id = ?", id).Find(&driver).Error; err != nil {
-		return nil, helper.ErrDatabase
-	}
-
-	return driver.AvailableSeats, nil
-}
-
-func (a *DriverRepoImpl) SetAvailableSeats(c context.Context, data model.DriverDetails) (res interface{}, err error) {
-	if err := a.db.WithContext(c).Updates(&data).Error; err != nil {
-		return nil, helper.ErrDatabase
-	}
-
-	return data.AvailableSeats, nil
 }
 
 func (a *DriverRepoImpl) GetStatus(c context.Context, id string) (res interface{}, err error) {

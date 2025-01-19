@@ -36,8 +36,8 @@ type AuthServiceImpl struct {
 func (a *AuthServiceImpl) CreateGovService(c context.Context, data dto.GovRegistrationReq, role string, image []byte) (res string, err *helper.ErrorStruct) {
 	if errValidate := helper.Validate.Struct(data); errValidate != nil {
 		return "", &helper.ErrorStruct{
-			Err:  errValidate,
-			Code: fiber.StatusBadRequest,
+			Code:             fiber.StatusBadRequest,
+			ValidationErrors: helper.ValidationError(errValidate),
 		}
 	}
 
@@ -83,8 +83,8 @@ func (a *AuthServiceImpl) CreateGovService(c context.Context, data dto.GovRegist
 func (a *AuthServiceImpl) CreateOwnerService(c context.Context, data dto.OwnerRegistrationsReq, role string, image []byte) (res string, err *helper.ErrorStruct) {
 	if errValidate := helper.Validate.Struct(data); errValidate != nil {
 		return "", &helper.ErrorStruct{
-			Err:  errValidate,
-			Code: fiber.StatusBadRequest,
+			Code:             fiber.StatusBadRequest,
+			ValidationErrors: helper.ValidationError(errValidate),
 		}
 	}
 
@@ -131,8 +131,8 @@ func (a *AuthServiceImpl) CreateOwnerService(c context.Context, data dto.OwnerRe
 func (a *AuthServiceImpl) CreateDriverService(c context.Context, data dto.DriverRegistrationsReq, role string, image []byte) (res string, err *helper.ErrorStruct) {
 	if errValidate := helper.Validate.Struct(data); errValidate != nil {
 		return "", &helper.ErrorStruct{
-			Err:  errValidate,
-			Code: fiber.StatusBadRequest,
+			Code:             fiber.StatusBadRequest,
+			ValidationErrors: helper.ValidationError(errValidate),
 		}
 	}
 
@@ -178,6 +178,13 @@ func (a *AuthServiceImpl) CreateDriverService(c context.Context, data dto.Driver
 }
 
 func (a *AuthServiceImpl) ChangePasswordService(c context.Context, id string, data dto.ChangePasswordReq) (res string, err *helper.ErrorStruct) {
+	if errValidate := helper.Validate.Struct(data); errValidate != nil {
+		return "", &helper.ErrorStruct{
+			Code:             fiber.StatusBadRequest,
+			ValidationErrors: helper.ValidationError(errValidate),
+		}
+	}
+
 	hashedNewPassword, errHashed := bcrypt.GenerateFromPassword([]byte(data.NewPassword), bcrypt.DefaultCost)
 
 	if errHashed != nil {
@@ -212,8 +219,8 @@ func (a *AuthServiceImpl) ChangePasswordService(c context.Context, id string, da
 func (a *AuthServiceImpl) CreateUserService(c context.Context, data dto.UserRegistrationsReq, role string) (res string, err *helper.ErrorStruct) {
 	if errValidate := helper.Validate.Struct(data); errValidate != nil {
 		return "", &helper.ErrorStruct{
-			Err:  errValidate,
-			Code: fiber.StatusBadRequest,
+			Code:             fiber.StatusBadRequest,
+			ValidationErrors: helper.ValidationError(errValidate),
 		}
 	}
 
@@ -260,10 +267,10 @@ func (a *AuthServiceImpl) CreateUserService(c context.Context, data dto.UserRegi
 }
 
 func (a *AuthServiceImpl) LoginUserService(c context.Context, data dto.UserLoginReq) (res dto.UserRegistrationsResp, err *helper.ErrorStruct) {
-	if err := helper.Validate.Struct(data); err != nil {
+	if errValidate := helper.Validate.Struct(data); errValidate != nil {
 		return res, &helper.ErrorStruct{
-			Err:  helper.ErrBadRequest,
-			Code: fiber.StatusBadRequest,
+			Code:             fiber.StatusBadRequest,
+			ValidationErrors: helper.ValidationError(errValidate),
 		}
 	}
 
