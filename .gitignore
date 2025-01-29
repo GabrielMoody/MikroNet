@@ -10,7 +10,7 @@ auth-config.env
 */uploads
 ./init
 ./init.sql
-
+live_location/
 docker-compose.development.yaml
 docker-compose.prod.yaml
 kong_config.yml

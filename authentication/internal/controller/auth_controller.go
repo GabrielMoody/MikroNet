@@ -2,16 +2,17 @@ package controller
 
 import (
 	"errors"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/middleware"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/service"
-	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
+	"github.com/GabrielMoody/MikroNet/authentication/internal/middleware"
+	"github.com/GabrielMoody/MikroNet/authentication/internal/service"
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type AuthController interface {
@@ -23,6 +24,7 @@ type AuthController interface {
 	SendResetPasswordLink(c *fiber.Ctx) error
 	ResetPassword(c *fiber.Ctx) error
 	ChangePassword(c *fiber.Ctx) error
+	ResetPasswordUI(c *fiber.Ctx) error
 }
 
 type AuthControllerImpl struct {
@@ -373,6 +375,10 @@ func (a *AuthControllerImpl) ResetPassword(c *fiber.Ctx) error {
 		"status": "success",
 		"data":   res,
 	})
+}
+
+func (a *AuthControllerImpl) ResetPasswordUI(c *fiber.Ctx) error {
+	return c.SendFile("views/reset_password.html")
 }
 
 func NewAuthController(authService service.AuthService) AuthController {

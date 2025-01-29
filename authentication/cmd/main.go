@@ -2,16 +2,19 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+
 	"github.com/GabrielMoody/MikroNet/authentication/internal/handler"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/models"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/pb"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"log"
-	"os"
 )
 
 func main() {
@@ -20,6 +23,10 @@ func main() {
 		AllowOrigins: "*",
 		AllowHeaders: "*",
 		AllowMethods: "*",
+	}))
+
+	app.Use("/static", filesystem.New(filesystem.Config{
+		Root: http.Dir("static"),
 	}))
 
 	app.Use(logger.New(logger.Config{

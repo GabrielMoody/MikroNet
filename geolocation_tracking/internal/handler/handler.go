@@ -1,29 +1,29 @@
 package handler
 
 import (
-	"context"
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/dto"
+	"fmt"
 	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/repository"
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/ws"
-	"github.com/gofiber/contrib/websocket"
+	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/socket_io"
+	"github.com/gofiber/contrib/socketio"
 	"github.com/gofiber/fiber/v2"
+
 	"gorm.io/gorm"
 )
 
 func NewWSHandler(r fiber.Router, db *gorm.DB) {
 	api := r.Group("/")
 
-	ctx := context.Background()
 	repo := repository.NewGeoTrackRepository(db)
-	hub := &dto.Hub{
-		Broadcast:  make(chan dto.Message),
-		Register:   make(chan *websocket.Conn),
-		Unregister: make(chan *websocket.Conn),
-		Clients:    make(map[*websocket.Conn]bool),
-	}
-	wsLocation := ws.NewWsGeoTracking(hub, repo)
+	socket := socket_io.NewWsGeoTracking(repo)
 
-	go wsLocation.Run()
+	//socketio.On(socketio.EventConnect, socket.JoinRoom)
+	socketio.On(socketio.EventClose, socket.LeaveRoom)
+	socketio.On(socketio.EventDisconnect, socket.Disconnect)
+	socketio.On(socketio.EventMessage, socket.EventMessage)
+	socketio.On("location", socket.SendLocation)
+	socketio.On(socketio.EventError, func(ep *socketio.EventPayload) {
+		fmt.Printf("Error event - User: %s", ep.Kws.GetStringAttribute("user_id"))
+	})
 
-	api.Use("/ws/location", websocket.New(wsLocation.LocationTracking(ctx)))
+	api.Get("/ws/:roomId", socketio.New(socket.JoinRoom))
 }

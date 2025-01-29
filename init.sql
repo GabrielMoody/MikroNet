@@ -141,23 +141,21 @@ EXECUTE FUNCTION log_driver_location_table_changes();
 
 CREATE EXTENSION postgis;
 CREATE EXTENSION postgis_topology;
-INSERT INTO routes ( route_name) values
-    ('Pusat Kota – Terminal Malalayang'),
-    ('Pusat Kota – Kampus UNSRAT – Terminal Malalayang'),
-    ('Pusat Kota – Terminal Karombasan'),
-    ('Terminal Malalayang – Terminal Karombasan'),
-    ('Terminal Karombasan – Terminal Paal Dua'),
-    ('Pusat Kota – Terminal Paal Dua'),
-    ('Pusat Kota – Kairagi'),
-    ('Pusat Kota – Perkamil'),
-    ('Pusat Kota – Paal 4 – Taas'),
-    ('Pusat Kota – Winangun'),
-    ('Pusat Kota – Tuminting'),
-    ('Terminal Paal Dua – Bandara Sam Ratulangi – Lapangan'),
-    ('Terminal Paal Dua – Politeknik Negeri Manado'),
-    ('Terminal Paal Dua – Terminal Karombasan'),
-    ('Pusat Kota – Woasa'),
-    ('Terminal Karombasan – Pineleng (Minahasa)'),
-    ('Terminal Karombasan – Warembungan (Minahasa)'),
-    ('Terminal Paal Dua – Maumbi – Kolongan'),
-    ('Terminal Paal Dua – Terminal Airmadidi (Minahasa Utara)')
+INSERT INTO routes ( id, route_name) values
+    (1, 'terminal malalayang- pusat kota'),
+    (2, 'terminal malalayang - terminal karombasan'),
+    (3, 'terminal karombasan- pusat kota'),
+    (4, 'terminal karombasan- pusat kota'),
+    (5, 'winangun- pusat kota'),
+    (6, 'karombasan - pusat kota'),
+    (7, 'Terminal karombasan - terminal paal dua'),
+    (8, 'terminal paal dua - pusat kota'),
+    (9, 'kairagi- pusat kota'),
+    (10, 'perkamil - pusat kota'),
+    (11, 'banjer, paal 4, taas- pusat kota'),
+    (12, 'wonasa - pusat kota'),
+    (13, 'tuminting - pusat kota'),
+    (14, 'terminal paal dua - lapangan'),
+    (15, 'terminal paal dua- politeknik)'),
+    (16, 'tuminting- pandu'),
+    (17, 'tuminting- tongkaina')

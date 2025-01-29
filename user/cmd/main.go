@@ -17,7 +17,6 @@ import (
 func main() {
 	app := fiber.New()
 	grpcServer := grpc.NewServer()
-
 	app.Use(cors.New(cors.Config{
 		AllowHeaders: "Authorization, Content-Type",
 		AllowOrigins: "*",
