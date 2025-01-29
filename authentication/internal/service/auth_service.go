@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/helper"
 	"github.com/GabrielMoody/MikroNet/authentication/internal/models"
@@ -335,7 +336,7 @@ func (a *AuthServiceImpl) SendResetPasswordService(c context.Context, email dto.
 	const CONFIG_AUTH_EMAIL = "test.mikronet@gmail.com"
 
 	html := fmt.Sprintf(`
-		<a href="http://localhost:8000/auth/api/auth/reset-password/%s"
+		<a href="http://188.166.179.146:8000/api/auth/reset-password/%s"
         style="
 		color: #fff;
 		background-color: #0069d9;

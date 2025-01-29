@@ -111,18 +111,16 @@ CREATE TABLE IF NOT EXISTS notifications (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE FUNCTION expire_reset_password_links() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-DELETE FROM ResetPassword WHERE current_timestamp < NOW() - INTERVAL '1 minute';
-RETURN NEW;
-END;
-$$;
+DELIMITER $$
 
 CREATE TRIGGER expire_reset_password_links
-    AFTER INSERT ON ResetPassword
-    EXECUTE PROCEDURE expire_reset_password_links();
+    AFTER INSERT ON reset_passwords
+    FOR EACH ROW
+BEGIN
+    DELETE FROM reset_passwords WHERE created_at < NOW() - INTERVAL 1 HOUR;
+END$$
+
+DELIMITER ;
 
 CREATE OR REPLACE FUNCTION log_driver_location_table_changes()
     RETURNS TRIGGER AS $$

@@ -378,7 +378,7 @@ func (a *AuthControllerImpl) ResetPassword(c *fiber.Ctx) error {
 }
 
 func (a *AuthControllerImpl) ResetPasswordUI(c *fiber.Ctx) error {
-	return c.SendFile("views/reset_password.html")
+	return c.SendFile("./views/reset_password.html")
 }
 
 func NewAuthController(authService service.AuthService) AuthController {
