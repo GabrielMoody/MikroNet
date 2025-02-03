@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"github.com/GabrielMoody/mikroNet/driver/internal/controller"
-	"github.com/GabrielMoody/mikroNet/driver/internal/gRPC"
-	"github.com/GabrielMoody/mikroNet/driver/internal/middleware"
-	"github.com/GabrielMoody/mikroNet/driver/internal/repository"
-	"github.com/GabrielMoody/mikroNet/driver/internal/service"
+	"github.com/GabrielMoody/mikronet-driver-service/internal/controller"
+	"github.com/GabrielMoody/mikronet-driver-service/internal/gRPC"
+	"github.com/GabrielMoody/mikronet-driver-service/internal/middleware"
+	"github.com/GabrielMoody/mikronet-driver-service/internal/repository"
+	"github.com/GabrielMoody/mikronet-driver-service/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -16,6 +16,8 @@ func DriverHandler(r fiber.Router, db *gorm.DB) {
 	controllerDriver := controller.NewDriverController(serviceDriver)
 
 	api := r.Group("/")
+
+	api.Get("/images/:id", controllerDriver.GetImage)
 
 	api.Use(middleware.ValidateDriverRole)
 

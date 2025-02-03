@@ -3,13 +3,13 @@ package service
 import (
 	"context"
 	"errors"
-	"github.com/GabrielMoody/mikroNet/driver/internal/dto"
-	"github.com/GabrielMoody/mikroNet/driver/internal/helper"
-	"github.com/GabrielMoody/mikroNet/driver/internal/model"
-	"github.com/GabrielMoody/mikroNet/driver/internal/repository"
-	"github.com/gofiber/fiber/v2"
 	"net/http"
-	"time"
+
+	"github.com/GabrielMoody/mikronet-driver-service/internal/dto"
+	"github.com/GabrielMoody/mikronet-driver-service/internal/helper"
+	"github.com/GabrielMoody/mikronet-driver-service/internal/model"
+	"github.com/GabrielMoody/mikronet-driver-service/internal/repository"
+	"github.com/gofiber/fiber/v2"
 )
 
 type DriverService interface {
@@ -19,10 +19,40 @@ type DriverService interface {
 	GetStatus(c context.Context, id string) (res interface{}, err *helper.ErrorStruct)
 	SetStatus(c context.Context, id string, data dto.StatusReq) (res interface{}, err *helper.ErrorStruct)
 	GetTripHistories(c context.Context, id string) (res interface{}, err *helper.ErrorStruct)
+	GetImage(c context.Context, id string) (res string, err *helper.ErrorStruct)
 }
 
 type driverServiceImpl struct {
 	repo repository.DriverRepo
+}
+
+func (a *driverServiceImpl) GetImage(c context.Context, id string) (res string, err *helper.ErrorStruct) {
+	resRepo, errRepo := a.repo.GetDriverDetails(c, id)
+
+	if errRepo != nil {
+		var code int
+
+		switch {
+		case errors.Is(errRepo, helper.ErrNotFound):
+			code = http.StatusNotFound
+		default:
+			code = http.StatusInternalServerError
+		}
+
+		return res, &helper.ErrorStruct{
+			Err:  errRepo,
+			Code: code,
+		}
+	}
+
+	if resRepo.ProfilePicture == "" {
+		return res, &helper.ErrorStruct{
+			Err:  errors.New("profile picture not found"),
+			Code: http.StatusNotFound,
+		}
+	}
+
+	return resRepo.ProfilePicture, nil
 }
 
 func (a *driverServiceImpl) GetDriverImage(c context.Context, id string) (res string, err *helper.ErrorStruct) {
@@ -67,15 +97,12 @@ func (a *driverServiceImpl) GetDriverDetails(c context.Context, id string) (res 
 	}
 
 	return dto.GetDriverDetailsRes{
-		ID:                 resRepo.ID,
-		FirstName:          resRepo.FirstName,
-		LastName:           resRepo.LastName,
-		DateOfBirth:        resRepo.DateOfBirth,
-		Age:                int(resRepo.Age),
-		Email:              resRepo.Email,
-		RegistrationNumber: resRepo.LicenseNumber,
-		Gender:             resRepo.Gender,
-		ProfilePicture:     resRepo.ProfilePicture,
+		ID:             resRepo.ID,
+		Name:           resRepo.Name,
+		Email:          resRepo.Email,
+		LicenseNumber:  resRepo.LicenseNumber,
+		SIM:            resRepo.SIM,
+		ProfilePicture: resRepo.ProfilePicture,
 	}, nil
 }
 
@@ -87,16 +114,11 @@ func (a *driverServiceImpl) EditDriverDetails(c context.Context, id string, data
 		}
 	}
 
-	format := "02-01-2006"
-	date, _ := time.Parse(format, data.DateOfBirth)
-
 	driver := model.DriverDetails{
-		ID:          id,
-		FirstName:   data.FirstName,
-		LastName:    data.LastName,
-		DateOfBirth: date,
-		Age:         int32(data.Age),
-		Gender:      data.Gender,
+		ID:            id,
+		Name:          data.Name,
+		LicenseNumber: data.LicenseNumber,
+		SIM:           data.SIM,
 	}
 
 	resRepo, errRepo := a.repo.EditDriverDetails(c, driver)

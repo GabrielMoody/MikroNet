@@ -1,30 +1,23 @@
 package dto
 
-import "time"
-
 type (
 	StatusReq struct {
 		Status string `json:"status" validate:"required"`
 	}
 
 	GetDriverDetailsRes struct {
-		ID                 string    `json:"id"`
-		FirstName          string    `json:"first_name"`
-		LastName           string    `json:"last_name"`
-		Email              string    `json:"email"`
-		DateOfBirth        time.Time `json:"date_of_birth"`
-		RegistrationNumber string    `json:"registration_number"`
-		Age                int       `json:"age"`
-		Gender             string    `json:"gender"`
-		ProfilePicture     string    `json:"profile_picture"`
+		ID             string `json:"id"`
+		Name           string `json:"name"`
+		Email          string `json:"email"`
+		LicenseNumber  string `json:"license_number" form:"license_number"`
+		SIM            string `json:"sim" form:"sim"`
+		ProfilePicture string `json:"profile_picture"`
 	}
 
 	EditDriverReq struct {
-		FirstName      string `json:"first_name" form:"first_name" validate:"required"`
-		LastName       string `json:"last_name" form:"last_name" validate:"required"`
-		DateOfBirth    string `json:"date_of_birth" form:"date_of_birth"`
-		Age            int    `json:"age" form:"age"`
-		Gender         string `json:"gender" form:"gender"`
+		Name           string `json:"name" form:"name" validate:"required"`
+		LicenseNumber  string `json:"license_number" form:"license_number" validate:"required"`
+		SIM            string `json:"sim" form:"sim" validate:"required"`
 		ProfilePicture string `json:"profile_picture" form:"profile_picture"`
 	}
 

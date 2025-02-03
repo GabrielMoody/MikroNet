@@ -2,10 +2,11 @@ package repository
 
 import (
 	"context"
-	"github.com/GabrielMoody/mikroNet/driver/internal/helper"
-	"github.com/GabrielMoody/mikroNet/driver/internal/model"
-	"gorm.io/gorm"
 	"time"
+
+	"github.com/GabrielMoody/mikronet-driver-service/internal/helper"
+	"github.com/GabrielMoody/mikronet-driver-service/internal/model"
+	"gorm.io/gorm"
 )
 
 type DriverRepo interface {

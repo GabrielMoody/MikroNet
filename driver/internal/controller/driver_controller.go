@@ -2,12 +2,13 @@ package controller
 
 import (
 	"fmt"
-	"github.com/GabrielMoody/mikroNet/driver/internal/dto"
-	"github.com/GabrielMoody/mikroNet/driver/internal/middleware"
-	"github.com/GabrielMoody/mikroNet/driver/internal/service"
-	"github.com/gofiber/fiber/v2"
+	"net/http"
 	"os"
-	"path/filepath"
+
+	"github.com/GabrielMoody/mikronet-driver-service/internal/dto"
+	"github.com/GabrielMoody/mikronet-driver-service/internal/middleware"
+	"github.com/GabrielMoody/mikronet-driver-service/internal/service"
+	"github.com/gofiber/fiber/v2"
 )
 
 type DriverController interface {
@@ -16,10 +17,45 @@ type DriverController interface {
 	GetStatus(c *fiber.Ctx) error
 	SetStatus(c *fiber.Ctx) error
 	GetTripHistories(c *fiber.Ctx) error
+	GetImage(c *fiber.Ctx) error
 }
 
 type DriverControllerImpl struct {
 	service service.DriverService
+}
+
+func (a *DriverControllerImpl) GetImage(c *fiber.Ctx) error {
+	id := c.Params("id")
+	ctx := c.Context()
+
+	res, err := a.service.GetImage(ctx, id)
+
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": err,
+		})
+	}
+
+	var extension = map[string]string{
+		"image/jpeg": "jpg",
+		"image/png":  "png",
+	}
+
+	img, errI := os.ReadFile(res)
+
+	if errI != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "error",
+			"errors": errI,
+		})
+	}
+
+	ext := http.DetectContentType(img)
+
+	c.Response().Header.Set("Content-Type", fmt.Sprintf("image/%s", extension[ext]))
+
+	return c.Status(fiber.StatusOK).Send(img)
 }
 
 func (a *DriverControllerImpl) GetDriver(c *fiber.Ctx) error {
@@ -37,29 +73,15 @@ func (a *DriverControllerImpl) GetDriver(c *fiber.Ctx) error {
 		})
 	}
 
-	image, errI := os.ReadFile(res.ProfilePicture)
-
-	if errI != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "error",
-			"errors": errI,
-		})
-	}
-
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "Success",
 		"data": fiber.Map{
 			"id":             res.ID,
-			"first_name":     res.FirstName,
-			"last_name":      res.LastName,
+			"name":           res.Name,
 			"email":          res.Email,
-			"license_number": res.RegistrationNumber,
-			"age":            res.Age,
-			"date_of_birth":  res.DateOfBirth,
-			"image": fiber.Map{
-				"mime_type": fmt.Sprintf("image/%s", filepath.Ext(res.ProfilePicture)[1:]),
-				"data":      image,
-			},
+			"license_number": res.LicenseNumber,
+			"SIM":            res.SIM,
+			"image":          os.Getenv("BASE_URL") + "/api/driver/images/" + res.ID,
 		},
 	})
 }
