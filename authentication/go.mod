@@ -1,4 +1,4 @@
-module github.com/GabrielMoody/MikroNet/authentication
+module github.com/GabrielMoody/mikronet-auth-service
 
 go 1.22.7
 

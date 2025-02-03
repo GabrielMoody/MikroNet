@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/helper"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/models"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/pb"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/repository"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/dto"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/helper"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/models"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/pb"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/repository"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -64,8 +64,7 @@ func (a *AuthServiceImpl) CreateGovService(c context.Context, data dto.GovRegist
 
 	_, errPb := a.pbDashboard.CreateGov(c, &pb.CreateGovReq{
 		Id:             resRepo,
-		FirstName:      data.FirstName,
-		LastName:       data.LastName,
+		FirstName:      data.Name,
 		Email:          data.Email,
 		PhoneNumber:    data.PhoneNumber,
 		ProfilePicture: image,
@@ -111,8 +110,7 @@ func (a *AuthServiceImpl) CreateOwnerService(c context.Context, data dto.OwnerRe
 
 	_, errPb := a.pbDashboard.CreateOwner(c, &pb.CreateOwnerReq{
 		Id:             resRepo,
-		FirstName:      data.FirstName,
-		LastName:       data.LastName,
+		FirstName:      data.Name,
 		Email:          data.Email,
 		PhoneNumber:    data.PhoneNumber,
 		Nik:            data.NIK,
@@ -159,12 +157,11 @@ func (a *AuthServiceImpl) CreateDriverService(c context.Context, data dto.Driver
 
 	_, errPb := a.pbDriver.CreateDriver(c, &pb.CreateDriverRequest{
 		Id:             resRepo,
-		FirstName:      data.FirstName,
-		LastName:       data.LastName,
+		Name:           data.Name,
 		Email:          data.Email,
 		PhoneNumber:    data.PhoneNumber,
-		DateOfBirth:    data.DateOfBirth,
 		LicenseNumber:  data.LicenseNumber,
+		Sim:            data.SIM,
 		ProfilePicture: image,
 	})
 

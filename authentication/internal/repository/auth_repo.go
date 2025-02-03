@@ -3,9 +3,10 @@ package repository
 import (
 	"context"
 	"errors"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/dto"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/helper"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/models"
+
+	"github.com/GabrielMoody/mikronet-auth-service/internal/dto"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/helper"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/models"
 	"github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"

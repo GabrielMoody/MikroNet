@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"github.com/GabrielMoody/MikroNet/authentication/internal/controller"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/middleware"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/pb"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/repository"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/service"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/controller"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/middleware"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/pb"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/repository"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )

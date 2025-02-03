@@ -14,12 +14,10 @@ type (
 	}
 
 	DriverRegistrationsReq struct {
-		FirstName            string `json:"first_name" form:"first_name" validate:"required"`
-		LastName             string `json:"last_name" form:"last_name" `
+		Name                 string `json:"name" form:"name" validate:"required"`
 		Email                string `json:"email" form:"email" validate:"required,email"`
 		PhoneNumber          string `json:"phone_number" form:"phone_number"`
-		DateOfBirth          string `json:"date_of_birth" form:"date_of_birth"`
-		Age                  int    `json:"age" form:"age"`
+		SIM                  string `json:"sim" form:"sim"`
 		LicenseNumber        string `json:"license_number" form:"license_number"`
 		ProfilePicture       string `json:"profile_picture" form:"profile_picture"`
 		Password             string `json:"password" form:"password" validate:"required,min=8"`
@@ -27,19 +25,17 @@ type (
 	}
 
 	OwnerRegistrationsReq struct {
-		FirstName            string `json:"first_name"`
-		LastName             string `json:"last_name"`
+		Name                 string `json:"name"`
 		Email                string `json:"email" validate:"required,email"`
 		PhoneNumber          string `json:"phone_number"`
 		NIK                  string `json:"nik"`
-		ProfilePicture       string `json:"profile_picture" form:"profile_picture" form:"profile_picture"`
+		ProfilePicture       string `json:"profile_picture" form:"profile_picture"`
 		Password             string `json:"password" validate:"required,min=8"`
 		PasswordConfirmation string `json:"password_confirmation" validate:"required,eqfield=Password"`
 	}
 
 	GovRegistrationReq struct {
-		FirstName            string `json:"first_name" form:"first_name" validate:"required"`
-		LastName             string `json:"last_name" form:"last_name" validate:"required"`
+		Name                 string `json:"name" form:"name" validate:"required"`
 		Email                string `json:"email" form:"email" validate:"required,email"`
 		PhoneNumber          string `json:"phone_number" form:"phone_number" validate:"required"`
 		NIP                  string `json:"nip" form:"nip" validate:"required"`

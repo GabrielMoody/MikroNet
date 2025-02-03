@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/GabrielMoody/MikroNet/authentication/internal/handler"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/models"
-	"github.com/GabrielMoody/MikroNet/authentication/internal/pb"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/handler"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/models"
+	"github.com/GabrielMoody/mikronet-auth-service/internal/pb"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
