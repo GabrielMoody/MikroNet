@@ -2,18 +2,19 @@ package main
 
 import (
 	"fmt"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/handler"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/models"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/pb"
+	"log"
+	"net"
+	"os"
+
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/handler"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/models"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/pb"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
-	"log"
-	"net"
-	"os"
 )
 
 func main() {

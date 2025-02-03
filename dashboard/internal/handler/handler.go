@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/controller"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/gRPC"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/middleware"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/pb"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/repository"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/service"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/controller"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/gRPC"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/middleware"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/pb"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/repository"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )

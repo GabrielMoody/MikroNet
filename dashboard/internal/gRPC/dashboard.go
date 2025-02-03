@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/models"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/pb"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/repository"
 	"image"
 	"image/jpeg"
 	"image/png"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/models"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/pb"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/repository"
 )
 
 type GRPC struct {
@@ -43,8 +44,7 @@ func (a *GRPC) CreateOwner(ctx context.Context, data *pb.CreateOwnerReq) (*pb.Cr
 
 	res, err := a.repo.CreateBusinessOwner(ctx, models.OwnerDetails{
 		ID:             data.Id,
-		FirstName:      data.FirstName,
-		LastName:       data.LastName,
+		Name:           data.Name,
 		Email:          data.Email,
 		PhoneNumber:    data.PhoneNumber,
 		NIK:            data.Nik,
@@ -58,8 +58,7 @@ func (a *GRPC) CreateOwner(ctx context.Context, data *pb.CreateOwnerReq) (*pb.Cr
 
 	return &pb.CreateOwnerReq{
 		Id:          res.ID,
-		FirstName:   res.FirstName,
-		LastName:    res.LastName,
+		Name:        res.Name,
 		Email:       res.Email,
 		PhoneNumber: res.PhoneNumber,
 		Nik:         res.NIK,
@@ -104,8 +103,7 @@ func (a *GRPC) CreateGov(ctx context.Context, data *pb.CreateGovReq) (*pb.Create
 
 	res, err := a.repo.CreateGovernment(ctx, models.GovDetails{
 		ID:             data.Id,
-		FirstName:      data.FirstName,
-		LastName:       data.LastName,
+		Name:           data.Name,
 		Email:          data.Email,
 		NIP:            data.Nip,
 		ProfilePicture: filePath,
@@ -116,11 +114,10 @@ func (a *GRPC) CreateGov(ctx context.Context, data *pb.CreateGovReq) (*pb.Create
 	}
 
 	return &pb.CreateGovReq{
-		Id:        res.ID,
-		FirstName: res.FirstName,
-		LastName:  res.LastName,
-		Email:     res.Email,
-		Nip:       res.NIP,
+		Id:    res.ID,
+		Name:  res.Name,
+		Email: res.Email,
+		Nip:   res.NIP,
 	}, nil
 }
 

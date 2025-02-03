@@ -3,10 +3,12 @@ package service
 import (
 	"context"
 	"errors"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/helper"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/models"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/repository"
+
 	"net/http"
+
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/helper"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/models"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/repository"
 )
 
 type DashboardService interface {

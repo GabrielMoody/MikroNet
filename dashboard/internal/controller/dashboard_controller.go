@@ -1,11 +1,12 @@
 package controller
 
 import (
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/dto"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/pb"
-	"github.com/GabrielMoody/mikroNet/dashboard/internal/service"
-	"github.com/gofiber/fiber/v2"
 	"net/http"
+
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/dto"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/pb"
+	"github.com/GabrielMoody/mikronet-dashboard-service/internal/service"
+	"github.com/gofiber/fiber/v2"
 )
 
 type DashboardController interface {
@@ -251,15 +252,10 @@ func (a *DashboardControllerImpl) GetDriverDetails(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "Success",
 		"data": fiber.Map{
-			"id":            res.Id,
-			"first_name":    res.FirstName,
-			"last_name":     res.LastName,
-			"email":         res.Email,
-			"date_of_birth": res.DateOfBirth,
-			"image": fiber.Map{
-				"mime_type": http.DetectContentType(res.ProfilePicture),
-				"image":     res.ProfilePicture,
-			},
+			"id":    res.Id,
+			"name":  res.Name,
+			"email": res.Email,
+			"image": res.ImageUrl,
 		},
 	})
 }
