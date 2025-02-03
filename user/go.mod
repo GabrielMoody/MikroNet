@@ -1,4 +1,4 @@
-module github.com/GabrielMoody/mikroNet/user
+module github.com/GabrielMoody/mikronet-user-service
 
 go 1.22.7
 

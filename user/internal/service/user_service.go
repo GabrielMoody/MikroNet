@@ -2,11 +2,12 @@ package service
 
 import (
 	"context"
-	"github.com/GabrielMoody/mikroNet/user/internal/dto"
-	"github.com/GabrielMoody/mikroNet/user/internal/helper"
-	"github.com/GabrielMoody/mikroNet/user/internal/model"
-	"github.com/GabrielMoody/mikroNet/user/internal/repository"
 	"net/http"
+
+	"github.com/GabrielMoody/mikronet-user-service/internal/dto"
+	"github.com/GabrielMoody/mikronet-user-service/internal/helper"
+	"github.com/GabrielMoody/mikronet-user-service/internal/model"
+	"github.com/GabrielMoody/mikronet-user-service/internal/repository"
 )
 
 type UserService interface {

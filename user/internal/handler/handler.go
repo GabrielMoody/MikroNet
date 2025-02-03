@@ -1,12 +1,13 @@
 package handler
 
 import (
-	"github.com/GabrielMoody/mikroNet/user/internal/controller"
-	"github.com/GabrielMoody/mikroNet/user/internal/gRPC"
-	"github.com/GabrielMoody/mikroNet/user/internal/middleware"
-	"github.com/GabrielMoody/mikroNet/user/internal/repository"
-	"github.com/GabrielMoody/mikroNet/user/internal/service"
+	"github.com/GabrielMoody/mikronet-user-service/internal/controller"
+	"github.com/GabrielMoody/mikronet-user-service/internal/gRPC"
+	"github.com/GabrielMoody/mikronet-user-service/internal/middleware"
+	"github.com/GabrielMoody/mikronet-user-service/internal/repository"
+	"github.com/GabrielMoody/mikronet-user-service/internal/service"
 	"github.com/gofiber/fiber/v2"
+
 	"gorm.io/gorm"
 )
 

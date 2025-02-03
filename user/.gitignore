@@ -1,0 +1,5 @@
+.idea
+tmp/
+.air.toml
+auth-config.env
+uploads/

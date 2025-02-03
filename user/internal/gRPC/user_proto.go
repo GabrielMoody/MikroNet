@@ -2,10 +2,11 @@ package gRPC
 
 import (
 	"context"
-	"github.com/GabrielMoody/mikroNet/user/internal/model"
-	"github.com/GabrielMoody/mikroNet/user/internal/pb"
-	"github.com/GabrielMoody/mikroNet/user/internal/repository"
 	"strconv"
+
+	"github.com/GabrielMoody/mikronet-user-service/internal/model"
+	"github.com/GabrielMoody/mikronet-user-service/internal/pb"
+	"github.com/GabrielMoody/mikronet-user-service/internal/repository"
 )
 
 type GRPC struct {

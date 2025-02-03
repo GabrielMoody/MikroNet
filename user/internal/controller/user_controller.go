@@ -2,13 +2,15 @@ package controller
 
 import (
 	"fmt"
-	"github.com/GabrielMoody/mikroNet/user/internal/dto"
-	"github.com/GabrielMoody/mikroNet/user/internal/middleware"
-	"github.com/GabrielMoody/mikroNet/user/internal/service"
-	"github.com/fasthttp/websocket"
-	"github.com/gofiber/fiber/v2"
+
 	"net/http"
 	"os"
+
+	"github.com/GabrielMoody/mikronet-user-service/internal/dto"
+	"github.com/GabrielMoody/mikronet-user-service/internal/middleware"
+	"github.com/GabrielMoody/mikronet-user-service/internal/service"
+	"github.com/fasthttp/websocket"
+	"github.com/gofiber/fiber/v2"
 )
 
 type UserController interface {

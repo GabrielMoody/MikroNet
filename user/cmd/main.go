@@ -2,16 +2,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/GabrielMoody/mikroNet/user/internal/handler"
-	"github.com/GabrielMoody/mikroNet/user/internal/model"
-	"github.com/GabrielMoody/mikroNet/user/internal/pb"
+	"log"
+	"net"
+
+	"github.com/GabrielMoody/mikronet-user-service/internal/handler"
+	"github.com/GabrielMoody/mikronet-user-service/internal/model"
+	"github.com/GabrielMoody/mikronet-user-service/internal/pb"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log"
-	"net"
 )
 
 func main() {
