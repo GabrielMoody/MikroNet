@@ -1,0 +1,46 @@
+name: Deployment Workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        id: docker-hub
+        env:
+          username: ${{secrets.DOCKER_HUB_USERNAME}}
+          password: ${{secrets.DOCKER_HUB_PASSWORD}}
+        run: |
+          docker login -u $username -p $password
+
+      - name: Build docker image
+        id: build-docker-image
+        run: |
+          docker build -t ${{secrets.DOCKER_HUB_USERNAME}}/geolocation_tracking:latest .
+
+
+      - name: Push the docker image
+        id: push-docker-image
+        run: |
+          docker push ${{secrets.DOCKER_HUB_USERNAME}}/geolocation_tracking:latest
+ 
+
+      - name: Deploy with SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          key: ${{ secrets.SSH_KEY }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
+          script: |
+            echo "${{ secrets.SSH_PASSWORD }}" | sudo -S docker compose up -d --pull always
+            echo "${{ secrets.SSH_PASSWORD }}" | sudo -S docker container restart kong

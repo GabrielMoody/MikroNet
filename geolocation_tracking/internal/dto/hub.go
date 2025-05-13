@@ -1,8 +1,9 @@
 package dto
 
 import (
-	"github.com/gofiber/contrib/websocket"
 	"sync"
+
+	"github.com/gofiber/contrib/websocket"
 )
 
 type Message struct {
@@ -18,8 +19,8 @@ type Room struct {
 }
 
 type Hub struct {
-	Rooms      map[string]*Room
-	Msg        chan Message
+	Clients    map[*websocket.Conn]bool
+	Broadcast  chan Message
 	Register   chan *websocket.Conn
 	Unregister chan *websocket.Conn
 }
