@@ -1,2 +1,2 @@
 run:
-	docker compose up -d
+	docker compose -f docker-compose.development.yaml up -d

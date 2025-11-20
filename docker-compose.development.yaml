@@ -11,7 +11,7 @@ volumes:
 
 services:
   auth_service:
-    build: authentication
+    build: /services/authentication
     container_name: auth_service
     depends_on:
       mysql_database:
@@ -34,7 +34,7 @@ services:
       - kong-net
 
   user_service:
-    build: user
+    build: /services/user
     container_name: user_service
     depends_on:
       mysql_database:
@@ -53,7 +53,7 @@ services:
       - kong-net
 
   driver_service:
-    build: driver
+    build: /services/driver
     container_name: driver_service
     depends_on:
       mysql_database:
@@ -73,7 +73,7 @@ services:
       - kong-net
 
   dashboard_service:
-    build: dashboard
+    build: /services/dashboard
     container_name: dashboard_service
     depends_on:
       mysql_database:
@@ -96,7 +96,7 @@ services:
       - kong-net
 
   geolocation_tracking_service:
-    build: geolocation_tracking
+    build: /services/geolocation_tracking
     container_name: geolocation_tracking_service
     depends_on:
         geolocation_database:
