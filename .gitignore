@@ -11,7 +11,6 @@ auth-config.env
 ./init
 ./init.sql
 live_location/
-docker-compose.development.yaml
 docker-compose.prod.yaml
 kong_config.yml
 TODO.MD
@@ -24,3 +23,6 @@ TODO.MD
 /proto
 
 dummy.sql
+*.air.toml
+*/uploads
+*/tmp
