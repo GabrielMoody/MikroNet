@@ -29,22 +29,3 @@ jobs:
             for folder in ${{ env.folders }}; do
                 docker build -t ${{secrets.DOCKER_HUB_USERNAME}}/$folder:latest $folder
             done
-
-      - name: Push the docker image
-        id: push-docker-image
-        run: |
-            for folder in ${{ env.folders }}; do
-                docker push ${{secrets.DOCKER_HUB_USERNAME}}/$folder:latest
-            done
-
-      - name: Deploy with SSH
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          key: ${{ secrets.SSH_KEY }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          port: 22
-          script: |
-            echo "${{ secrets.SSH_PASSWORD }}" | sudo -S docker compose up -d --pull always
-            echo "${{ secrets.SSH_PASSWORD }}" | sudo -S docker container restart kong

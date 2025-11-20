@@ -297,13 +297,15 @@ services:
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - /monitoring/loki-config.yaml:/etc/loki/local-config.yaml:ro
 
   fluent-bit:
     container_name: fluent-bit
     image: fluent/fluent-bit
     volumes:
-      - ./fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
-      - ./parser.conf:/fluent-bit/etc/parser.conf
+      - /monitoring/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - /monitoring/parser.conf:/fluent-bit/etc/parser.conf
       - ./var/log/mikronet:/var/log/mikronet
     depends_on:
       - loki
@@ -338,7 +340,7 @@ services:
     container_name: promotheus
     image: prom/prometheus
     volumes:
-      - ./promotheus.yaml:/etc/prometheus/prometheus.yml
+      - /monitoring/promotheus.yaml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090" 
 

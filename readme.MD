@@ -1,4 +1,12 @@
-# Ride Hailing Microservices Documentation
+<p align="center">
+  <img src="https://github.com/GabrielMoody/MikroNet/actions/workflows/build.yml/badge.svg" alt="CI" />
+  <a href="https://goreportcard.com/report/GabrielMoody/MikroNet">
+    <img src="https://goreportcard.com/badge/GabrielMoody/MikroNet" alt="Go Report Card" />
+  </a>
+  <img src="https://img.shields.io/github/license/GabrielMoody/MikroNet" alt="License" />
+</p>
+
+# Ride Hailing Microservices
 
 MikroNet is a backend systems for real-time driver tracking, order management and notification services to server mobile applications both for the users and the drivers.
 
@@ -19,3 +27,14 @@ MikroNet is a backend systems for real-time driver tracking, order management an
 - Docker & Docker Compose
 - Kong Gateway
 - Promotheus + Grafana + Loki + FluentBit
+
+## How to Run
+
+### Prerequisite
+- Docker
+- Docker Compose v2.1+
+
+On linux/git bash:
+```bash
+make
+```
