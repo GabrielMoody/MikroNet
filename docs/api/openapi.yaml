@@ -1,0 +1,654 @@
+openapi: 3.0.3
+info:
+  title: MikroNet
+  version: 1.0.0
+  contact: {}
+servers:
+  - url: http://localhost:8000/api
+paths:
+  /auth/register/user:
+    post:
+      tags:
+        - Authentication
+      summary: Register New User
+      description: Register New User
+      operationId: registerNewUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: heri123@gmail.com
+                password:
+                  type: string
+                  example: '12345678'
+                password_confirmation:
+                  type: string
+                  example: '12345678'
+            examples:
+              Register New User:
+                value:
+                  email: heri123@gmail.com
+                  password: '12345678'
+                  password_confirmation: '12345678'
+      responses:
+        '200':
+          description: ''
+  /auth/register/driver:
+    post:
+      tags:
+        - Authentication
+      summary: Register New Driver
+      description: Register New Driver
+      operationId: registerNewDriver
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: heri2@gmail.com
+                ktp:
+                  type: string
+                  format: binary
+                license_number:
+                  type: string
+                  example: DB 1234 AA
+                name:
+                  type: string
+                  example: Heri Kurniawan
+                password:
+                  type: string
+                  example: '12345678'
+                password_confirmation:
+                  type: string
+                  example: '12345678'
+                phone_number:
+                  type: string
+                  example: '089279213091'
+                profile_picture:
+                  type: string
+                  format: binary
+                sim:
+                  type: string
+                  example: '2193879213'
+      responses:
+        '200':
+          description: ''
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login
+      description: Login
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: heri123@gmail.com
+                password:
+                  type: string
+                  example: '12345678'
+            examples:
+              Login:
+                value:
+                  email: heri123@gmail.com
+                  password: '12345678'
+      responses:
+        '200':
+          description: ''
+  /auth/reset-password:
+    post:
+      tags:
+        - Authentication
+      summary: Request Reset Password Link
+      description: Request Reset Password Link
+      operationId: requestResetPasswordLink
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: gabrielmdy08@gmail.com
+            examples:
+              Request Reset Password Link:
+                value:
+                  email: gabrielmdy08@gmail.com
+      responses:
+        '200':
+          description: ''
+  /auth/reset-password/{id}:
+    put:
+      tags:
+        - Authentication
+      summary: Reset Password
+      description: Reset Password
+      operationId: resetPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: '12345678'
+                password_confirmation:
+                  type: string
+                  example: '12345678'
+            examples:
+              Reset Password:
+                value:
+                  password: '12345678'
+                  password_confirmation: '12345678'
+      responses:
+        '200':
+          description: ''
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 653a7319-de8f-4359-a8af-c65c83a33332
+  /auth/change-password:
+    put:
+      tags:
+        - Authentication
+      summary: Change Password
+      description: Change Password
+      operationId: changePassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_password:
+                  type: string
+                  example: '12345678'
+                new_password_confirm:
+                  type: string
+                  example: '12345678'
+                old_password:
+                  type: string
+                  example: '12345678'
+            examples:
+              Change Password:
+                value:
+                  new_password: '12345678'
+                  new_password_confirm: '12345678'
+                  old_password: '12345678'
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+  /dashboard/users:
+    get:
+      tags:
+        - Dashboard (Admin)
+      summary: Get all users
+      description: Get all users
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+  /dashboard/drivers:
+    get:
+      tags:
+        - Dashboard (Admin)
+      summary: Get all drivers
+      description: Get all drivers
+      operationId: getAllDrivers
+      parameters:
+        - name: verified
+          in: query
+          schema:
+            type: string
+            example: '1'
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+  /dashboard/drivers/{id}:
+    get:
+      tags:
+        - Dashboard (Admin)
+      summary: Get driver details by ID
+      description: Get driver details by ID
+      operationId: getDriverDetailsById
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - Dashboard (Admin)
+      summary: Delete driver
+      description: Delete driver
+      operationId: deleteDriver
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 0088b0ad-54aa-431a-82cb-7539df342602
+  /dashboard/users/{id}:
+    get:
+      tags:
+        - Dashboard (Admin)
+      summary: Get user details by ID
+      description: Get user details by ID
+      operationId: getUserDetailsById
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - Dashboard (Admin)
+      summary: Delete user
+      description: Delete user
+      operationId: deleteUser
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 00a736e6-b4df-4861-80ea-fe607b50caed
+  /dashboard/reviews:
+    get:
+      tags:
+        - Dashboard (Admin)
+      summary: Get All Reviews
+      description: Get All Reviews
+      operationId: getAllReviews
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+  /dashboard/reviews/{id}:
+    get:
+      tags:
+        - Dashboard (Admin)
+      summary: Get Review By ID
+      description: Get Review By ID
+      operationId: getReviewById
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: '1'
+  /dashboard/block:
+    get:
+      tags:
+        - Dashboard (Admin)
+      summary: Get All Block Account
+      description: Get All Block Account
+      operationId: getAllBlockAccount
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+  /dashboard/drivers/verified/{id}:
+    post:
+      tags:
+        - Dashboard (Admin)
+      summary: Set status verified to drivers
+      description: Set status verified to drivers
+      operationId: setStatusVerifiedToDrivers
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: ''
+  /dashboard/block/{id}:
+    put:
+      tags:
+        - Dashboard (Admin)
+      summary: Unlock blocked account
+      description: Unlock blocked account
+      operationId: unlockBlockedAccount
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Dashboard (Admin)
+      summary: Block an account
+      description: Block an account
+      operationId: blockAnAccount
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 99457fe1-06e6-41a4-8582-ea5a29cfd55e
+  /dashboard/route:
+    post:
+      tags:
+        - Dashboard (Admin)
+      summary: Add new route
+      description: Add new route
+      operationId: addNewRoute
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                route_name:
+                  type: string
+                  example: Malalayang - Pasar 45
+            examples:
+              Add new route:
+                value:
+                  route_name: Malalayang - Pasar 45
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+  /driver/status:
+    get:
+      tags:
+        - Driver
+      summary: Get driver status
+      description: Get driver status
+      operationId: getDriverStatus
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Driver
+      summary: Update driver status
+      description: Update driver status
+      operationId: updateDriverStatus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: 'on'
+            examples:
+              Update driver status:
+                value:
+                  status: 'on'
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+  /driver/:
+    get:
+      tags:
+        - Driver
+      summary: Get driver details
+      description: Get driver details
+      operationId: getDriverDetails
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Driver
+      summary: Edit driver detail
+      description: Edit driver detail
+      operationId: editDriverDetail
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                license_number:
+                  type: string
+                  example: DB 1234 AA
+                name:
+                  type: string
+                  example: Heri Kurniawan
+                profile_picture:
+                  type: string
+                  format: binary
+                sim:
+                  type: string
+                  example: '8291739813'
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+  /api/driver/images/{id}:
+    get:
+      tags:
+        - Driver
+      summary: Get Images
+      description: Get Images
+      operationId: getImages
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 78133654-2b9e-4ef1-9384-266b95f6a9a9
+  /driver/code/:
+    get:
+      tags:
+        - Driver
+      summary: Get QR Code
+      description: Get QR Code
+      operationId: getQrCode
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+  /user/:
+    get:
+      tags:
+        - User
+      summary: Get user profile
+      description: Get user profile
+      operationId: getUserProfile
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - User
+      summary: Update user profile
+      description: Update user profile
+      operationId: updateUserProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Heri Kurniawan
+            examples:
+              Update user profile:
+                value:
+                  name: Heri Kurniawan
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+  /user/review/{id}:
+    post:
+      tags:
+        - User
+      summary: Review driver
+      description: Review driver
+      operationId: reviewDriver
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                  example: Berbahaya
+                star:
+                  type: number
+                  example: 1
+            examples:
+              Review driver:
+                value:
+                  comment: Berbahaya
+                  star: 1
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 78133654-2b9e-4ef1-9384-266b95f6a9a9
+  /user/order:
+    post:
+      tags:
+        - User
+      summary: Make an order
+      description: Make an order
+      operationId: makeAnOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lat:
+                  type: number
+                  example: 1.45714
+                lng:
+                  type: number
+                  example: 124.830788
+            examples:
+              Make an order:
+                value:
+                  lat: 1.45714
+                  lng: 124.830788
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+  /user/transaction:
+    post:
+      tags:
+        - User
+      summary: Transaction
+      description: Transaction
+      operationId: transaction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  example: 6000
+                driver_id:
+                  type: string
+                  example: ''
+            examples:
+              Transaction:
+                value:
+                  amount: 6000
+                  driver_id: ''
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+tags:
+  - name: Authentication
+  - name: Dashboard (Admin)
+  - name: Driver
+  - name: User
