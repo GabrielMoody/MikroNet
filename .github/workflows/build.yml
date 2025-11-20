@@ -11,7 +11,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     env:
-        folders: "/services/authentication /services/dashboard /services/user /services/driver"
+        folders: "services/authentication services/dashboard services/user services/driver"
     steps:
       - uses: actions/checkout@v4
 
