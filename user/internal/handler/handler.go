@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/GabrielMoody/mikronet-user-service/internal/controller"
-	"github.com/GabrielMoody/mikronet-user-service/internal/gRPC"
 	"github.com/GabrielMoody/mikronet-user-service/internal/middleware"
 	"github.com/GabrielMoody/mikronet-user-service/internal/repository"
 	"github.com/GabrielMoody/mikronet-user-service/internal/service"
@@ -24,11 +23,5 @@ func UserHandler(r fiber.Router, db *gorm.DB) {
 
 	api.Post("/order", controllerUser.Order)
 	api.Post("/review/:driverId", controllerUser.ReviewOrder)
-}
-
-func GRPCHandler(db *gorm.DB) *gRPC.GRPC {
-	repo := repository.NewUserRepo(db)
-	grpc := gRPC.NewgRPC(repo)
-
-	return grpc
+	api.Post("/transaction", controllerUser.Transaction)
 }

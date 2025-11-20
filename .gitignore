@@ -15,3 +15,9 @@ docker-compose.development.yaml
 docker-compose.prod.yaml
 kong_config.yml
 TODO.MD
+
+/var
+/uploads
+/pgadmin-data
+/maps
+/faker

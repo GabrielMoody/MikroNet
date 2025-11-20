@@ -9,56 +9,42 @@ import (
 )
 
 type UserRepo interface {
-	CreateUser(c context.Context, user model.UserDetails) (model.UserDetails, error)
-	GetUserDetails(c context.Context, id string) (model.UserDetails, error)
-	GetAllUsers(c context.Context) ([]model.UserDetails, error)
-	GetAllReviews(c context.Context) ([]model.Review, error)
-	GetReviewsByID(c context.Context, id string) (model.Review, error)
+	DeleteUser(c context.Context, id string) (model.PassengerDetails, error)
+	GetUserDetails(c context.Context, id string) (model.Users, error)
 	ReviewOrder(c context.Context, data model.Review) (model.Review, error)
+	Transaction(c context.Context, data model.Transaction) (model.Transaction, error)
 }
 
 type UserRepoImpl struct {
 	db *gorm.DB
 }
 
-func (a *UserRepoImpl) GetAllReviews(c context.Context) (res []model.Review, err error) {
-	if err := a.db.WithContext(c).Find(&res).Error; err != nil {
-		return nil, helper.ErrDatabase
-	}
-
-	return res, nil
-}
-
-func (a *UserRepoImpl) GetReviewsByID(c context.Context, id string) (res model.Review, err error) {
-	if err := a.db.WithContext(c).First(&res, "id = ?", id).Error; err != nil {
-		return res, helper.ErrNotFound
-	}
-
-	return res, nil
-}
-
-func (a *UserRepoImpl) GetAllUsers(c context.Context) (res []model.UserDetails, err error) {
-	if err := a.db.WithContext(c).Find(&res).Error; err != nil {
-		return nil, helper.ErrDatabase
-	}
-
-	return res, nil
-}
-
-func (a *UserRepoImpl) GetUserDetails(c context.Context, id string) (res model.UserDetails, err error) {
-	if err := a.db.WithContext(c).Find(&res, "id = ?", id).Error; err != nil {
-		return res, helper.ErrNotFound
-	}
-
-	return res, nil
-}
-
-func (a *UserRepoImpl) CreateUser(c context.Context, user model.UserDetails) (res model.UserDetails, err error) {
-	if err = a.db.WithContext(c).Create(&user).Error; err != nil {
+func (a *UserRepoImpl) Transaction(c context.Context, data model.Transaction) (res model.Transaction, err error) {
+	if err := a.db.WithContext(c).Create(&data).Error; err != nil {
 		return res, helper.ErrDatabase
 	}
 
-	return user, nil
+	return data, nil
+}
+
+func (a *UserRepoImpl) DeleteUser(c context.Context, id string) (res model.PassengerDetails, err error) {
+	if err := a.db.WithContext(c).Delete(&res, "id = ?", id).Error; err != nil {
+		return res, helper.ErrDatabase
+	}
+
+	return res, nil
+}
+
+func (a *UserRepoImpl) GetUserDetails(c context.Context, id string) (res model.Users, err error) {
+	if err := a.db.WithContext(c).Table("users").
+		Joins("JOIN passenger_details p ON p.id = users.id").
+		Select("users.id, users.email, p.name").
+		Scan(&res).
+		Error; err != nil {
+		return res, helper.ErrNotFound
+	}
+
+	return res, nil
 }
 
 func (a *UserRepoImpl) ReviewOrder(c context.Context, data model.Review) (res model.Review, err error) {

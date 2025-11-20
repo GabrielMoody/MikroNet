@@ -2,10 +2,11 @@ package models
 
 import (
 	"fmt"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"log"
 	"os"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 func DatabaseInit() *gorm.DB {
@@ -20,7 +21,7 @@ func DatabaseInit() *gorm.DB {
 
 	log.Print("Connection Succeed")
 
-	err = db.AutoMigrate(&OwnerDetails{}, &BlockedAccount{}, &GovDetails{}, &Admin{}, &OwnerDetails{})
+	err = db.AutoMigrate(&User{}, &BlockedAccount{}, &Admin{}, &PassengerDetails{}, &DriverDetails{}, &ResetPassword{}, &Route{}, &Review{}, &Transaction{})
 
 	if err != nil {
 		panic(fmt.Errorf("error while migrating database"))

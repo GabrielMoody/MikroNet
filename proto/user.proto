@@ -8,8 +8,6 @@ message User {
   string email = 2;
 }
 
-message Empty{}
-
 message CreateUserRequest {
   User user = 1;
 }
@@ -42,6 +40,7 @@ service UserService {
   rpc CreateUser (CreateUserRequest) returns (CreateUserResponse){}
   rpc GetUsers (Empty) returns (Users){}
   rpc GetUserDetails (GetByIDRequest) returns (User){}
+  rpc DeleteUser (GetByIDRequest) returns (User){}
   rpc GetReviews (Empty) returns (GetReviewsResponse){}
   rpc GetReviewsByID (GetByIDRequest) returns (Review){}
 }

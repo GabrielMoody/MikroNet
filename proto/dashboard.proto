@@ -5,24 +5,22 @@ option go_package = "github.com/GabrielMoody/MikroNet/dashboard/internal/pb";
 
 message CreateOwnerReq {
   string id = 1;
-  string first_name = 2;
-  string last_name = 3;
-  string email = 4;
-  string phone_number = 5;
-  string nik = 6;
-  bytes profile_picture = 7;
-  string filename = 8;
+  string name = 2;
+  string email = 3;
+  string phone_number = 4;
+  string nik = 5;
+  bytes profile_picture = 6;
+  string filename = 7;
 }
 
 message CreateGovReq {
   string id = 1;
-  string first_name = 2;
-  string last_name = 3;
-  string email = 4;
-  string phone_number = 5;
-  string nip = 6;
-  bytes profile_picture = 7;
-  string filename = 8;
+  string name = 2;
+  string email = 3;
+  string phone_number = 4;
+  string nip = 5;
+  bytes profile_picture = 6;
+  string filename = 7;
 }
 
 message IsBlockedReq {

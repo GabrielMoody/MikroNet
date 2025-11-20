@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"net/http"
@@ -17,25 +18,48 @@ type UserController interface {
 	GetUser(c *fiber.Ctx) error
 	Order(c *fiber.Ctx) error
 	ReviewOrder(c *fiber.Ctx) error
+	Transaction(c *fiber.Ctx) error
 }
 
 type UserControllerImpl struct {
 	service service.UserService
 }
 
-func (a *UserControllerImpl) Order(c *fiber.Ctx) error {
+func (a *UserControllerImpl) Transaction(c *fiber.Ctx) error {
+	ctx := c.Context()
 	token := c.Get("Authorization")
-	payload, err := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
+	payload, _ := middleware.GetJWTPayload(token, os.Getenv("JWT_SECRET"))
 
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"status": "error",
-			"errors": "Unauthorized",
+	var data dto.Transaction
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": "Error",
+			"errors": err.Error(),
 		})
 	}
 
+	_, err := a.service.Transaction(ctx, data, payload["id"].(string))
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "Error",
+			"errors": err,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": "Success",
+		"data":   "Berhasil melakukan transaksi",
+	})
+}
+
+func (a *UserControllerImpl) Order(c *fiber.Ctx) error {
+	token := c.Get("Authorization")
+	payload, _ := middleware.GetJWTPayload(token, os.Getenv("JWT_SECRET"))
+
 	var data dto.MessageLoc
-	if err = c.BodyParser(&data); err != nil {
+	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status": "error",
 			"errors": err.Error(),
@@ -45,7 +69,7 @@ func (a *UserControllerImpl) Order(c *fiber.Ctx) error {
 	headers := http.Header{}
 	headers.Add("Authorization", token)
 
-	conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s:8040/ws/location", os.Getenv("GEOLOCATION_HOST")), headers)
+	conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s/tracking/ws/location", os.Getenv("BASE_URL")), headers)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status": "error",
@@ -62,7 +86,15 @@ func (a *UserControllerImpl) Order(c *fiber.Ctx) error {
 		"lng":     data.Lng,
 	}
 
-	if err := conn.WriteJSON(location); err != nil {
+	locationJSON, err := json.Marshal(location)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "error",
+			"errors": "Failed to marshal location to JSON",
+		})
+	}
+
+	if err := conn.WriteMessage(websocket.TextMessage, locationJSON); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status": "error",
 			"errors": "Failed to send location",
@@ -99,9 +131,14 @@ func (a *UserControllerImpl) GetUser(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "success",
-		"data":   res,
+		"data": fiber.Map{
+			"id":    res.ID,
+			"email": res.Email,
+			"name":  res.Name,
+		},
 	})
 }
+
 func (a *UserControllerImpl) ReviewOrder(c *fiber.Ctx) error {
 	ctx := c.Context()
 	driverId := c.Params("driverId")

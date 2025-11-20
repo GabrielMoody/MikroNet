@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"os"
 )
 
 func GetJWTPayload(tokenString, secretKey string) (jwt.MapClaims, error) {
@@ -30,28 +31,24 @@ func GetJWTPayload(tokenString, secretKey string) (jwt.MapClaims, error) {
 	}
 }
 
-func ValidateDashboardRole(roles ...string) func(c *fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
-		token := c.Get("Authorization")
-		payload, err := GetJWTPayload(token, os.Getenv("JWT_SECRET"))
+func ValidateDashboardRole(c *fiber.Ctx) error {
+	token := c.Get("Authorization")
+	payload, err := GetJWTPayload(token, os.Getenv("JWT_SECRET"))
 
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"status":  "error",
-				"message": "Unauthorized",
-			})
-		}
-
-		for _, role := range roles {
-			if payload["role"] == role {
-				return c.Next()
-			}
-		}
-
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"status":  "error",
-			"message": "Forbidden access",
+			"message": "Unauthorized",
 		})
-
 	}
+
+	if payload["role"] == "admin" {
+		return c.Next()
+	}
+
+	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+		"status":  "error",
+		"message": "Forbidden access",
+	})
+
 }

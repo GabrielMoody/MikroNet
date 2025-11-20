@@ -22,7 +22,7 @@ NB: Needs to be updated
 | Services       | Ports |
 |:---------------|:------|
 | Authentication | 3306  |
-| User           | 3307  |                                         |
+| User           | 3307  |                                         
 | Driver         | 3308  |
 | Admin          | 3309  |
 | Geolocation    | 3310  |

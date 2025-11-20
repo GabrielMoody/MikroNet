@@ -3,49 +3,32 @@ CREATE TYPE genders AS ENUM ('male', 'female', '');
 CREATE TYPE statuses AS ENUM ('on', 'off');
 CREATE TYPE order_status AS ENUM  ('pending', 'accepted', 'completed', 'canceled');
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS auth (
     id uuid PRIMARY KEY,
-    first_name VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255),
     email VARCHAR(255) UNIQUE NOT NULL,
-    phone_number VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    date_of_birth DATE,
-    age INTEGER,
-    gender genders,
     role roles NOT NULL,
-    is_blocked BOOLEAN DEFAULT FALSE,
-    image_url VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE business_owners (
-    id uuid PRIMARY KEY,
-    NIK VARCHAR(255),
-    verified BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id) REFERENCES users(id)
-);
-
 CREATE TABLE IF NOT EXISTS routes (
-    id BIGSERIAL PRIMARY KEY,
-    route_name VARCHAR(255),
+    id INT PRIMARY KEY,
+    name VARCHAR(255),
     created_at TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS drivers (
+CREATE TABLE IF NOT EXISTS driver_details (
     id uuid PRIMARY KEY,
-    owner_id uuid,
     route_id uuid,
-    registration_number VARCHAR(255) UNIQUE,
+    name VARCHAR(255),
+    phone_number VARCHAR(255) UNIQUE,
+    sim VARCHAR(255) UNIQUE,
+    license_number VARCHAR(255) UNIQUE,
     status statuses DEFAULT 'off',
-    available_seats INT CONSTRAINT seat_constraint CHECK ( available_seats <= 9 ) DEFAULT 9,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id) REFERENCES users(id),
-    FOREIGN KEY (owner_id) REFERENCES business_owners(id),
     FOREIGN KEY (route_id) REFERENCES routes(id)
 );
 
@@ -56,20 +39,6 @@ CREATE TABLE IF NOT EXISTS driver_location (
     FOREIGN KEY (driver_id) REFERENCES drivers(id)
 );
 
-CREATE TABLE IF NOT EXISTS orders
-(
-    id uuid PRIMARY KEY,
-    user_id uuid,
-    driver_id uuid,
-    start_location geography(Point, 4326),
-    end_location geography(Point, 4326),
-    status order_status,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (driver_id) REFERENCES drivers(id)
-);
-
 CREATE TABLE IF NOT EXISTS driver_location_logs (
     id uuid PRIMARY KEY,
     location geography(Point, 4326),
@@ -77,30 +46,38 @@ CREATE TABLE IF NOT EXISTS driver_location_logs (
     FOREIGN KEY (id) REFERENCES drivers(id)
 );
 
-CREATE TABLE IF NOT EXISTS passenger_histories (
+CREATE TABLE IF NOT EXISTS passenger_details (
     id uuid PRIMARY KEY,
-    start_location geography(Point, 4326),
-    end_location geography(Point, 4326),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    name VARCHAR(255),
     FOREIGN KEY (id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS reviews (
     id uuid PRIMARY KEY,
+    passenger_id uuid,
+    driver_id uuid,
     review VARCHAR(255),
     star INT CONSTRAINT star_constraint CHECK (star BETWEEN 1 AND 5),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id) REFERENCES orders(id)
+    FOREIGN KEY (passenger_id) REFERENCES passenger_details(id),
+    FOREIGN KEY (driver_id) REFERENCES driver_details(id)
 );
 
 CREATE TABLE IF NOT EXISTS reset_password (
-    id BIGSERIAL PRIMARY KEY,
+    id INT PRIMARY KEY,
     user_id uuid,
     reset_code VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+CREATE TABLE blocked_account {
+    id INT PRIMARY KEY,
+    account_id uuid,
+    role VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (account_id) REFERENCES users(id)
+}
 
 CREATE TABLE IF NOT EXISTS notifications (
     id BIGSERIAL PRIMARY KEY,
@@ -157,3 +134,25 @@ INSERT INTO routes ( id, route_name) values
     (15, 'terminal paal dua- politeknik)'),
     (16, 'tuminting- pandu'),
     (17, 'tuminting- tongkaina')
+
+DELIMITER //
+
+CREATE TRIGGER set_username_from_email
+BEFORE INSERT ON passenger_details
+FOR EACH ROW
+BEGIN
+  DECLARE email_val VARCHAR(255);
+
+  -- Get email from user_accounts using the user_id
+  SELECT email INTO email_val
+  FROM users
+  WHERE users = NEW.id;
+
+  -- Set username only if not manually provided
+  IF NEW.name IS NULL OR NEW.name = '' THEN
+    SET NEW.name = SUBSTRING_INDEX(email_val, '@', 1);
+  END IF;
+END;
+//
+
+DELIMITER ;

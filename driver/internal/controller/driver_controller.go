@@ -1,7 +1,9 @@
 package controller
 
 import (
-	"fmt"
+	"io"
+	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 
@@ -9,6 +11,7 @@ import (
 	"github.com/GabrielMoody/mikronet-driver-service/internal/middleware"
 	"github.com/GabrielMoody/mikronet-driver-service/internal/service"
 	"github.com/gofiber/fiber/v2"
+	"github.com/skip2/go-qrcode"
 )
 
 type DriverController interface {
@@ -18,10 +21,94 @@ type DriverController interface {
 	SetStatus(c *fiber.Ctx) error
 	GetTripHistories(c *fiber.Ctx) error
 	GetImage(c *fiber.Ctx) error
+	GetAllDriverLastSeen(c *fiber.Ctx) error
+	SetDriverLastSeen(c *fiber.Ctx) error
+	GetQrisData(c *fiber.Ctx) error
 }
 
 type DriverControllerImpl struct {
 	service service.DriverService
+}
+
+func readImage(image *multipart.FileHeader) ([]byte, error) {
+	f, err := image.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	fileData, err := io.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+
+	return fileData, nil
+}
+
+func (a *DriverControllerImpl) GetQrisData(c *fiber.Ctx) error {
+	token := c.Get("Authorization")
+	payload, _ := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
+	ctx := c.Context()
+
+	res, err := a.service.GetQrisData(ctx, payload["id"].(string))
+
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": err,
+		})
+	}
+
+	code, errQr := qrcode.Encode(res, qrcode.Medium, 256)
+
+	if errQr != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status": "error",
+			"errors": errQr,
+		})
+	}
+
+	c.Response().Header.Set("Content-Type", "image/png")
+
+	return c.Status(fiber.StatusOK).Send(code)
+}
+
+func (a *DriverControllerImpl) GetAllDriverLastSeen(c *fiber.Ctx) error {
+	ctx := c.Context()
+
+	res, err := a.service.GetAllLastSeen(ctx)
+
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": err,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": "Success",
+		"data":   res,
+	})
+}
+
+func (a *DriverControllerImpl) SetDriverLastSeen(c *fiber.Ctx) error {
+	token := c.Get("Authorization")
+
+	payload, _ := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
+	ctx := c.Context()
+
+	_, err := a.service.SetLastSeen(ctx, payload["id"].(string))
+
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"status": "error",
+			"errors": err,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": "Success",
+	})
 }
 
 func (a *DriverControllerImpl) GetImage(c *fiber.Ctx) error {
@@ -37,11 +124,6 @@ func (a *DriverControllerImpl) GetImage(c *fiber.Ctx) error {
 		})
 	}
 
-	var extension = map[string]string{
-		"image/jpeg": "jpg",
-		"image/png":  "png",
-	}
-
 	img, errI := os.ReadFile(res)
 
 	if errI != nil {
@@ -53,7 +135,7 @@ func (a *DriverControllerImpl) GetImage(c *fiber.Ctx) error {
 
 	ext := http.DetectContentType(img)
 
-	c.Response().Header.Set("Content-Type", fmt.Sprintf("image/%s", extension[ext]))
+	c.Response().Header.Set("Content-Type", ext)
 
 	return c.Status(fiber.StatusOK).Send(img)
 }
@@ -93,6 +175,7 @@ func (a *DriverControllerImpl) EditDriver(c *fiber.Ctx) error {
 	ctx := c.Context()
 
 	var data dto.EditDriverReq
+	var fileDataPP []byte
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -101,18 +184,32 @@ func (a *DriverControllerImpl) EditDriver(c *fiber.Ctx) error {
 		})
 	}
 
-	res, err := a.service.EditDriverDetails(ctx, payload["id"].(string), data)
+	image, err := c.FormFile("profile_picture")
 
-	if err != nil {
-		return c.Status(err.Code).JSON(fiber.Map{
+	if err != nil || err == http.ErrMissingFile {
+		log.Println("No Image uploaded!")
+	} else {
+		fileDataPP, err = readImage(image)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"status": "error",
+				"errors": err.Error(),
+			})
+		}
+	}
+
+	_, errService := a.service.EditDriverDetails(ctx, payload["id"].(string), data, fileDataPP)
+
+	if errService != nil {
+		return c.Status(errService.Code).JSON(fiber.Map{
 			"status": "error",
 			"errors": err,
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status": "Success",
-		"data":   res,
+		"status":  "Success",
+		"message": "Data berhasil diperbarui!",
 	})
 }
 

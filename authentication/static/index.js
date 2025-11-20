@@ -8,7 +8,7 @@ document.getElementById('resetPasswordForm').addEventListener('submit', async fu
     const password_confirmation = document.getElementById('password_confirmation').value;
 
     try {
-        const response = await fetch(`/reset-password/${uniqueCode}`, {
+        const response = await fetch(`http://188.166.179.146:8000/api/auth/reset-password/${uniqueCode}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

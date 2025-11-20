@@ -3,7 +3,7 @@ info:
   title: MikroNet
   version: 1.0.0
 servers:
-  - url: http://localhost/api/v1/
+  - url: http://188.166.179.146:8000/api
   - url: http://localhost:8000/
   - url: http://localhost:8010/
   - url: http://localhost:8020/
@@ -22,7 +22,6 @@ tags:
   - name: Admin
   - name: Driver
   - name: User
-  - name: Notification
 
 paths:
 #*################################################################################
@@ -40,12 +39,31 @@ paths:
             schema:
               type: object
               example:
-                first_name: Gabriel Moody
-                last_name: Waworundeng
+                email: gabrie123l@mail.com
+                password: gabriel0803
+                password_confirmation: gabriel0803
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  
+  /register/driver:
+    post:
+      tags:
+        - Authentication
+      summary: Register new driver
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Gabriel Moody Waworundeng
                 email: gabrie123l@mail.com
                 phone_number: '089279213091'
-                date_of_birth: 01-01-1970
-                age: 54
+                license_number: "DB 1234 AA"
+                SIM: "2193819238120"
                 password: gabriel0803
                 password_confirmation: gabriel0803
       responses:
@@ -158,6 +176,80 @@ paths:
           content:
             application/json: {}
 
+  /drivers:
+    get:
+      tags:
+        - Admin
+      summary: Get all drivers
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+
+  /users/{id}: 
+    get:
+      tags:
+        - Admin
+      summary: Get user by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  
+  /drivers/{id}: 
+    get:
+      tags:
+        - Admin
+      summary: Get driver by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+
+  /reviews: 
+    get:
+      tags:
+        - Admin
+      summary: Get all reviews
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+
+  /reviews/{id}: 
+    get:
+      tags:
+        - Admin
+      summary: Get driver by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  
+
 #*################################################################################
 #*                                DRIVER                                         #
 #*################################################################################
@@ -268,46 +360,6 @@ paths:
       summary: Delete user profile
       security:
         - bearerAuth: []
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json: {}
-
-  /sse/notification/{id}:
-    get:
-      tags:
-        - Notification
-      summary: Make a connection
-      parameters:
-        - name: id
-          in: path
-          schema:
-            type: string
-          required: true
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json: {}
-  /015/sse/notify/{id}:
-    post:
-      tags:
-        - Notification
-      summary: Send a notification
-      requestBody:
-        content: {}
-      parameters:
-        - name: message
-          in: query
-          schema:
-            type: string
-          example: '{ "data": "adasda" , "location": "asdasd"}'
-        - name: id
-          in: path
-          schema:
-            type: string
-          required: true
       responses:
         '200':
           description: Successful response

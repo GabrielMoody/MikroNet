@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/GabrielMoody/mikronet-driver-service/internal/controller"
-	"github.com/GabrielMoody/mikronet-driver-service/internal/gRPC"
 	"github.com/GabrielMoody/mikronet-driver-service/internal/middleware"
 	"github.com/GabrielMoody/mikronet-driver-service/internal/repository"
 	"github.com/GabrielMoody/mikronet-driver-service/internal/service"
@@ -18,6 +17,7 @@ func DriverHandler(r fiber.Router, db *gorm.DB) {
 	api := r.Group("/")
 
 	api.Get("/images/:id", controllerDriver.GetImage)
+	api.Get("/online", controllerDriver.GetAllDriverLastSeen)
 
 	api.Use(middleware.ValidateDriverRole)
 
@@ -25,11 +25,8 @@ func DriverHandler(r fiber.Router, db *gorm.DB) {
 	api.Put("/", controllerDriver.EditDriver)
 	api.Get("/status/", controllerDriver.GetStatus)
 	api.Put("/status/", controllerDriver.SetStatus)
-}
+	api.Get("/code/", controllerDriver.GetQrisData)
+	api.Get("/trips/", controllerDriver.GetTripHistories)
 
-func GRPCHandler(db *gorm.DB) *gRPC.GRPC {
-	repo := repository.NewDriverRepo(db)
-	grpc := gRPC.NewgRPC(repo)
-
-	return grpc
+	api.Post("/heartbeat/", controllerDriver.SetDriverLastSeen)
 }

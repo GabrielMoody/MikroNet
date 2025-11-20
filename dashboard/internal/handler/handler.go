@@ -2,45 +2,43 @@ package handler
 
 import (
 	"github.com/GabrielMoody/mikronet-dashboard-service/internal/controller"
-	"github.com/GabrielMoody/mikronet-dashboard-service/internal/gRPC"
 	"github.com/GabrielMoody/mikronet-dashboard-service/internal/middleware"
-	"github.com/GabrielMoody/mikronet-dashboard-service/internal/pb"
 	"github.com/GabrielMoody/mikronet-dashboard-service/internal/repository"
 	"github.com/GabrielMoody/mikronet-dashboard-service/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
-func DashboardHandler(r fiber.Router, db *gorm.DB, driver pb.DriverServiceClient, user pb.UserServiceClient) {
+func DashboardHandler(r fiber.Router, db *gorm.DB) {
 	repo := repository.NewDashboardRepo(db)
 	serviceDashboard := service.NewDashboardService(repo)
-	controllerDashboard := controller.NewDashboardController(serviceDashboard, driver, user)
+	controllerDashboard := controller.NewDashboardController(serviceDashboard)
 
 	api := r.Group("/")
+	api.Get("/ktp/:id", controllerDashboard.GetKTP)
 
-	api.Get("/users", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetUsers)
-	api.Get("/users/:id", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetUserDetails)
+	api.Get("/users", controllerDashboard.GetUsers)
+	api.Get("/users/:id", controllerDashboard.GetUserDetails)
+	api.Delete("/users/:id", middleware.ValidateDashboardRole, controllerDashboard.DeleteUser)
 
-	api.Get("/drivers", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetDrivers)
-	api.Get("/drivers/:id", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetDriverDetails)
-	api.Put("/drivers/verified/:id", middleware.ValidateDashboardRole("admin"), controllerDashboard.SetDriverStatusVerified)
+	api.Get("/drivers", controllerDashboard.GetDrivers)
+	api.Get("/drivers/:id", controllerDashboard.GetDriverDetails)
+	api.Post("/drivers/verified/:id", middleware.ValidateDashboardRole, controllerDashboard.SetDriverStatusVerified)
+	api.Delete("/drivers/:id", middleware.ValidateDashboardRole, controllerDashboard.DeleteDriver)
 
-	api.Get("/owners", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetBusinessOwners)
-	api.Get("/owners/blocked", middleware.ValidateDashboardRole("admin", "government"), controllerDashboard.GetBlockedBusinessOwners)
-	api.Get("/owners/unverified", middleware.ValidateDashboardRole("admin", "government"), controllerDashboard.GetUnverifiedBusinessOwners)
-	api.Get("/owners/:id", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetBusinessOwnerDetails)
-	api.Put("/owners/verified/:id", middleware.ValidateDashboardRole("admin"), controllerDashboard.SetOwnerStatusVerified)
+	api.Get("/block", middleware.ValidateDashboardRole, controllerDashboard.GetAllBlockAccount)
+	api.Post("/block/:id", middleware.ValidateDashboardRole, controllerDashboard.BlockAccount)
+	api.Put("/block/:id", middleware.ValidateDashboardRole, controllerDashboard.UnblockAccount)
 
-	api.Post("/block/:id", middleware.ValidateDashboardRole("admin"), controllerDashboard.BlockAccount)
-	api.Delete("/block/:id", middleware.ValidateDashboardRole("admin"), controllerDashboard.UnblockAccount)
+	api.Get("/reviews", controllerDashboard.GetReviews)
+	api.Get("/reviews/:id", controllerDashboard.GetReviewByID)
 
-	api.Get("/reviews", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetReviews)
-	api.Get("/reviews/:id", middleware.ValidateDashboardRole("admin", "owner", "government"), controllerDashboard.GetReviewByID)
-}
+	api.Get("/routes", controllerDashboard.GetRoutes)
+	api.Post("/route", middleware.ValidateDashboardRole, controllerDashboard.AddRoute)
+	api.Put("/route/:id", middleware.ValidateDashboardRole, controllerDashboard.EditAmountRoute)
+	api.Delete("/route/:id", middleware.ValidateDashboardRole, controllerDashboard.DeleteRoute)
 
-func GRPCHandler(db *gorm.DB) *gRPC.GRPC {
-	repo := repository.NewDashboardRepo(db)
-	grpc := gRPC.NewGRPC(repo)
+	api.Get("/histories", controllerDashboard.GetAllTripHistories)
 
-	return grpc
+	api.Get("/reports", controllerDashboard.MonthlyReport)
 }

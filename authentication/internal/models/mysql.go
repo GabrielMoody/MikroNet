@@ -2,10 +2,11 @@ package models
 
 import (
 	"fmt"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"log"
 	"os"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 func DatabaseInit() *gorm.DB {
@@ -17,11 +18,11 @@ func DatabaseInit() *gorm.DB {
 		panic(fmt.Errorf("error while connecting database %v", err.Error()))
 	}
 
-	err = db.AutoMigrate(&User{}, &ResetPassword{})
+	// err = db.AutoMigrate(&User{}, &ResetPassword{})
 
-	if err != nil {
-		panic(fmt.Errorf("error while migrating database"))
-	}
+	// if err != nil {
+	// 	panic(fmt.Errorf("error while migrating database"))
+	// }
 
 	log.Print("Connection Succeed")
 

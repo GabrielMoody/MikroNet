@@ -2,11 +2,7 @@ package dto
 
 type (
 	EditUserDetails struct {
-		FirstName   string `json:"first_name" validate:"required"`
-		LastName    string `json:"last_name" validate:"required"`
-		DateOfBirth string `json:"date_of_birth"`
-		Age         int    `json:"age"`
-		Gender      string `json:"gender"`
+		Name string `json:"name" validate:"required"`
 	}
 
 	MessageLoc struct {
@@ -18,5 +14,10 @@ type (
 	ReviewReq struct {
 		Comment string `json:"comment"`
 		Star    int    `json:"star" validate:"required"`
+	}
+
+	Transaction struct {
+		DriverId string `json:"driver_id"`
+		Amount   int    `json:"amount"`
 	}
 )

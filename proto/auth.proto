@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "github.com/GabrielMoody/MikroNet/authentication/internal/pb";
+
+message ReqByID {
+  string id = 1;
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+}
+
+service AuthenticationService {
+  rpc DeleteUser (ReqByID) returns (User){}
+}

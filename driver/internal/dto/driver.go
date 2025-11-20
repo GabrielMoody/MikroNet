@@ -5,6 +5,10 @@ type (
 		Status string `json:"status" validate:"required"`
 	}
 
+	SeatReq struct {
+		Seat int `json:"seat"`
+	}
+
 	GetDriverDetailsRes struct {
 		ID             string `json:"id"`
 		Name           string `json:"name"`

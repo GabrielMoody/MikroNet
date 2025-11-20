@@ -13,19 +13,20 @@ services:
   auth_service:
     build: authentication
     container_name: auth_service
-    ports:
-      - 8050:8050
     depends_on:
-      auth_database:
+      mysql_database:
         condition: service_healthy
+    volumes:
+      - ./uploads:/usr/bin/uploads
     environment:
-      - DB_HOST=auth_database
+      - DB_HOST=mysql_database
       - DB_USER=root
       - DB_PASSWORD=123
       - DB_PORT=3306
-      - DB_NAME=authentication
+      - DB_NAME=mikronet
       - GRPC_USER=user_service
       - GRPC_DRIVER=driver_service
+      - GRPC_DASHBOARD=dashboard_service
       - EMAIL_PASSWORD=khzy wosb xckz aihb
       - JWT_SECRET=FV77z4uhQ9M
       - JWT_ISS=MikroNet
@@ -35,59 +36,58 @@ services:
   user_service:
     build: user
     container_name: user_service
-    ports:
-      - 8010:8010
-      - 5005:5005
     depends_on:
-      user_database:
+      mysql_database:
         condition: service_healthy
     environment:
-      - DB_HOST=user_database
+      - DB_HOST=mysql_database
       - DB_USER=root
       - DB_PASSWORD=123
       - DB_PORT=3306
-      - DB_NAME=user
+      - DB_NAME=mikronet
       - GEOLOCATION_HOST=geolocation_tracking_service
       - JWT_SECRET=FV77z4uhQ9M
       - JWT_ISS=MikroNet
+      - BASE_URL=kong:8000/api
     networks:
       - kong-net
 
   driver_service:
     build: driver
     container_name: driver_service
-    ports:
-      - 8020:8020
-      - 5006:5006
     depends_on:
-      driver_database:
+      mysql_database:
         condition: service_healthy
+    volumes:
+      - ./uploads:/usr/bin/uploads
     environment:
-      - DB_HOST=driver_database
+      - DB_HOST=mysql_database
       - DB_USER=root
       - DB_PASSWORD=123
       - DB_PORT=3306
-      - DB_NAME=driver
+      - DB_NAME=mikronet
       - JWT_SECRET=FV77z4uhQ9M
       - JWT_ISS=MikroNet
+      - BASE_URL=http://localhost:8000
     networks:
       - kong-net
 
   dashboard_service:
     build: dashboard
     container_name: dashboard_service
-    ports:
-      - 8030:8030
-      - 5007:5007
     depends_on:
-      dashboard_database:
+      mysql_database:
         condition: service_healthy
+    volumes:
+      - ./uploads:/usr/bin/uploads
+      - ./var/log/mikronet:/var/log/mikronet
     environment:
-      - DB_HOST=dashboard_database
+      - SERVICE_NAME=dashboard_service
+      - DB_HOST=mysql_database
       - DB_USER=root
       - DB_PASSWORD=123
       - DB_PORT=3306
-      - DB_NAME=dashboard
+      - DB_NAME=mikronet
       - GRPC_USER=user_service
       - GRPC_DRIVER=driver_service
       - JWT_SECRET=FV77z4uhQ9M
@@ -98,15 +98,13 @@ services:
   geolocation_tracking_service:
     build: geolocation_tracking
     container_name: geolocation_tracking_service
-    ports:
-      - 8040:8040
     depends_on:
         geolocation_database:
             condition: service_healthy
     environment:
-      - DB_HOST=location_database
-      - DB_USER=postgres
-      - DB_PASSWORD=123
+      - DB_HOST=geolocation_database
+      - DB_USER=geolocation
+      - DB_PASSWORD=Of@2gDmD8imF%D
       - DB_PORT=5432
       - DB_NAME=mikronet
       - JWT_SECRET=FV77z4uhQ9M
@@ -117,88 +115,74 @@ services:
 #############################################################################################
 # DATABASE CONTAINER
 
-  auth_database:
-    container_name: auth_database
+  mysql_database:
+    container_name: mysql_database
     image: mysql:latest
     ports:
-      - 3306:3306
+      - "3306:3306"
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p '123'" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p123" ]
       interval: 10s
       timeout: 5s
       retries: 3
     environment:
       MYSQL_ROOT_PASSWORD: 123
-      MYSQL_DATABASE: authentication
+      MYSQL_DATABASE: mikronet
+      TZ: Asia/Singapore
     networks:
       - kong-net
 
-  user_database:
-    container_name: user_database
-    image: mysql:latest
-    healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p '123'" ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    environment:
-      MYSQL_ROOT_PASSWORD: 123
-      MYSQL_DATABASE: user
-    networks:
-      - kong-net
-
-  driver_database:
-    container_name: driver_database
-    image: mysql:latest
-    ports:
-      - 3308:3306
-    healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p '123'" ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    environment:
-      MYSQL_ROOT_PASSWORD: 123
-      MYSQL_DATABASE: driver
-    networks:
-      - kong-net
-
-  dashboard_database:
-    container_name: dashboard_database
-    image: mysql:latest
-    ports:
-      - 3309:3306
-    healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p '123'" ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    environment:
-      MYSQL_ROOT_PASSWORD: 123
-      MYSQL_DATABASE: dashboard
-    networks:
-      - kong-net
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   container_name: phpmyadmin
+  #   restart: always
+  #   ports:
+  #     - "8080:80"
+  #   environment:
+  #     PMA_HOST: mysql_database
+  #     MYSQL_ROOT_PASSWORD: 123
+  #   depends_on:
+  #     mysql_database:
+  #      condition: service_healthy
+  #   networks:
+  #     - kong-net
 
   geolocation_database:
     image: postgis/postgis
-    container_name: location_database
+    container_name: geolocation_database
     restart: always
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123
       POSTGRES_DB: mikronet
+      TZ: "GMT+8"
+      PGTZ: "GMT+8"
     ports:
       - 5432:5432
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "mikronet"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mikronet"]
       interval: 10s
+      timeout: 10s
       retries: 5
       start_period: 30s
-      timeout: 10s
     volumes:
-      - ./data/postgis:/var/lib/postgresql/data
+      # - data/postgis:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - kong-net
+  
+  pgadmin_service:
+    image: dpage/pgadmin4
+    container_name: my-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: test@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: postgres
+    ports:
+      - "15432:80"
+    networks:
+      - kong-net
+    volumes:
+      - ./pgadmin-data:/var/lib/pgadmin
 
   kong-migrations:
     image: "${KONG_DOCKER_TAG:-kong:latest}"
@@ -304,9 +288,63 @@ services:
     volumes:
       - kong_data:/var/lib/postgresql/data
 
+######################################################
+#   LOGGING
+
+  loki:
+    container_name: loki
+    image: grafana/loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+  fluent-bit:
+    container_name: fluent-bit
+    image: fluent/fluent-bit
+    volumes:
+      - ./fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./parser.conf:/fluent-bit/etc/parser.conf
+      - ./var/log/mikronet:/var/log/mikronet
+    depends_on:
+      - loki
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - loki
+
+  cadvisor:
+    container_name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:latest
+    privileged: true
+    # network_mode: host
+    command:
+      - "--docker_only=true"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /mnt/wsl/docker-desktop-data/data/docker/:/var/lib/docker:ro
+    ports:
+      - "8080:8080" 
+
+  promotheus:
+    container_name: promotheus
+    image: prom/prometheus
+    volumes:
+      - ./promotheus.yaml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090" 
+
 networks:
   kong-net:
-    external: false
+    driver: bridge
 
 secrets:
   kong_postgres_password:

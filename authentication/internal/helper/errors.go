@@ -3,6 +3,7 @@ package helper
 import (
 	"errors"
 	"fmt"
+
 	"github.com/go-playground/validator/v10"
 )
 
@@ -12,7 +13,9 @@ var (
 	ErrDatabase          = fmt.Errorf("database error")
 	ErrBadRequest        = fmt.Errorf("bad request")
 	ErrPasswordIncorrect = fmt.Errorf("password incorrect")
-	ErrBlocked           = fmt.Errorf("user blocked")
+	ErrBlockedAccount    = fmt.Errorf("akun anda telah diblokir")
+	ErrExpired           = fmt.Errorf("link reset password telah expired/invalid. silahkan melakukan reset password kembali")
+	ErrNotVerified       = fmt.Errorf("akun anda belum diverifikasi")
 )
 
 type ErrorStruct struct {
@@ -82,7 +85,12 @@ func CheckError(err error) *ErrorStruct {
 			Err:  err,
 			Code: 401,
 		}
-	case errors.Is(err, ErrBlocked):
+	case errors.Is(err, ErrBlockedAccount):
+		return &ErrorStruct{
+			Err:  err,
+			Code: 403,
+		}
+	case errors.Is(err, ErrNotVerified):
 		return &ErrorStruct{
 			Err:  err,
 			Code: 403,

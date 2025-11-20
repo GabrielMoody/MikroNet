@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DriverService_CreateDriver_FullMethodName      = "/dashboard.DriverService/CreateDriver"
-	DriverService_GetDrivers_FullMethodName        = "/dashboard.DriverService/GetDrivers"
-	DriverService_GetDriverDetails_FullMethodName  = "/dashboard.DriverService/GetDriverDetails"
-	DriverService_SetStatusVerified_FullMethodName = "/dashboard.DriverService/SetStatusVerified"
+	DriverService_CreateDriver_FullMethodName      = "/driver.DriverService/CreateDriver"
+	DriverService_GetDrivers_FullMethodName        = "/driver.DriverService/GetDrivers"
+	DriverService_GetDriverDetails_FullMethodName  = "/driver.DriverService/GetDriverDetails"
+	DriverService_DeleteDriver_FullMethodName      = "/driver.DriverService/DeleteDriver"
+	DriverService_SetStatusVerified_FullMethodName = "/driver.DriverService/SetStatusVerified"
 )
 
 // DriverServiceClient is the client API for DriverService service.
@@ -32,6 +33,7 @@ type DriverServiceClient interface {
 	CreateDriver(ctx context.Context, in *CreateDriverRequest, opts ...grpc.CallOption) (*Driver, error)
 	GetDrivers(ctx context.Context, in *ReqDrivers, opts ...grpc.CallOption) (*Drivers, error)
 	GetDriverDetails(ctx context.Context, in *ReqByID, opts ...grpc.CallOption) (*Driver, error)
+	DeleteDriver(ctx context.Context, in *ReqByID, opts ...grpc.CallOption) (*Driver, error)
 	SetStatusVerified(ctx context.Context, in *ReqByID, opts ...grpc.CallOption) (*Driver, error)
 }
 
@@ -73,6 +75,16 @@ func (c *driverServiceClient) GetDriverDetails(ctx context.Context, in *ReqByID,
 	return out, nil
 }
 
+func (c *driverServiceClient) DeleteDriver(ctx context.Context, in *ReqByID, opts ...grpc.CallOption) (*Driver, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Driver)
+	err := c.cc.Invoke(ctx, DriverService_DeleteDriver_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *driverServiceClient) SetStatusVerified(ctx context.Context, in *ReqByID, opts ...grpc.CallOption) (*Driver, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Driver)
@@ -90,6 +102,7 @@ type DriverServiceServer interface {
 	CreateDriver(context.Context, *CreateDriverRequest) (*Driver, error)
 	GetDrivers(context.Context, *ReqDrivers) (*Drivers, error)
 	GetDriverDetails(context.Context, *ReqByID) (*Driver, error)
+	DeleteDriver(context.Context, *ReqByID) (*Driver, error)
 	SetStatusVerified(context.Context, *ReqByID) (*Driver, error)
 	mustEmbedUnimplementedDriverServiceServer()
 }
@@ -109,6 +122,9 @@ func (UnimplementedDriverServiceServer) GetDrivers(context.Context, *ReqDrivers)
 }
 func (UnimplementedDriverServiceServer) GetDriverDetails(context.Context, *ReqByID) (*Driver, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDriverDetails not implemented")
+}
+func (UnimplementedDriverServiceServer) DeleteDriver(context.Context, *ReqByID) (*Driver, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteDriver not implemented")
 }
 func (UnimplementedDriverServiceServer) SetStatusVerified(context.Context, *ReqByID) (*Driver, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetStatusVerified not implemented")
@@ -188,6 +204,24 @@ func _DriverService_GetDriverDetails_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DriverService_DeleteDriver_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReqByID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DriverServiceServer).DeleteDriver(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DriverService_DeleteDriver_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DriverServiceServer).DeleteDriver(ctx, req.(*ReqByID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _DriverService_SetStatusVerified_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ReqByID)
 	if err := dec(in); err != nil {
@@ -210,7 +244,7 @@ func _DriverService_SetStatusVerified_Handler(srv interface{}, ctx context.Conte
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var DriverService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "dashboard.DriverService",
+	ServiceName: "driver.DriverService",
 	HandlerType: (*DriverServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -224,6 +258,10 @@ var DriverService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDriverDetails",
 			Handler:    _DriverService_GetDriverDetails_Handler,
+		},
+		{
+			MethodName: "DeleteDriver",
+			Handler:    _DriverService_DeleteDriver_Handler,
 		},
 		{
 			MethodName: "SetStatusVerified",
