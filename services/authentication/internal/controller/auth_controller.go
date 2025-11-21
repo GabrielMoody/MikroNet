@@ -1,15 +1,10 @@
 package controller
 
 import (
-	"errors"
-	"io"
-	"mime/multipart"
-	"net/http"
 	"os"
 	"time"
 
 	"github.com/GabrielMoody/mikronet-auth-service/internal/dto"
-	"github.com/GabrielMoody/mikronet-auth-service/internal/middleware"
 	"github.com/GabrielMoody/mikronet-auth-service/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -19,65 +14,10 @@ type AuthController interface {
 	CreateUser(c *fiber.Ctx) error
 	CreateDriver(c *fiber.Ctx) error
 	LoginUser(c *fiber.Ctx) error
-	SendResetPasswordLink(c *fiber.Ctx) error
-	ResetPassword(c *fiber.Ctx) error
-	ChangePassword(c *fiber.Ctx) error
-	ResetPasswordUI(c *fiber.Ctx) error
 }
 
 type AuthControllerImpl struct {
 	AuthService service.AuthService
-}
-
-func readImage(image *multipart.FileHeader) ([]byte, error) {
-	f, err := image.Open()
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	fileData, err := io.ReadAll(f)
-	if err != nil {
-		return nil, err
-	}
-
-	return fileData, nil
-}
-
-func (a *AuthControllerImpl) ChangePassword(c *fiber.Ctx) error {
-	token := c.Get("Authorization")
-	payload, _ := middleware.GetJWTPayload(token[7:], os.Getenv("JWT_SECRET"))
-
-	ctx := c.Context()
-	var user dto.ChangePasswordReq
-
-	if err := c.BodyParser(&user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "error",
-			"errors": err.Error(),
-		})
-	}
-
-	_, errService := a.AuthService.ChangePasswordService(ctx, payload["id"].(string), user)
-
-	if errService != nil && errService.ValidationErrors != nil {
-		return c.Status(errService.Code).JSON(fiber.Map{
-			"status": "error",
-			"errors": errService.ValidationErrors,
-		})
-	}
-
-	if errService != nil && errService.Err != nil {
-		return c.Status(errService.Code).JSON(fiber.Map{
-			"status": "error",
-			"errors": errService.Err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status":  "success",
-		"message": "Berhasil mengubah password!",
-	})
 }
 
 func (a *AuthControllerImpl) CreateUser(c *fiber.Ctx) error {
@@ -91,7 +31,7 @@ func (a *AuthControllerImpl) CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	_, errService := a.AuthService.CreateUserService(ctx, user, "user")
+	_, errService := a.AuthService.CreateUserService(ctx, user)
 
 	if errService != nil && errService.ValidationErrors != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
@@ -116,15 +56,6 @@ func (a *AuthControllerImpl) CreateUser(c *fiber.Ctx) error {
 func (a *AuthControllerImpl) CreateDriver(c *fiber.Ctx) error {
 	var driver dto.DriverRegistrationsReq
 	ctx := c.Context()
-	pp, err := c.FormFile("profile_picture")
-	ktp, err := c.FormFile("ktp")
-
-	if err != nil && !errors.Is(err, http.ErrMissingFile) {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "error",
-			"errors": "error reading image",
-		})
-	}
 
 	if err := c.BodyParser(&driver); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -133,23 +64,7 @@ func (a *AuthControllerImpl) CreateDriver(c *fiber.Ctx) error {
 		})
 	}
 
-	fileDataPP, err := readImage(pp)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "error",
-			"errors": err.Error(),
-		})
-	}
-
-	fileDataKtp, err := readImage(ktp)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": "error",
-			"errors": err.Error(),
-		})
-	}
-
-	_, errService := a.AuthService.CreateDriverService(ctx, driver, "driver", fileDataPP, fileDataKtp)
+	_, errService := a.AuthService.CreateDriverService(ctx, driver)
 
 	if errService != nil && errService.ValidationErrors != nil {
 		return c.Status(errService.Code).JSON(fiber.Map{
@@ -239,70 +154,6 @@ func (a *AuthControllerImpl) LoginUser(c *fiber.Ctx) error {
 			"refresh_token": rt,
 		},
 	})
-}
-
-func (a *AuthControllerImpl) SendResetPasswordLink(c *fiber.Ctx) error {
-	var email dto.ForgotPasswordReq
-	ctx := c.Context()
-
-	if err := c.BodyParser(&email); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "error",
-			"errors": err.Error(),
-		})
-	}
-
-	res, err := a.AuthService.SendResetPasswordService(ctx, email)
-
-	if err != nil {
-		return c.Status(err.Code).JSON(fiber.Map{
-			"status": "error",
-			"errors": err.Err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status":  "success",
-		"message": res,
-	})
-}
-
-func (a *AuthControllerImpl) ResetPassword(c *fiber.Ctx) error {
-	code := c.Params("code")
-	var rp dto.ResetPasswordReq
-	ctx := c.Context()
-
-	if err := c.BodyParser(&rp); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": "error",
-			"errors": err.Error(),
-		})
-	}
-
-	_, errService := a.AuthService.ResetPassword(ctx, rp, code)
-
-	if errService != nil && errService.ValidationErrors != nil {
-		return c.Status(errService.Code).JSON(fiber.Map{
-			"status": "error",
-			"errors": errService.ValidationErrors,
-		})
-	}
-
-	if errService != nil && errService.Err != nil {
-		return c.Status(errService.Code).JSON(fiber.Map{
-			"status": "error",
-			"errors": errService.Err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status":  "success",
-		"message": "Berhasil melakukan reset password!",
-	})
-}
-
-func (a *AuthControllerImpl) ResetPasswordUI(c *fiber.Ctx) error {
-	return c.SendFile("./views/reset_password.html")
 }
 
 func NewAuthController(authService service.AuthService) AuthController {

@@ -1,51 +1,21 @@
 package dto
 
 type (
-	ChangePasswordReq struct {
-		OldPassword        string `json:"old_password" validate:"required"`
-		NewPassword        string `json:"new_password" validate:"required,min=8"`
-		NewPasswordConfirm string `json:"new_password_confirm" validate:"required,min=8,eqfield=NewPassword"`
-	}
-
 	UserRegistrationsReq struct {
 		Email                string `json:"email" validate:"required,email" form:"email"`
+		PhoneNumber          string `json:"phone_number" form:"phone_number"`
+		Name                 string `json:"name" form:"name" validate:"required"`
 		Password             string `json:"password" form:"password" validate:"required,min=8"`
 		PasswordConfirmation string `json:"password_confirmation" form:"password_confirmation" validate:"required,eqfield=Password"`
-		Name                 string `json:"name"`
-		DateOfBirth          string `json:"date_of_birth"`
-		Age                  int    `json:"age"`
 	}
 
 	DriverRegistrationsReq struct {
 		Name                 string `json:"name" form:"name" validate:"required"`
 		Email                string `json:"email" form:"email" validate:"required,email"`
 		PhoneNumber          string `json:"phone_number" form:"phone_number"`
-		SIM                  string `json:"sim" form:"sim"`
-		LicenseNumber        string `json:"license_number" form:"license_number"`
-		ProfilePicture       string `json:"profile_picture" form:"profile_picture"`
-		KTP                  string `json:"ktp" form:"ktp"`
+		PlateNumber          string `json:"plate_number" form:"plate_number"`
 		Password             string `json:"password" form:"password" validate:"required,min=8"`
 		PasswordConfirmation string `json:"password_confirmation" form:"password_confirmation" validate:"required,eqfield=Password"`
-	}
-
-	OwnerRegistrationsReq struct {
-		Name                 string `json:"name"`
-		Email                string `json:"email" validate:"required,email"`
-		PhoneNumber          string `json:"phone_number"`
-		NIK                  string `json:"nik"`
-		ProfilePicture       string `json:"profile_picture" form:"profile_picture"`
-		Password             string `json:"password" validate:"required,min=8"`
-		PasswordConfirmation string `json:"password_confirmation" validate:"required,eqfield=Password"`
-	}
-
-	GovRegistrationReq struct {
-		Name                 string `json:"name" form:"name" validate:"required"`
-		Email                string `json:"email" form:"email" validate:"required,email"`
-		PhoneNumber          string `json:"phone_number" form:"phone_number" validate:"required"`
-		NIP                  string `json:"nip" form:"nip" validate:"required"`
-		Password             string `json:"password" form:"password" validate:"required"`
-		PasswordConfirmation string `json:"password_confirmation" form:"password_confirmation" validate:"required,eqfield=Password"`
-		ProfilePicture       string `json:"profile_picture" form:"profile_picture" validate:"required"`
 	}
 
 	UserRegistrationsResp struct {
@@ -60,14 +30,5 @@ type (
 	UserLoginReq struct {
 		Email    string `json:"email" validate:"required,email"`
 		Password string `json:"password" validate:"required"`
-	}
-
-	ForgotPasswordReq struct {
-		Email string `json:"email" validate:"required,email"`
-	}
-
-	ResetPasswordReq struct {
-		Password             string `json:"password" validate:"required,min=8"`
-		PasswordConfirmation string `json:"password_confirmation" validate:"required,eqfield=Password"`
 	}
 )

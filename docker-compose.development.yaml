@@ -14,15 +14,15 @@ services:
     build: /services/authentication
     container_name: auth_service
     depends_on:
-      mysql_database:
+      postgresql:
         condition: service_healthy
     volumes:
       - ./uploads:/usr/bin/uploads
     environment:
-      - DB_HOST=mysql_database
-      - DB_USER=root
-      - DB_PASSWORD=123
-      - DB_PORT=3306
+      - DB_HOST=postgresql
+      - DB_USER=geolocation
+      - DB_PASSWORD=Of@2gDmD8imF%D
+      - DB_PORT=5432
       - DB_NAME=mikronet
       - GRPC_USER=user_service
       - GRPC_DRIVER=driver_service
@@ -37,13 +37,13 @@ services:
     build: /services/user
     container_name: user_service
     depends_on:
-      mysql_database:
+      postgresql:
         condition: service_healthy
     environment:
-      - DB_HOST=mysql_database
-      - DB_USER=root
-      - DB_PASSWORD=123
-      - DB_PORT=3306
+      - DB_HOST=postgresql
+      - DB_USER=geolocation
+      - DB_PASSWORD=Of@2gDmD8imF%D
+      - DB_PORT=5432
       - DB_NAME=mikronet
       - GEOLOCATION_HOST=geolocation_tracking_service
       - JWT_SECRET=FV77z4uhQ9M
@@ -56,15 +56,15 @@ services:
     build: /services/driver
     container_name: driver_service
     depends_on:
-      mysql_database:
+      postgresql:
         condition: service_healthy
     volumes:
       - ./uploads:/usr/bin/uploads
     environment:
-      - DB_HOST=mysql_database
-      - DB_USER=root
-      - DB_PASSWORD=123
-      - DB_PORT=3306
+      - DB_HOST=postgresql
+      - DB_USER=geolocation
+      - DB_PASSWORD=Of@2gDmD8imF%D
+      - DB_PORT=5432
       - DB_NAME=mikronet
       - JWT_SECRET=FV77z4uhQ9M
       - JWT_ISS=MikroNet
@@ -76,17 +76,17 @@ services:
     build: /services/dashboard
     container_name: dashboard_service
     depends_on:
-      mysql_database:
+      postgresql:
         condition: service_healthy
     volumes:
       - ./uploads:/usr/bin/uploads
       - ./var/log/mikronet:/var/log/mikronet
     environment:
       - SERVICE_NAME=dashboard_service
-      - DB_HOST=mysql_database
-      - DB_USER=root
-      - DB_PASSWORD=123
-      - DB_PORT=3306
+      - DB_HOST=postgresql
+      - DB_USER=geolocation
+      - DB_PASSWORD=Of@2gDmD8imF%D
+      - DB_PORT=5432
       - DB_NAME=mikronet
       - GRPC_USER=user_service
       - GRPC_DRIVER=driver_service
@@ -99,10 +99,10 @@ services:
     build: /services/geolocation_tracking
     container_name: geolocation_tracking_service
     depends_on:
-        geolocation_database:
+        postgresql:
             condition: service_healthy
     environment:
-      - DB_HOST=geolocation_database
+      - DB_HOST=postgresql
       - DB_USER=geolocation
       - DB_PASSWORD=Of@2gDmD8imF%D
       - DB_PORT=5432
@@ -114,42 +114,9 @@ services:
 
 #############################################################################################
 # DATABASE CONTAINER
-
-  mysql_database:
-    container_name: mysql_database
-    image: mysql:latest
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p123" ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    environment:
-      MYSQL_ROOT_PASSWORD: 123
-      MYSQL_DATABASE: mikronet
-      TZ: Asia/Singapore
-    networks:
-      - kong-net
-
-  # phpmyadmin:
-  #   image: phpmyadmin/phpmyadmin
-  #   container_name: phpmyadmin
-  #   restart: always
-  #   ports:
-  #     - "8080:80"
-  #   environment:
-  #     PMA_HOST: mysql_database
-  #     MYSQL_ROOT_PASSWORD: 123
-  #   depends_on:
-  #     mysql_database:
-  #      condition: service_healthy
-  #   networks:
-  #     - kong-net
-
-  geolocation_database:
+  postgresql:
     image: postgis/postgis
-    container_name: geolocation_database
+    container_name: postgresql
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -296,16 +263,16 @@ services:
     image: grafana/loki
     ports:
       - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml
+    command: -config.expand-env=true -config.file=/etc/loki/local-config.yaml
     volumes:
-      - /monitoring/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - ./monitoring/loki-config.yaml:/etc/loki/local-config.yaml:ro
 
   fluent-bit:
     container_name: fluent-bit
     image: fluent/fluent-bit
     volumes:
-      - /monitoring/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
-      - /monitoring/parser.conf:/fluent-bit/etc/parser.conf
+      - ./monitoring/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./monitoring/parser.conf:/fluent-bit/etc/parser.conf
       - ./var/log/mikronet:/var/log/mikronet
     depends_on:
       - loki
@@ -340,7 +307,7 @@ services:
     container_name: promotheus
     image: prom/prometheus
     volumes:
-      - /monitoring/promotheus.yaml:/etc/prometheus/prometheus.yml
+      - ./monitoring/promotheus.yaml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090" 
 

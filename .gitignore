@@ -26,3 +26,4 @@ dummy.sql
 *.air.toml
 services/user/uploads
 */tmp
+/model

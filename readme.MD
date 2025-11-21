@@ -1,8 +1,5 @@
 <p align="center">
   <img src="https://github.com/GabrielMoody/MikroNet/actions/workflows/build.yml/badge.svg" alt="CI" />
-  <a href="https://goreportcard.com/report/GabrielMoody/MikroNet">
-    <img src="https://goreportcard.com/badge/GabrielMoody/MikroNet" alt="Go Report Card" />
-  </a>
   <img src="https://img.shields.io/github/license/GabrielMoody/MikroNet" alt="License" />
 </p>
 
@@ -15,7 +12,7 @@ MikroNet is a backend systems for real-time driver tracking, order management an
 - Geospatial query with PostGis for accurate point and redis for faster access
 - User order to nearest driver available
 - Push notification
-- Event-driver using RabbitMQ
+- Event-driven using RabbitMQ
 - JWT Authentication
 - API Gateway using Kong
 

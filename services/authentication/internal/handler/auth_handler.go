@@ -18,8 +18,4 @@ func AuthHandler(r fiber.Router, db *gorm.DB) {
 	authHandler.Post("/register/user", authController.CreateUser)
 	authHandler.Post("/register/driver", authController.CreateDriver)
 	authHandler.Post("/login", authController.LoginUser)
-	authHandler.Post("/reset-password", authController.SendResetPasswordLink)
-	authHandler.Put("/reset-password/:code", authController.ResetPassword)
-	authHandler.Put("/change-password", authController.ChangePassword)
-	authHandler.Get("/reset-password/:code", authController.ResetPasswordUI)
 }
