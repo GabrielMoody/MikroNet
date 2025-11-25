@@ -2,12 +2,12 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/GabrielMoody/mikronet-driver-service/internal/helper"
 	"github.com/GabrielMoody/mikronet-driver-service/internal/model"
 	"github.com/GabrielMoody/mikronet-driver-service/internal/pb"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -22,31 +22,11 @@ type DriverRepo interface {
 	GetTripHistories(c context.Context, id string) (res []model.Histories, err error)
 	GetAllDriverLastSeen(c context.Context) (res []model.DriverDetails, err error)
 	SetLastSeen(c context.Context, id string) (res *time.Time, err error)
-	GetQrisData(c context.Context, id string) (res *string, err error)
 }
 
 type DriverRepoImpl struct {
-	db *gorm.DB
-}
-
-func generateQrisData(id string) *string {
-	qr := fmt.Sprintf("0002010102115802ID6006Manado6208%s530336054060006304A1B2", id)
-	return &qr
-}
-
-func (a *DriverRepoImpl) GetQrisData(c context.Context, id string) (res *string, err error) {
-	if err := a.db.WithContext(c).Model(&model.DriverDetails{}).Select("qris_data").Where("id = ?", id).Scan(&res).Error; err != nil {
-		return res, helper.ErrDatabase
-	}
-
-	if res == nil {
-		res = generateQrisData(id)
-		if err := a.db.WithContext(c).Model(&model.DriverDetails{}).Where("id = ?", id).Update("qris_data", res).Error; err != nil {
-			return res, helper.ErrDatabase
-		}
-	}
-
-	return res, nil
+	db  *gorm.DB
+	rdb *redis.Client
 }
 
 func (a *DriverRepoImpl) GetAllDriverLastSeen(c context.Context) (res []model.DriverDetails, err error) {

@@ -24,8 +24,9 @@ func main() {
 
 	api := app.Group("/")
 	db := model.DatabaseInit()
+	rdb := model.RedisConnect()
 
-	handler.NewWSHandler(api, db)
+	handler.NewWSHandler(api, db, rdb)
 
 	err := app.Listen(":8040")
 

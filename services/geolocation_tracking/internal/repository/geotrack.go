@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+
 	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/dto"
 	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/model"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -12,20 +14,29 @@ type GeoTrackRepository interface {
 }
 
 type GeoTrackRepositoryImpl struct {
-	db *gorm.DB
+	db  *gorm.DB
+	rdb *redis.Client
 }
 
 func (a *GeoTrackRepositoryImpl) SaveCurrentDriverLocation(c context.Context, location dto.Message) (res model.DriverLocation, err error) {
-	if err := a.db.WithContext(c).Raw("INSERT INTO driver_locations (driver_id, location) VALUES (?, ST_SetSRID(ST_MakePoint(?, ?), 4326))"+
-		" ON CONFLICT (driver_id) DO UPDATE SET location = EXCLUDED.location", location.UserID, location.Lng, location.Lat).Scan(res).Error; err != nil {
-		return res, err
-	}
+	// if err := a.db.WithContext(c).
+	// 	Raw("INSERT INTO driver_locations (driver_id, location) VALUES (?, ST_SetSRID(ST_MakePoint(?, ?), 4326))"+
+	// 		" ON CONFLICT (driver_id) DO UPDATE SET location = EXCLUDED.location", location.UserID, location.Lng, location.Lat).Scan(res).Error; err != nil {
+	// 	return res, err
+	// }
+
+	a.rdb.GeoAdd(c, "drivers:location", &redis.GeoLocation{
+		Name:      string(location.UserID),
+		Longitude: location.Lng,
+		Latitude:  location.Lat,
+	})
 
 	return res, nil
 }
 
-func NewGeoTrackRepository(db *gorm.DB) GeoTrackRepository {
+func NewGeoTrackRepository(db *gorm.DB, rdb *redis.Client) GeoTrackRepository {
 	return &GeoTrackRepositoryImpl{
-		db: db,
+		db:  db,
+		rdb: rdb,
 	}
 }

@@ -27,3 +27,4 @@ dummy.sql
 services/user/uploads
 */tmp
 /model
+/redis_data

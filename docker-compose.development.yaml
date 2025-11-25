@@ -20,8 +20,8 @@ services:
       - ./uploads:/usr/bin/uploads
     environment:
       - DB_HOST=postgresql
-      - DB_USER=geolocation
-      - DB_PASSWORD=Of@2gDmD8imF%D
+      - DB_USER=postgres
+      - DB_PASSWORD=123
       - DB_PORT=5432
       - DB_NAME=mikronet
       - GRPC_USER=user_service
@@ -41,8 +41,8 @@ services:
         condition: service_healthy
     environment:
       - DB_HOST=postgresql
-      - DB_USER=geolocation
-      - DB_PASSWORD=Of@2gDmD8imF%D
+      - DB_USER=postgres
+      - DB_PASSWORD=123
       - DB_PORT=5432
       - DB_NAME=mikronet
       - GEOLOCATION_HOST=geolocation_tracking_service
@@ -62,8 +62,8 @@ services:
       - ./uploads:/usr/bin/uploads
     environment:
       - DB_HOST=postgresql
-      - DB_USER=geolocation
-      - DB_PASSWORD=Of@2gDmD8imF%D
+      - DB_USER=postgres
+      - DB_PASSWORD=123
       - DB_PORT=5432
       - DB_NAME=mikronet
       - JWT_SECRET=FV77z4uhQ9M
@@ -84,8 +84,8 @@ services:
     environment:
       - SERVICE_NAME=dashboard_service
       - DB_HOST=postgresql
-      - DB_USER=geolocation
-      - DB_PASSWORD=Of@2gDmD8imF%D
+      - DB_USER=postgres
+      - DB_PASSWORD=123
       - DB_PORT=5432
       - DB_NAME=mikronet
       - GRPC_USER=user_service
@@ -103,8 +103,8 @@ services:
             condition: service_healthy
     environment:
       - DB_HOST=postgresql
-      - DB_USER=geolocation
-      - DB_PASSWORD=Of@2gDmD8imF%D
+      - DB_USER=postgres
+      - DB_PASSWORD=123
       - DB_PORT=5432
       - DB_NAME=mikronet
       - JWT_SECRET=FV77z4uhQ9M
@@ -137,6 +137,20 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - kong-net
+
+  redis:
+    image: redis/redis-stack:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+      - "8010:8001"
+    environment:
+      - REDIS_ARGS=--appendonly yes --save 60 1000
+    volumes:
+      - ./redis_data/:/data
+    restart: always
+    networks:
+      - kong-net
   
   pgadmin_service:
     image: dpage/pgadmin4
@@ -152,7 +166,7 @@ services:
       - ./pgadmin-data:/var/lib/pgadmin
 
   kong-migrations:
-    image: "${KONG_DOCKER_TAG:-kong:latest}"
+    image: kong:latest
     command: kong migrations bootstrap
     depends_on:
       - db
@@ -172,7 +186,7 @@ services:
         condition: on-failure
 
   kong-migrations-up:
-    image: "${KONG_DOCKER_TAG:-kong:latest}"
+    image: kong:latest
     command: kong migrations up && kong migrations finish
     depends_on:
       - db
@@ -193,7 +207,7 @@ services:
 
   kong:
     container_name: kong
-    image: "${KONG_DOCKER_TAG:-kong:latest}"
+    image: kong:latest
     user: "${KONG_USER:-kong}"
     depends_on:
       - db

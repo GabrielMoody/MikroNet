@@ -6,18 +6,19 @@ type (
 	}
 
 	MessageLoc struct {
-		UserID string  `json:"user_id"`
+		UserID int64   `json:"user_id"`
 		Lat    float64 `json:"lat"`
 		Lng    float64 `json:"lng"`
 	}
 
-	ReviewReq struct {
-		Comment string `json:"comment"`
-		Star    int    `json:"star" validate:"required"`
+	Point struct {
+		Lat float64 `json:"lat"`
+		Lng float64 `json:"lng"`
 	}
 
-	Transaction struct {
-		DriverId string `json:"driver_id"`
-		Amount   int    `json:"amount"`
+	OrderReq struct {
+		UserID      int64 `json:"-"`
+		PickupPoint Point `json:"pickup_point"`
+		DestPoint   Point `json:"dest_point"`
 	}
 )

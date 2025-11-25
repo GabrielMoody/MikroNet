@@ -20,11 +20,5 @@ func DatabaseInit() *gorm.DB {
 
 	log.Print("Connection Succeed")
 
-	err = db.AutoMigrate(&DriverLocationLogs{}, &DriverLocation{})
-
-	if err != nil {
-		panic(fmt.Errorf("error while migrating database"))
-	}
-
 	return db
 }

@@ -11,40 +11,16 @@ import (
 )
 
 type UserService interface {
-	GetUserDetails(c context.Context, id string) (res model.Users, err *helper.ErrorStruct)
-	ReviewOrder(c context.Context, data dto.ReviewReq, userId string, driverId string) (res interface{}, err *helper.ErrorStruct)
-	Transaction(c context.Context, data dto.Transaction, passenger_id string) (res model.Transaction, err *helper.ErrorStruct)
+	GetUserDetails(c context.Context, id string) (res model.User, err *helper.ErrorStruct)
+	MakeOrder(c context.Context, order_req dto.OrderReq) (res dto.OrderReq, err *helper.ErrorStruct)
 }
 
 type userServiceImpl struct {
 	repo repository.UserRepo
+	amqp *common.AMQP
 }
 
-func (a *userServiceImpl) Transaction(c context.Context, data dto.Transaction, passenger_id string) (res model.Transaction, err *helper.ErrorStruct) {
-	if err := helper.Validate.Struct(data); err != nil {
-		return res, &helper.ErrorStruct{
-			Code: http.StatusBadRequest,
-			Err:  err,
-		}
-	}
-
-	resRepo, errRepo := a.repo.Transaction(c, model.Transaction{
-		PassengerID: passenger_id,
-		DriverID:    data.DriverId,
-		Amount:      data.Amount,
-	})
-
-	if errRepo != nil {
-		return res, &helper.ErrorStruct{
-			Code: http.StatusInternalServerError,
-			Err:  errRepo,
-		}
-	}
-
-	return resRepo, nil
-}
-
-func (a *userServiceImpl) GetUserDetails(c context.Context, id string) (res model.Users, err *helper.ErrorStruct) {
+func (a *userServiceImpl) GetUserDetails(c context.Context, id string) (res model.User, err *helper.ErrorStruct) {
 	resRepo, errRepo := a.repo.GetUserDetails(c, id)
 
 	if errRepo != nil {
@@ -57,29 +33,19 @@ func (a *userServiceImpl) GetUserDetails(c context.Context, id string) (res mode
 	return resRepo, nil
 }
 
-func (a *userServiceImpl) ReviewOrder(c context.Context, data dto.ReviewReq, userId string, driverId string) (res interface{}, err *helper.ErrorStruct) {
-	if err := helper.Validate.Struct(data); err != nil {
-		return res, &helper.ErrorStruct{
-			Code: http.StatusBadRequest,
-			Err:  err,
-		}
+func (a *userServiceImpl) MakeOrder(c context.Context, order_req dto.OrderReq) (res dto.OrderReq, err *helper.ErrorStruct) {
+	order := model.Order{
+		UserID: order_req.UserID,
+		PickupPoint: model.GeoPoint{
+			Lat: order_req.PickupPoint.Lat,
+			Lng: order_req.PickupPoint.Lng,
+		},
+		DropoffPoint: model.GeoPoint{
+			Lat: order_req.DestPoint.Lat,
+			Lng: order_req.DestPoint.Lng,
+		},
+		Status: "ORDER_PENDING",
 	}
-
-	resRepo, errRepo := a.repo.ReviewOrder(c, model.Review{
-		PassengerID: userId,
-		DriverID:    driverId,
-		Comment:     data.Comment,
-		Star:        data.Star,
-	})
-
-	if errRepo != nil {
-		return res, &helper.ErrorStruct{
-			Code: http.StatusInternalServerError,
-			Err:  errRepo,
-		}
-	}
-
-	return resRepo, nil
 }
 
 func NewUserService(repo repository.UserRepo) UserService {

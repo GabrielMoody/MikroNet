@@ -8,14 +8,15 @@ import (
 	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/ws"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
-func NewWSHandler(r fiber.Router, db *gorm.DB) {
+func NewWSHandler(r fiber.Router, db *gorm.DB, rdb *redis.Client) {
 	api := r.Group("/")
 
 	ctx := context.Background()
-	repo := repository.NewGeoTrackRepository(db)
+	repo := repository.NewGeoTrackRepository(db, rdb)
 	hub := &dto.Hub{
 		Broadcast:  make(chan dto.Message),
 		Register:   make(chan *websocket.Conn),
