@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/GabrielMoody/MikroNet/services/common"
 	"github.com/GabrielMoody/mikronet-user-service/internal/controller"
 	"github.com/GabrielMoody/mikronet-user-service/internal/middleware"
 	"github.com/GabrielMoody/mikronet-user-service/internal/repository"
@@ -10,9 +11,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func UserHandler(r fiber.Router, db *gorm.DB) {
+func UserHandler(r fiber.Router, db *gorm.DB, amqp *common.AMQP) {
 	repo := repository.NewUserRepo(db)
-	serviceUser := service.NewUserService(repo)
+	serviceUser := service.NewUserService(repo, amqp)
 	controllerUser := controller.NewUserController(serviceUser)
 
 	api := r.Group("/")
@@ -22,6 +23,4 @@ func UserHandler(r fiber.Router, db *gorm.DB) {
 	api.Get("/", controllerUser.GetUser)
 
 	api.Post("/order", controllerUser.Order)
-	api.Post("/review/:driverId", controllerUser.ReviewOrder)
-	api.Post("/transaction", controllerUser.Transaction)
 }

@@ -14,12 +14,11 @@ import (
 type DriverRepo interface {
 	CreateDriver(c context.Context, data model.DriverDetails) (model.DriverDetails, error)
 	GetAllDrivers(c context.Context, verified *pb.ReqDrivers) ([]model.DriverDetails, error)
-	GetDriverDetails(c context.Context, id string) (model.Drivers, error)
+	GetDriverDetails(c context.Context, id string) (model.DriverDetails, error)
 	EditDriverDetails(c context.Context, user model.DriverDetails) (model.DriverDetails, error)
 	DeleteDriver(c context.Context, id string) (model.DriverDetails, error)
 	GetStatus(c context.Context, id string) (res interface{}, err error)
 	SetStatus(c context.Context, status string, id string) (res interface{}, err error)
-	GetTripHistories(c context.Context, id string) (res []model.Histories, err error)
 	GetAllDriverLastSeen(c context.Context) (res []model.DriverDetails, err error)
 	SetLastSeen(c context.Context, id string) (res *time.Time, err error)
 }

@@ -1,0 +1,44 @@
+_format_version: "3.0"
+_transform: true
+
+upstreams:
+  - name: auth_upstream
+    targets:
+      - target: auth_service:8050
+
+  - name: user_upstream
+    targets:
+      - target: user_service:8010
+
+  - name: driver_upstream
+    targets:
+      - target: driver_service:8020
+
+services:
+  - name: auth_service_route
+    url: http://auth_upstream
+
+  - name: user_service_route
+    url: http://user_upstream
+
+  - name: driver_service_route
+    url: http://driver_upstream
+
+routes:
+  - name: auth_route
+    service: auth_service_route
+    paths:
+      - /api/v1/auth
+    strip_path: true
+
+  - name: user_route
+    service: user_service_route
+    paths:
+      - /api/v1/user
+    strip_path: true
+
+  - name: driver_route
+    service: driver_service_route
+    paths:
+      - /api/v1/driver
+    strip_path: true

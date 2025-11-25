@@ -1,6 +1,6 @@
 module github.com/GabrielMoody/mikronet-user-service
 
-go 1.24.0
+go 1.25.4
 
 require (
 	github.com/fasthttp/websocket v1.5.12
@@ -12,6 +12,7 @@ require (
 )
 
 require (
+	github.com/GabrielMoody/MikroNet/services/common v0.0.0-20251125061638-a32b81d7fa4b // indirect
 	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
@@ -32,6 +33,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/redis/go-redis/v9 v9.17.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect

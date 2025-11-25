@@ -19,8 +19,6 @@ func main() {
 		AllowMethods: "*",
 	}))
 
-	app.Static("/static", "./static")
-
 	app.Use(logger.New(logger.Config{
 		TimeFormat: "02-Jan-2006",
 		TimeZone:   "Asia/Singapore",

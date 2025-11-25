@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/GabrielMoody/MikroNet/services/common"
 	"github.com/GabrielMoody/mikronet-user-service/internal/handler"
 	"github.com/GabrielMoody/mikronet-user-service/internal/model"
 	"github.com/gofiber/fiber/v2"
@@ -24,10 +25,11 @@ func main() {
 	}))
 
 	db := model.DatabaseInit()
+	amqp := common.New("amqp://guest:guest@localhost:5672/")
 
 	api := app.Group("/")
 
-	handler.UserHandler(api, db)
+	handler.UserHandler(api, db, amqp)
 
 	err := app.Listen("0.0.0.0:8010")
 

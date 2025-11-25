@@ -7,7 +7,8 @@ import (
 	"github.com/GabrielMoody/mikronet-auth-service/internal/dto"
 	"github.com/GabrielMoody/mikronet-auth-service/internal/helper"
 	"github.com/GabrielMoody/mikronet-auth-service/internal/models"
-	"github.com/go-sql-driver/mysql"
+	"github.com/lib/pq"
+
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -23,7 +24,7 @@ type AuthRepoImpl struct {
 }
 
 func (a *AuthRepoImpl) LoginUser(c context.Context, data dto.UserLoginReq) (res models.Authentication, err error) {
-	if err := a.db.WithContext(c).First(&res, "email = ?", data.Email).Error; err != nil {
+	if err := a.db.WithContext(c).First(&res, "username = ?", data.Email).Error; err != nil {
 		return res, helper.ErrNotFound
 	}
 
@@ -46,9 +47,9 @@ func (a *AuthRepoImpl) CreateUser(c context.Context, data models.Authentication)
 	if err := tx.Create(&data).Error; err != nil {
 		tx.Rollback()
 
-		var mysqlErr *mysql.MySQLError
+		var psqlErr *pq.Error
 
-		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
+		if errors.As(err, &psqlErr) && psqlErr.Code == "23505" {
 			return 0, helper.ErrDuplicateEntry
 		}
 
@@ -72,9 +73,9 @@ func (a *AuthRepoImpl) CreateDriver(c context.Context, data models.Authenticatio
 	if err := tx.Create(&data).Error; err != nil {
 		tx.Rollback()
 
-		var mysqlErr *mysql.MySQLError
+		var psqlErr *pq.Error
 
-		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
+		if errors.As(err, &psqlErr) && psqlErr.Code == "23505" {
 			return 0, helper.ErrDuplicateEntry
 		}
 
