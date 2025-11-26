@@ -19,12 +19,6 @@ type GeoTrackRepositoryImpl struct {
 }
 
 func (a *GeoTrackRepositoryImpl) SaveCurrentDriverLocation(c context.Context, location dto.Message) (res model.DriverLocation, err error) {
-	// if err := a.db.WithContext(c).
-	// 	Raw("INSERT INTO driver_locations (driver_id, location) VALUES (?, ST_SetSRID(ST_MakePoint(?, ?), 4326))"+
-	// 		" ON CONFLICT (driver_id) DO UPDATE SET location = EXCLUDED.location", location.UserID, location.Lng, location.Lat).Scan(res).Error; err != nil {
-	// 	return res, err
-	// }
-
 	a.rdb.GeoAdd(c, "drivers:location", &redis.GeoLocation{
 		Name:      string(location.UserID),
 		Longitude: location.Lng,

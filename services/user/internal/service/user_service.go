@@ -37,14 +37,13 @@ func (a *userServiceImpl) GetUserDetails(c context.Context, id string) (res mode
 
 func (a *userServiceImpl) MakeOrder(c context.Context, order_req dto.OrderReq) (res dto.OrderReq, err *helper.ErrorStruct) {
 	order := model.Order{
-		UserID: order_req.UserID,
 		PickupPoint: model.GeoPoint{
-			Lat: order_req.PickupPoint.Lat,
-			Lng: order_req.PickupPoint.Lng,
+			Lat: res.PickupPoint.Lat,
+			Lng: res.PickupPoint.Lng,
 		},
 		DropoffPoint: model.GeoPoint{
-			Lat: order_req.DestPoint.Lat,
-			Lng: order_req.DestPoint.Lng,
+			Lat: res.DestPoint.Lat,
+			Lng: res.DestPoint.Lng,
 		},
 		Status: "ORDER_CREATED",
 	}

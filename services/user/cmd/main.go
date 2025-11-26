@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/GabrielMoody/MikroNet/services/common"
+	"github.com/GabrielMoody/mikronet-user-service/config/rabbitmq"
 	"github.com/GabrielMoody/mikronet-user-service/internal/handler"
 	"github.com/GabrielMoody/mikronet-user-service/internal/model"
 	"github.com/gofiber/fiber/v2"
@@ -25,7 +25,7 @@ func main() {
 	}))
 
 	db := model.DatabaseInit()
-	amqp := common.New("amqp://guest:guest@localhost:5672/")
+	amqp := rabbitmq.Init("amqp://admin:admin123@localhost:15672")
 
 	api := app.Group("/")
 
