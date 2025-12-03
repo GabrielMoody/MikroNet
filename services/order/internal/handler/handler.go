@@ -1,26 +1,21 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/GabrielMoody/MikroNet/services/common"
-	"github.com/GabrielMoody/MikroNet/services/order/internal/controller"
-	"github.com/GabrielMoody/MikroNet/services/order/internal/middleware"
+	"github.com/GabrielMoody/MikroNet/services/order/internal/events"
 	"github.com/GabrielMoody/MikroNet/services/order/internal/repository"
 	"github.com/GabrielMoody/MikroNet/services/order/internal/service"
-	"github.com/gofiber/fiber/v2"
+	"github.com/redis/go-redis/v9"
 
 	"gorm.io/gorm"
 )
 
-func UserHandler(r fiber.Router, db *gorm.DB, amqp *common.AMQP) {
-	repo := repository.NewUserRepo(db)
-	serviceUser := service.NewUserService(repo, amqp)
-	controllerUser := controller.NewUserController(serviceUser)
+func OrderHandler(db *gorm.DB, rdb *redis.Client, amqp *common.AMQP) {
+	repo := repository.NewOrderRepo(db, rdb)
+	serviceUser := service.NewOrderService(repo, amqp)
+	events := events.NewUserController(serviceUser, amqp)
 
-	api := r.Group("/")
-
-	api.Use(middleware.ValidateUserRole)
-
-	api.Get("/", controllerUser.GetUser)
-
-	api.Post("/order", controllerUser.Order)
+	events.Listen(context.Background())
 }

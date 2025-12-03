@@ -17,8 +17,6 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
-    volumes:
-      - ./uploads:/usr/bin/uploads
     environment:
       - DB_HOST=postgresql
       - DB_USER=postgres
@@ -59,8 +57,6 @@ services:
   #   depends_on:
   #     postgresql:
   #       condition: service_healthy
-  #   volumes:
-  #     - ./uploads:/usr/bin/uploads
   #   environment:
   #     - DB_HOST=postgresql
   #     - DB_USER=postgres
@@ -73,14 +69,13 @@ services:
   #   networks:
   #     - kong-net
 
-  dashboard_service:
-    build: /services/dashboard
-    container_name: dashboard_service
+  order_service:
+    build: /services/order
+    container_name: order_service
     depends_on:
       postgresql:
         condition: service_healthy
     volumes:
-      - ./uploads:/usr/bin/uploads
       - ./var/log/mikronet:/var/log/mikronet
     environment:
       - SERVICE_NAME=dashboard_service

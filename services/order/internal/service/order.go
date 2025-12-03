@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/GabrielMoody/MikroNet/services/common"
@@ -9,10 +10,11 @@ import (
 	"github.com/GabrielMoody/MikroNet/services/order/internal/helper"
 	"github.com/GabrielMoody/MikroNet/services/order/internal/model"
 	"github.com/GabrielMoody/MikroNet/services/order/internal/repository"
+	"github.com/redis/go-redis/v9"
 )
 
 type OrderService interface {
-	MakeOrder(c context.Context, order_req dto.OrderReq) (res dto.OrderReq, err *helper.ErrorStruct)
+	MakeOrder(c context.Context, order_req dto.OrderReq) (res []redis.GeoLocation, err *helper.ErrorStruct)
 }
 
 type OrderServiceImpl struct {
@@ -20,15 +22,16 @@ type OrderServiceImpl struct {
 	amqp *common.AMQP
 }
 
-func (a *OrderServiceImpl) MakeOrder(c context.Context, order_req dto.OrderReq) (res dto.OrderReq, err *helper.ErrorStruct) {
+func (a *OrderServiceImpl) MakeOrder(c context.Context, order_req dto.OrderReq) (res []redis.GeoLocation, err *helper.ErrorStruct) {
+	log.Println("Make an order from Order Service")
 	order := model.Order{
 		PickupPoint: model.GeoPoint{
-			Lat: res.PickupPoint.Lat,
-			Lng: res.PickupPoint.Lng,
+			Lat: order_req.PickupPoint.Lat,
+			Lng: order_req.PickupPoint.Lng,
 		},
 		DropoffPoint: model.GeoPoint{
-			Lat: res.DestPoint.Lat,
-			Lng: res.DestPoint.Lng,
+			Lat: order_req.DestPoint.Lat,
+			Lng: order_req.DestPoint.Lng,
 		},
 		Status: "ORDER_CREATED",
 	}
@@ -42,7 +45,16 @@ func (a *OrderServiceImpl) MakeOrder(c context.Context, order_req dto.OrderReq) 
 		}
 	}
 
-	return res, nil
+	drivers, errRepo := a.repo.FindNearestDriver(c, order.PickupPoint)
+
+	if errRepo != nil {
+		return res, &helper.ErrorStruct{
+			Err:  errRepo,
+			Code: http.StatusInternalServerError,
+		}
+	}
+
+	return drivers, nil
 }
 
 func NewOrderService(repo repository.OrderRepo, amqp *common.AMQP) OrderService {

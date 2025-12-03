@@ -36,34 +36,13 @@ func (a *userServiceImpl) GetUserDetails(c context.Context, id string) (res mode
 }
 
 func (a *userServiceImpl) MakeOrder(c context.Context, order_req dto.OrderReq) (res dto.OrderReq, err *helper.ErrorStruct) {
-	order := model.Order{
-		PickupPoint: model.GeoPoint{
-			Lat: res.PickupPoint.Lat,
-			Lng: res.PickupPoint.Lng,
-		},
-		DropoffPoint: model.GeoPoint{
-			Lat: res.DestPoint.Lat,
-			Lng: res.DestPoint.Lng,
-		},
-		Status: "ORDER_CREATED",
-	}
-
-	_, errRepo := a.repo.MakeOrder(c, order)
-
-	if errRepo != nil {
-		return res, &helper.ErrorStruct{
-			Err:  errRepo,
-			Code: http.StatusInternalServerError,
-		}
-	}
-
 	// Published event order.created
 	body, _ := json.Marshal(order_req)
 	errEvent := a.amqp.PublishPersistent("order", "order.created", body)
 
 	if errEvent != nil {
 		return res, &helper.ErrorStruct{
-			Err:  errRepo,
+			Err:  errEvent,
 			Code: http.StatusInternalServerError,
 		}
 	}

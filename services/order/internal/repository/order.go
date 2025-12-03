@@ -34,23 +34,32 @@ func (a *OrderRepoImpl) FindNearestDriver(c context.Context, pickup_point model.
 			Radius:     50,
 			RadiusUnit: "km",
 			Sort:       "ASC",
-			Count:      1,
+			Count:      5,
 		},
 		WithCoord: true,
 		WithDist:  true,
 	}
 
-	drivers, err := a.rdb.GeoSearchLocation(c, "driver:location", q).Result()
+	drivers, err := a.rdb.GeoSearchLocation(c, "drivers:location", q).Result()
 
 	if err != nil {
 		return nil, err
 	}
 
-	return drivers, nil
+	var availableDrivers []redis.GeoLocation
+	for _, d := range drivers {
+		isAvailable, _ := a.rdb.SIsMember(c, "drivers:available", d.Name).Result()
+		if isAvailable {
+			availableDrivers = append(availableDrivers, d)
+		}
+	}
+
+	return availableDrivers, nil
 }
 
-func NewOrderRepo(db *gorm.DB) OrderRepo {
+func NewOrderRepo(db *gorm.DB, rdb *redis.Client) OrderRepo {
 	return &OrderRepoImpl{
-		db: db,
+		db:  db,
+		rdb: rdb,
 	}
 }

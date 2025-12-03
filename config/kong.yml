@@ -14,6 +14,10 @@ upstreams:
     targets:
       - target: driver_service:8020
 
+  - name: geolocation_tracking_upstream
+    targets:
+      - target: geolocation_tracking_service:8040
+
 services:
   - name: auth_service_route
     url: http://auth_upstream
@@ -23,6 +27,9 @@ services:
 
   - name: driver_service_route
     url: http://driver_upstream
+
+  - name: geolocation_tracking_route
+    url: http://geolocation_tracking_upstream
 
 routes:
   - name: auth_route
@@ -41,4 +48,10 @@ routes:
     service: driver_service_route
     paths:
       - /api/v1/driver
+    strip_path: true
+
+  - name: geolocation_tracking_route
+    service: geolocation_tracking_route
+    paths:
+      - /api/v1/geo
     strip_path: true

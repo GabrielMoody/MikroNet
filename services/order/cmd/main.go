@@ -1,8 +1,9 @@
 package main
 
 import (
-	"log"
-
+	"github.com/GabrielMoody/MikroNet/services/order/config/rabbitmq"
+	"github.com/GabrielMoody/MikroNet/services/order/internal/handler"
+	"github.com/GabrielMoody/MikroNet/services/order/internal/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -20,15 +21,9 @@ func main() {
 		TimeZone:   "Asia/Singapore",
 	}))
 
-	// db := model.DatabaseInit()
+	db := model.DatabaseInit()
+	rdb := model.RedisConnect()
+	aqmp := rabbitmq.Init("amqp://admin:admin123@rabbitmq:5672/")
 
-	// api := app.Group("/")
-
-	// handler.DriverHandler(api, db)
-
-	err := app.Listen("0.0.0.0:8060")
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	handler.OrderHandler(db, rdb, aqmp)
 }

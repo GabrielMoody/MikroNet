@@ -7,7 +7,7 @@ import (
 )
 
 func Init(url string) *common.AMQP {
-	amqp := common.New("amqp://admin:admin123@rabbitmq:5672/")
+	amqp := common.New(url)
 	err := amqp.Connect(context.Background())
 
 	if err != nil {

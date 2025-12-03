@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 
 CREATE TABLE authentications (
     id BIGSERIAL PRIMARY KEY,
-    username VARCHAR(255),
+    username VARCHAR(255) UNIQUE,
     password VARCHAR(255),
     role VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -11,7 +11,7 @@ CREATE TABLE authentications (
 
 CREATE TABLE users (
     id BIGINT PRIMARY KEY REFERENCES authentications(id) ON DELETE CASCADE,
-    username VARCHAR(255),
+    username VARCHAR(255) UNIQUE,
     fullname VARCHAR(255),
     phone_number VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
