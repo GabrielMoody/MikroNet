@@ -12,7 +12,7 @@ import (
 
 type AMQP struct {
 	URL string
-	// internal
+
 	conn    *amqp.Connection
 	channel *amqp.Channel
 	ackCh   chan amqp.Confirmation
