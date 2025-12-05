@@ -110,6 +110,7 @@ func (a *AuthServiceImpl) LoginUserService(c context.Context, data dto.UserLogin
 	}
 
 	return dto.UserRegistrationsResp{
+		ID:    resRepo.ID,
 		Email: resRepo.Username,
 		Role:  resRepo.Role,
 	}, nil

@@ -29,4 +29,8 @@ func DriverHandler(r fiber.Router, db *gorm.DB) {
 	api.Get("/trips/", controllerDriver.GetTripHistories)
 
 	api.Post("/heartbeat/", controllerDriver.SetDriverLastSeen)
+
+	api.Get("/healthcheck", func(c *fiber.Ctx) error {
+		return c.Status(200).JSON(map[string]string{"status": "pass"})
+	})
 }

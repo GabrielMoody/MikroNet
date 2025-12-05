@@ -15,12 +15,12 @@ type OrderEvents interface {
 }
 
 type OrderEventsImpl struct {
-	amqp    *common.AMQP
-	service service.OrderService
+	amqp_cons *common.AMQP
+	service   service.OrderService
 }
 
 func (a *OrderEventsImpl) Listen(c context.Context) error {
-	msgs, err := a.amqp.Consume("order_created", "order", "order.created")
+	msgs, err := a.amqp_cons.Consume("order_created", "order", "order.created")
 
 	if err != nil {
 		return err
@@ -34,7 +34,9 @@ func (a *OrderEventsImpl) Listen(c context.Context) error {
 				log.Fatal(err)
 			}
 
-			a.service.MakeOrder(c, order_req)
+			driver, _ := a.service.MakeOrder(c, order_req)
+
+			log.Println(driver)
 
 			msg.Ack(false)
 		}
@@ -43,9 +45,9 @@ func (a *OrderEventsImpl) Listen(c context.Context) error {
 	select {}
 }
 
-func NewUserController(service service.OrderService, amqp *common.AMQP) OrderEvents {
+func NewEvents(service service.OrderService, amqp_cons *common.AMQP) OrderEvents {
 	return &OrderEventsImpl{
-		service: service,
-		amqp:    amqp,
+		service:   service,
+		amqp_cons: amqp_cons,
 	}
 }

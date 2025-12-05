@@ -23,4 +23,8 @@ func UserHandler(r fiber.Router, db *gorm.DB, amqp *common.AMQP) {
 	api.Get("/", controllerUser.GetUser)
 
 	api.Post("/order", controllerUser.Order)
+
+	api.Get("/healthcheck", func(c *fiber.Ctx) error {
+		return c.Status(200).JSON(map[string]string{"status": "pass"})
+	})
 }

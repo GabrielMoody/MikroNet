@@ -1,21 +1,30 @@
 package main
 
 import (
-	"github.com/GabrielMoody/mikroNet/notification/internal/handler"
-	"github.com/gofiber/fiber/v2"
-	"log"
+	"fmt"
+	"net"
+
+	"github.com/GabrielMoody/mikroNet/notification/internal/hub"
 )
 
 func main() {
-	app := fiber.New()
-
-	api := app.Group("/")
-
-	handler.NewHandler(api)
-
-	err := app.Listen("0.0.0.0:8015")
-
+	listener, err := net.Listen("tcp", "0.0.0.0:9000")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
+	}
+
+	hub := hub.NewHub()
+
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("accept error:", err)
+			continue
+		}
+
+		fmt.Println("Client connected:", conn.RemoteAddr())
+		go hub.HandleClient(conn)
+
+		hub.SendOrderNotification()
 	}
 }

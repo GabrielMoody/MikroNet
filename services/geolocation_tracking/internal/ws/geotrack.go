@@ -3,13 +3,11 @@ package ws
 import (
 	"context"
 	"log"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/dto"
 	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/helper"
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/midleware"
 	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/repository"
 	"github.com/gofiber/contrib/websocket"
 )
@@ -55,22 +53,22 @@ func (a *GeoTrackImpl) LocationTracking(ctx context.Context) func(*websocket.Con
 			_ = c.Close()
 		}()
 
-		tokenString := c.Query("token")
-		var userID string
+		// tokenString := c.Query("token")
+		// var userID string
 
-		if tokenString != "" {
-			claims, err := midleware.ValidateJWT(tokenString, os.Getenv("JWT_SECRET"))
-			if err != nil {
-				log.Println("Invalid token:", err)
-				// Optionally: return here if you want to reject invalid tokens
-			} else {
-				if id, ok := claims["id"].(string); ok {
-					userID = id
-				}
-			}
-		} else {
-			log.Println("No token provided, proceeding without user ID")
-		}
+		// if tokenString != "" {
+		// 	claims, err := midleware.ValidateJWT(tokenString, os.Getenv("JWT_SECRET"))
+		// 	if err != nil {
+		// 		log.Println("Invalid token:", err)
+		// 		// Optionally: return here if you want to reject invalid tokens
+		// 	} else {
+		// 		if id, ok := claims["id"].(string); ok {
+		// 			userID = id
+		// 		}
+		// 	}
+		// } else {
+		// 	log.Println("No token provided, proceeding without user ID")
+		// }
 
 		a.h.Register <- c
 
@@ -110,13 +108,13 @@ func (a *GeoTrackImpl) LocationTracking(ctx context.Context) func(*websocket.Con
 			}
 
 			a.h.Broadcast <- dto.Message{
-				UserID: userID,
+				UserID: msg.UserID,
 				Lat:    msg.Lat,
 				Lng:    msg.Lng,
 			}
 
 			_, err = a.repo.SaveCurrentDriverLocation(ctx, dto.Message{
-				UserID: userID,
+				UserID: msg.UserID,
 				Lat:    msg.Lat,
 				Lng:    msg.Lng,
 			})

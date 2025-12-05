@@ -23,10 +23,6 @@ services:
       - DB_PASSWORD=123
       - DB_PORT=5432
       - DB_NAME=mikronet
-      - GRPC_USER=user_service
-      - GRPC_DRIVER=driver_service
-      - GRPC_DASHBOARD=dashboard_service
-      - EMAIL_PASSWORD=khzy wosb xckz aihb
       - JWT_SECRET=FV77z4uhQ9M
       - JWT_ISS=MikroNet
     networks:
@@ -38,6 +34,8 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
     environment:
       - DB_HOST=postgresql
       - DB_USER=postgres
@@ -75,6 +73,10 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
     volumes:
       - ./var/log/mikronet:/var/log/mikronet
     environment:
@@ -84,8 +86,6 @@ services:
       - DB_PASSWORD=123
       - DB_PORT=5432
       - DB_NAME=mikronet
-      - GRPC_USER=user_service
-      - GRPC_DRIVER=driver_service
       - JWT_SECRET=FV77z4uhQ9M
       - JWT_ISS=MikroNet
     networks:

@@ -28,3 +28,5 @@ services/user/uploads
 */tmp
 /model
 /redis_data
+
+/test_notification_client

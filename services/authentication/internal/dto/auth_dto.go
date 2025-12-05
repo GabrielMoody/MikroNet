@@ -19,12 +19,9 @@ type (
 	}
 
 	UserRegistrationsResp struct {
-		ID          string `json:"id"`
-		FirstName   string `json:"first_name"`
-		LastName    string `json:"last_name"`
-		Email       string `json:"email"`
-		PhoneNumber string `json:"phone_number"`
-		Role        string `json:"role"`
+		ID    int64  `json:"id"`
+		Email string `json:"email"`
+		Role  string `json:"role"`
 	}
 
 	UserLoginReq struct {

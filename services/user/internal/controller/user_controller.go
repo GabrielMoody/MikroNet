@@ -2,7 +2,6 @@ package controller
 
 import (
 	"os"
-	"strconv"
 
 	"github.com/GabrielMoody/mikronet-user-service/internal/dto"
 	"github.com/GabrielMoody/mikronet-user-service/internal/middleware"
@@ -31,10 +30,9 @@ func (a *UserControllerImpl) Order(c *fiber.Ctx) error {
 		})
 	}
 
-	id := payload["id"].(string)
-	uid, _ := strconv.Atoi(id)
+	id := payload["id"].(float64)
 
-	order_req.UserID = int64(uid)
+	order_req.UserID = int64(id)
 
 	_, err := a.service.MakeOrder(c.Context(), order_req)
 

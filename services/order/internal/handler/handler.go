@@ -12,10 +12,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func OrderHandler(db *gorm.DB, rdb *redis.Client, amqp *common.AMQP) {
+func OrderHandler(db *gorm.DB, rdb *redis.Client, amqp_cons, amqp_pub *common.AMQP) {
 	repo := repository.NewOrderRepo(db, rdb)
-	serviceUser := service.NewOrderService(repo, amqp)
-	events := events.NewUserController(serviceUser, amqp)
+	serviceUser := service.NewOrderService(repo, amqp_pub)
+	events := events.NewEvents(serviceUser, amqp_cons)
 
 	events.Listen(context.Background())
 }

@@ -2,25 +2,17 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/GabrielMoody/mikronet-driver-service/internal/helper"
 	"github.com/GabrielMoody/mikronet-driver-service/internal/model"
-	"github.com/GabrielMoody/mikronet-driver-service/internal/pb"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type DriverRepo interface {
-	CreateDriver(c context.Context, data model.DriverDetails) (model.DriverDetails, error)
-	GetAllDrivers(c context.Context, verified *pb.ReqDrivers) ([]model.DriverDetails, error)
-	GetDriverDetails(c context.Context, id string) (model.DriverDetails, error)
-	EditDriverDetails(c context.Context, user model.DriverDetails) (model.DriverDetails, error)
-	DeleteDriver(c context.Context, id string) (model.DriverDetails, error)
+	GetDriverDetails(c context.Context, id string) (model.Driver, error)
 	GetStatus(c context.Context, id string) (res interface{}, err error)
-	SetStatus(c context.Context, status string, id string) (res interface{}, err error)
-	GetAllDriverLastSeen(c context.Context) (res []model.DriverDetails, err error)
-	SetLastSeen(c context.Context, id string) (res *time.Time, err error)
+	SetStatus(c context.Context, status *bool, id string) (res interface{}, err error)
 }
 
 type DriverRepoImpl struct {
@@ -28,31 +20,7 @@ type DriverRepoImpl struct {
 	rdb *redis.Client
 }
 
-func (a *DriverRepoImpl) GetAllDriverLastSeen(c context.Context) (res []model.DriverDetails, err error) {
-	if err := a.db.WithContext(c).Find(&res).Where("last_seen >= ?", time.Now().Add(-5*time.Minute)).Scan(&res).Error; err != nil {
-		return nil, helper.ErrDatabase
-	}
-
-	return res, nil
-}
-
-func (a *DriverRepoImpl) SetLastSeen(c context.Context, id string) (res *time.Time, err error) {
-	if err := a.db.WithContext(c).Model(&model.DriverDetails{}).Where("id = ?", id).Update("last_seen", time.Now()).Error; err != nil {
-		return res, helper.ErrDatabase
-	}
-
-	return res, nil
-}
-
-func (a *DriverRepoImpl) DeleteDriver(c context.Context, id string) (res model.DriverDetails, err error) {
-	if err := a.db.WithContext(c).Delete(&res, "id = ?", id).Error; err != nil {
-		return res, helper.ErrDatabase
-	}
-
-	return res, nil
-}
-
-func (a *DriverRepoImpl) CreateDriver(c context.Context, data model.DriverDetails) (res model.DriverDetails, err error) {
+func (a *DriverRepoImpl) CreateDriver(c context.Context, data model.Driver) (res model.Driver, err error) {
 	if err := a.db.WithContext(c).Create(&data).Error; err != nil {
 		return res, helper.ErrDatabase
 	}
@@ -60,26 +28,7 @@ func (a *DriverRepoImpl) CreateDriver(c context.Context, data model.DriverDetail
 	return data, nil
 }
 
-func (a *DriverRepoImpl) GetAllDrivers(c context.Context, verified *pb.ReqDrivers) (res []model.DriverDetails, err error) {
-	switch v := verified.Verified.(type) {
-	case *pb.ReqDrivers_IsVerified:
-		if err := a.db.WithContext(c).Find(&res, "verified = ?", v.IsVerified).Error; err != nil {
-			return res, helper.ErrDatabase
-		}
-	case *pb.ReqDrivers_NotVerified:
-		if err := a.db.WithContext(c).Find(&res, "verified = ?", v.NotVerified).Error; err != nil {
-			return res, helper.ErrDatabase
-		}
-	default:
-		if err := a.db.WithContext(c).Find(&res).Error; err != nil {
-			return res, helper.ErrDatabase
-		}
-	}
-
-	return res, nil
-}
-
-func (a *DriverRepoImpl) GetDriverDetails(c context.Context, id string) (res model.Drivers, err error) {
+func (a *DriverRepoImpl) GetDriverDetails(c context.Context, id string) (res model.Driver, err error) {
 	if err := a.db.WithContext(c).Table("driver_details").
 		Select("driver_details.id as id, users.email, driver_details.name, driver_details.phone_number, driver_details.license_number, driver_details.sim, driver_details.verified, driver_details.profile_picture").
 		Joins("JOIN users ON users.id = driver_details.id").
@@ -91,38 +40,18 @@ func (a *DriverRepoImpl) GetDriverDetails(c context.Context, id string) (res mod
 	return res, nil
 }
 
-func (a *DriverRepoImpl) EditDriverDetails(c context.Context, driver model.DriverDetails) (res model.DriverDetails, err error) {
-	if err := a.db.WithContext(c).Updates(&driver).Error; err != nil {
-		return driver, helper.ErrDatabase
-	}
-
-	return driver, nil
-}
-
-func (a *DriverRepoImpl) GetTripHistories(c context.Context, id string) (res []model.Histories, err error) {
-	if err := a.db.WithContext(c).Table("transactions").
-		Select("transactions.id as id, passenger_details.name as passenger_name, driver_details.name as driver_name, transactions.amount as amount, transactions.created_at").
-		Joins("JOIN passenger_details on passenger_details.id = transactions.passenger_id").
-		Joins("JOIN driver_details on driver_details.id = transactions.driver_id").
-		Where("driver_id = ?", id).Scan(&res).Error; err != nil {
-		return nil, helper.ErrDatabase
-	}
-
-	return res, nil
-}
-
 func (a *DriverRepoImpl) GetStatus(c context.Context, id string) (res interface{}, err error) {
-	var driver model.DriverDetails
+	var driver model.DriverStatus
 
-	if err := a.db.WithContext(c).Select("status").First(&driver, "id = ?", id).Error; err != nil {
+	if err := a.db.WithContext(c).Select("is_online").First(&driver, "driver_id = ?", id).Error; err != nil {
 		return nil, helper.ErrDatabase
 	}
 
-	return driver.Status, nil
+	return driver.IsOnline, nil
 }
 
-func (a *DriverRepoImpl) SetStatus(c context.Context, status string, id string) (res interface{}, err error) {
-	if err := a.db.WithContext(c).Where("id = ?", id).Updates(model.DriverDetails{Status: status}).Error; err != nil {
+func (a *DriverRepoImpl) SetStatus(c context.Context, status *bool, id string) (res interface{}, err error) {
+	if err := a.db.WithContext(c).Where("id = ?", id).Updates(model.DriverStatus{IsOnline: status}).Error; err != nil {
 		return nil, helper.ErrDatabase
 	}
 

@@ -20,7 +20,7 @@ type GeoTrackRepositoryImpl struct {
 
 func (a *GeoTrackRepositoryImpl) SaveCurrentDriverLocation(c context.Context, location dto.Message) (res model.DriverLocation, err error) {
 	a.rdb.GeoAdd(c, "drivers:location", &redis.GeoLocation{
-		Name:      string(location.UserID),
+		Name:      location.UserID,
 		Longitude: location.Lng,
 		Latitude:  location.Lat,
 	})

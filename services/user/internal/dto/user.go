@@ -17,7 +17,7 @@ type (
 	}
 
 	OrderReq struct {
-		UserID      int64 `json:"-"`
+		UserID      int64 `json:"user_id"`
 		PickupPoint Point `json:"pickup_point"`
 		DestPoint   Point `json:"dest_point"`
 	}

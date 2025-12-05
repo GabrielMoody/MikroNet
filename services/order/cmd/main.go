@@ -23,7 +23,8 @@ func main() {
 
 	db := model.DatabaseInit()
 	rdb := model.RedisConnect()
-	aqmp := rabbitmq.Init("amqp://admin:admin123@rabbitmq:5672/")
+	aqmp_cons := rabbitmq.Init("amqp://admin:admin123@rabbitmq:5672/")
+	amqp_pub := rabbitmq.Init("amqp://admin:admin123@rabbitmq:5672/")
 
-	handler.OrderHandler(db, rdb, aqmp)
+	handler.OrderHandler(db, rdb, aqmp_cons, amqp_pub)
 }

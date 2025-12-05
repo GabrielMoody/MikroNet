@@ -18,4 +18,8 @@ func AuthHandler(r fiber.Router, db *gorm.DB) {
 	authHandler.Post("/register/user", authController.CreateUser)
 	authHandler.Post("/register/driver", authController.CreateDriver)
 	authHandler.Post("/login", authController.LoginUser)
+
+	authHandler.Get("/healthcheck", func(c *fiber.Ctx) error {
+		return c.Status(200).JSON(map[string]string{"status": "pass"})
+	})
 }

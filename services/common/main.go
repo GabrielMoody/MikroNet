@@ -15,6 +15,7 @@ type AMQP struct {
 	// internal
 	conn    *amqp.Connection
 	channel *amqp.Channel
+	ackCh   chan amqp.Confirmation
 	notify  chan *amqp.Error
 }
 
@@ -38,6 +39,8 @@ func (a *AMQP) Connect(ctx context.Context) error {
 				a.notify = a.conn.NotifyClose(make(chan *amqp.Error))
 				// enable confirm mode for publisher reliability
 				_ = a.channel.Confirm(false)
+				a.ackCh = a.channel.NotifyPublish(make(chan amqp.Confirmation, 1))
+
 				return nil
 			}
 			_ = a.conn.Close()
@@ -67,12 +70,11 @@ func (a *AMQP) DeclareExchange(name, kind string) error {
 	return a.channel.ExchangeDeclare(name, kind, true, false, false, false, nil)
 }
 
-// PublishPersistent JSON body must be []byte
 func (a *AMQP) PublishPersistent(exchange, routingKey string, body []byte) error {
 	if a.channel == nil {
 		return errors.New("channel nil")
 	}
-	// use persistent delivery mode
+
 	err := a.channel.PublishWithContext(context.Background(), exchange, routingKey, false, false, amqp.Publishing{
 		DeliveryMode: amqp.Persistent,
 		ContentType:  "application/json",
@@ -82,10 +84,9 @@ func (a *AMQP) PublishPersistent(exchange, routingKey string, body []byte) error
 	if err != nil {
 		return err
 	}
-	// wait for confirm
-	ackCh := a.channel.NotifyPublish(make(chan amqp.Confirmation, 1))
+
 	select {
-	case conf := <-ackCh:
+	case conf := <-a.ackCh:
 		if !conf.Ack {
 			return fmt.Errorf("message nacked")
 		}
@@ -95,7 +96,6 @@ func (a *AMQP) PublishPersistent(exchange, routingKey string, body []byte) error
 	return nil
 }
 
-// Consume returns a deliveries channel after declaring queue/binding
 func (a *AMQP) Consume(queue, exchange, routingKey string) (<-chan amqp.Delivery, error) {
 	if a.channel == nil {
 		return nil, errors.New("channel nil")

@@ -17,8 +17,16 @@ type (
 	}
 
 	OrderReq struct {
-		UserID      int64 `json:"-"`
+		UserID      int64 `json:"user_id"`
 		PickupPoint Point `json:"pickup_point"`
 		DestPoint   Point `json:"dest_point"`
+	}
+
+	OrderNotificationData struct {
+		RecipientID string `json:"recipent_id"`
+		Title       string `json:"title"`
+		Passenger   string `json:"passenger"`
+		PickupPoint Point  `json:"pickup_point"`
+		DestPoint   Point  `json:"dest_point"`
 	}
 )
