@@ -117,6 +117,7 @@ func (a *AuthControllerImpl) LoginUser(c *fiber.Ctx) error {
 		"id":    res.ID,
 		"email": res.Email,
 		"role":  res.Role,
+		"kid":   res.Role + "-kid",
 		"exp":   time.Now().Add(time.Hour * 24).Unix(),
 		"iss":   os.Getenv("JWT_ISS"),
 	}
