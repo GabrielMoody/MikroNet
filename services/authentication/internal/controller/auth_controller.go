@@ -4,8 +4,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/GabrielMoody/mikronet-auth-service/internal/dto"
-	"github.com/GabrielMoody/mikronet-auth-service/internal/service"
+	"github.com/GabrielMoody/MikroNet/services/authentication/internal/dto"
+	"github.com/GabrielMoody/MikroNet/services/authentication/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )

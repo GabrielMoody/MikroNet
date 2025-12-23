@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 
-	"github.com/GabrielMoody/mikronet-driver-service/internal/dto"
-	"github.com/GabrielMoody/mikronet-driver-service/internal/helper"
-	"github.com/GabrielMoody/mikronet-driver-service/internal/repository"
+	"github.com/GabrielMoody/MikroNet/services/common"
+	"github.com/GabrielMoody/MikroNet/services/driver/internal/dto"
+	"github.com/GabrielMoody/MikroNet/services/driver/internal/helper"
+	"github.com/GabrielMoody/MikroNet/services/driver/internal/repository"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -15,10 +17,24 @@ type DriverService interface {
 	GetDriverDetails(c context.Context, id string) (res dto.GetDriverDetailsRes, err *helper.ErrorStruct)
 	GetStatus(c context.Context, id string) (res interface{}, err *helper.ErrorStruct)
 	SetStatus(c context.Context, id string, data dto.StatusReq) (res interface{}, err *helper.ErrorStruct)
+	ConfirmOrder(c context.Context, order_id string, is_acepted bool) (res interface{}, err *helper.ErrorStruct)
 }
 
 type driverServiceImpl struct {
 	repo repository.DriverRepo
+	amqp *common.AMQP
+}
+
+func (a *driverServiceImpl) ConfirmOrder(c context.Context, order_id string, is_accepted bool) (res interface{}, err *helper.ErrorStruct) {
+	data := dto.OrderConfirmation{
+		IsAccepted: is_accepted,
+	}
+
+	b, _ := json.Marshal(data)
+
+	a.amqp.PublishPersistent("order", "order.confirmation", b)
+
+	return true, nil
 }
 
 func (a *driverServiceImpl) GetDriverDetails(c context.Context, id string) (res dto.GetDriverDetailsRes, err *helper.ErrorStruct) {
@@ -41,12 +57,9 @@ func (a *driverServiceImpl) GetDriverDetails(c context.Context, id string) (res 
 	}
 
 	return dto.GetDriverDetailsRes{
-		ID:             resRepo.ID,
-		Name:           resRepo.Name,
-		Email:          resRepo.Email,
-		LicenseNumber:  resRepo.LicenseNumber,
-		SIM:            resRepo.SIM,
-		ProfilePicture: resRepo.ProfilePicture,
+		ID:            resRepo.ID,
+		Name:          resRepo.Name,
+		LicenseNumber: resRepo.PlateNumber,
 	}, nil
 }
 
@@ -71,7 +84,7 @@ func (a *driverServiceImpl) SetStatus(c context.Context, id string, data dto.Sta
 		}
 	}
 
-	resRepo, errRepo := a.repo.SetStatus(c, data.Status, id)
+	resRepo, errRepo := a.repo.SetStatus(c, &data.IsOnline, id)
 
 	if errRepo != nil {
 		return nil, &helper.ErrorStruct{
@@ -83,8 +96,9 @@ func (a *driverServiceImpl) SetStatus(c context.Context, id string, data dto.Sta
 	return resRepo, nil
 }
 
-func NewDriverService(repo repository.DriverRepo) DriverService {
+func NewDriverService(repo repository.DriverRepo, amqp *common.AMQP) DriverService {
 	return &driverServiceImpl{
 		repo: repo,
+		amqp: amqp,
 	}
 }

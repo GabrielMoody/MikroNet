@@ -6,10 +6,10 @@ import (
 	"net/http"
 
 	"github.com/GabrielMoody/MikroNet/services/common"
-	"github.com/GabrielMoody/mikronet-user-service/internal/dto"
-	"github.com/GabrielMoody/mikronet-user-service/internal/helper"
-	"github.com/GabrielMoody/mikronet-user-service/internal/model"
-	"github.com/GabrielMoody/mikronet-user-service/internal/repository"
+	"github.com/GabrielMoody/MikroNet/services/user/internal/dto"
+	"github.com/GabrielMoody/MikroNet/services/user/internal/helper"
+	"github.com/GabrielMoody/MikroNet/services/user/internal/model"
+	"github.com/GabrielMoody/MikroNet/services/user/internal/repository"
 )
 
 type UserService interface {

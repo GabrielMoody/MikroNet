@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/handler"
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/model"
+	"github.com/GabrielMoody/MikroNet/services/geolocation_tracking/internal/handler"
+	"github.com/GabrielMoody/MikroNet/services/geolocation_tracking/internal/model"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 )

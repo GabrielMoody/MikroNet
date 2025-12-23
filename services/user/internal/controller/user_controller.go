@@ -3,9 +3,9 @@ package controller
 import (
 	"os"
 
-	"github.com/GabrielMoody/mikronet-user-service/internal/dto"
-	"github.com/GabrielMoody/mikronet-user-service/internal/middleware"
-	"github.com/GabrielMoody/mikronet-user-service/internal/service"
+	"github.com/GabrielMoody/MikroNet/services/user/internal/dto"
+	"github.com/GabrielMoody/MikroNet/services/user/internal/middleware"
+	"github.com/GabrielMoody/MikroNet/services/user/internal/service"
 	"github.com/gofiber/fiber/v2"
 )
 

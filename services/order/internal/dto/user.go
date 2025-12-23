@@ -29,4 +29,9 @@ type (
 		PickupPoint Point  `json:"pickup_point"`
 		DestPoint   Point  `json:"dest_point"`
 	}
+
+	OrderConfirmationReq struct {
+		OrderID     int  `json:"order_id"`
+		IsConfirmed bool `json:"is_confirmed"`
+	}
 )

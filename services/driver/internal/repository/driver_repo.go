@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/GabrielMoody/mikronet-driver-service/internal/helper"
-	"github.com/GabrielMoody/mikronet-driver-service/internal/model"
+	"github.com/GabrielMoody/MikroNet/services/driver/internal/helper"
+	"github.com/GabrielMoody/MikroNet/services/driver/internal/model"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )

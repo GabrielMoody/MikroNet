@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/dto"
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/model"
+	"github.com/GabrielMoody/MikroNet/services/geolocation_tracking/internal/dto"
+	"github.com/GabrielMoody/MikroNet/services/geolocation_tracking/internal/model"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )

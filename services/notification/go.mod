@@ -1,4 +1,4 @@
-module github.com/GabrielMoody/mikroNet/notification
+module github.com/GabrielMoody/MikroNet/services/notification
 
 go 1.25.4
 

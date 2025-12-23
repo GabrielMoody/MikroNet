@@ -1,4 +1,4 @@
-module github.com/GabrielMoody/MikroNet/geolocation_tracking
+module github.com/GabrielMoody/MikroNet/services/geolocation_tracking
 
 go 1.22.3
 

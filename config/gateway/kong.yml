@@ -1,6 +1,17 @@
 _format_version: "3.0"
 _transform: true
 
+streams:
+  - name: notification-tcp
+    protocol: tcp
+    sources:
+      - ip: 0.0.0.0/0
+    destinations:
+      - port: 9001
+    upstream:
+      targets:
+        - target: notification-service:9000
+
 upstreams:
   - name: auth_upstream
     targets:

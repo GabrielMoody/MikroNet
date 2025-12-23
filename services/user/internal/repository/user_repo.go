@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/GabrielMoody/mikronet-user-service/internal/helper"
-	"github.com/GabrielMoody/mikronet-user-service/internal/model"
+	"github.com/GabrielMoody/MikroNet/services/user/internal/helper"
+	"github.com/GabrielMoody/MikroNet/services/user/internal/model"
 	"gorm.io/gorm"
 )
 

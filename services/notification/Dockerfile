@@ -1,9 +1,15 @@
-FROM golang:alpine
+FROM golang:alpine AS build
 RUN apk update && apk add --no-cache git
 WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
 COPY . .
-#COPY config/auth-config.env /app/notification/config/
-EXPOSE 8015
-RUN go mod tidy
-RUN go build -o binary ./cmd/main.go
-ENTRYPOINT ["/app/binary"]
+
+RUN go build -o /go/bin/app ./cmd/main.go
+
+FROM alpine
+WORKDIR /usr/bin
+COPY --from=build /go/bin/app .
+EXPOSE 9000
+CMD ["app"]

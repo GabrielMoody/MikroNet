@@ -3,7 +3,7 @@ module github.com/GabrielMoody/MikroNet/services/order
 go 1.25.4
 
 require (
-	github.com/GabrielMoody/MikroNet/services/common v0.0.0-20251126082409-7097e3ef9402
+	github.com/GabrielMoody/MikroNet/services/common v0.1.0
 	github.com/go-playground/validator/v10 v10.28.0
 	github.com/gofiber/fiber/v2 v2.52.10
 	github.com/golang-jwt/jwt/v5 v5.3.0

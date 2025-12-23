@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/dto"
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/helper"
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/repository"
+	"github.com/GabrielMoody/MikroNet/services/geolocation_tracking/internal/dto"
+	"github.com/GabrielMoody/MikroNet/services/geolocation_tracking/internal/helper"
+	"github.com/GabrielMoody/MikroNet/services/geolocation_tracking/internal/repository"
 	"github.com/gofiber/contrib/websocket"
 )
 
