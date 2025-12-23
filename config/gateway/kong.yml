@@ -1,18 +1,11 @@
 _format_version: "3.0"
 _transform: true
 
-streams:
-  - name: notification-tcp
-    protocol: tcp
-    sources:
-      - ip: 0.0.0.0/0
-    destinations:
-      - port: 9001
-    upstream:
-      targets:
-        - target: notification-service:9000
-
 upstreams:
+  - name: notification_upstream
+    targets:
+      - target: notification_service:9000
+      
   - name: auth_upstream
     targets:
       - target: auth_service:8050
@@ -30,6 +23,11 @@ upstreams:
       - target: geolocation_tracking_service:8040
 
 services:
+  - name: notification_service
+    protocol: tcp
+    host: notification_upstream
+    port: 9000
+
   - name: auth_service_route
     url: http://auth_upstream
 
@@ -40,7 +38,7 @@ services:
     url: http://driver_upstream
 
   - name: geolocation_tracking_route
-    url: http://geolocation_tracking_upstream
+    url: http://geolocation_tracking_upstream 
 
 routes:
   - name: auth_route
@@ -66,3 +64,14 @@ routes:
     paths:
       - /api/v1/geo
     strip_path: true
+
+  - name: notification_tcp_route
+    protocols: [tcp]
+    destinations:
+      - port: 9001
+    service: notification_service
+
+plugins:
+  - name: jwt
+    config:
+      key_claim_name: 
