@@ -36,13 +36,24 @@ func (a *OrderEventsImpl) Listen(c context.Context) error {
 				log.Errorf("Error consuming queue: %s", err.Error())
 			}
 
-			for msg := range messages {
-				queue.Handler(c, msg)
+			for {
+				select {
+				case <-c.Done():
+					log.Info("Stopping consumer:", qname.Queue)
+					return
+				case msg, ok := <-messages:
+					if !ok {
+						return
+					}
+
+					qname.Handler(c, msg)
+				}
 			}
 		}(qname)
+
 	}
 
-	select {}
+	return nil
 }
 
 func NewEvents(service service.OrderService, amqp_cons *common.AMQP) OrderEvents {

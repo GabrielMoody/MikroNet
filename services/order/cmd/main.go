@@ -1,6 +1,11 @@
 package main
 
 import (
+	"context"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/GabrielMoody/MikroNet/services/order/config/rabbitmq"
 	"github.com/GabrielMoody/MikroNet/services/order/internal/handler"
 	"github.com/GabrielMoody/MikroNet/services/order/internal/model"
@@ -11,6 +16,14 @@ import (
 )
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	db := model.DatabaseInit()
+	rdb := model.RedisConnect()
+	aqmp_cons := rabbitmq.Init("amqp://admin:admin123@localhost:5672/")
+	amqp_pub := rabbitmq.Init("amqp://admin:admin123@localhost:5672/")
+
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
@@ -24,14 +37,24 @@ func main() {
 
 	api := app.Group("/")
 
-	db := model.DatabaseInit()
-	rdb := model.RedisConnect()
-	aqmp_cons := rabbitmq.Init("amqp://admin:admin123@rabbitmq:5672/")
-	amqp_pub := rabbitmq.Init("amqp://admin:admin123@rabbitmq:5672/")
+	orderEvents := handler.OrderHandler(api, db, rdb, aqmp_cons, amqp_pub)
 
-	handler.OrderHandler(api, db, rdb, aqmp_cons, amqp_pub)
-
-	if err := app.Listen(":8060"); err != nil {
-		log.Errorf(err.Error())
+	if err := orderEvents.Listen(ctx); err != nil {
+		log.Fatal(err)
 	}
+
+	go func() {
+		if err := app.Listen(":8060"); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	<-sig
+
+	log.Info("Shutting down...")
+
+	cancel()
+	_ = app.Shutdown()
 }

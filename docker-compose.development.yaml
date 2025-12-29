@@ -49,23 +49,22 @@ services:
     networks:
       - kong-net
 
-  # driver_service:
-  #   build: /services/driver
-  #   container_name: driver_service
-  #   depends_on:
-  #     postgresql:
-  #       condition: service_healthy
-  #   environment:
-  #     - DB_HOST=postgresql
-  #     - DB_USER=postgres
-  #     - DB_PASSWORD=123
-  #     - DB_PORT=5432
-  #     - DB_NAME=mikronet
-  #     - JWT_SECRET=FV77z4uhQ9M
-  #     - JWT_ISS=MikroNet
-  #     - BASE_URL=http://localhost:8000
-  #   networks:
-  #     - kong-net
+  driver_service:
+    build: /services/driver
+    container_name: driver_service
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    environment:
+      - DB_HOST=postgresql
+      - DB_USER=postgres
+      - DB_PASSWORD=123
+      - DB_PORT=5432
+      - DB_NAME=mikronet
+      - JWT_SECRET=FV77z4uhQ9M
+      - JWT_ISS=MikroNet
+    networks:
+      - kong-net
 
   notification_service:
     build: /services/notification
@@ -91,7 +90,6 @@ services:
     volumes:
       - ./var/log/mikronet:/var/log/mikronet
     environment:
-      - SERVICE_NAME=dashboard_service
       - DB_HOST=postgresql
       - DB_USER=postgres
       - DB_PASSWORD=123
