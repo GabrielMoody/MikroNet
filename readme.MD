@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/GabrielMoody/MikroNet/actions/workflows/build.yml/badge.svg" alt="CI" />
+  <img src="https://github.com/GabrielMoody/MikroNet/actions/workflows/go_test.yml/badge.svg" alt="CI" />
   <img src="https://img.shields.io/github/license/GabrielMoody/MikroNet" alt="License" />
 </p>
 
