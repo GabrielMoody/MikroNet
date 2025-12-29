@@ -9,7 +9,7 @@ import (
 type Order struct {
 	ID           int64     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
 	UserID       *int64    `gorm:"column:user_id" json:"user_id"`
-	DriverID     *int64    `gorm:"column:driver_id" json:"driver_id"`
+	DriverID     int64     `gorm:"column:driver_id" json:"driver_id"`
 	PickupPoint  GeoPoint  `gorm:"column:pickup_point;type:geometry(Point,4326)" json:"pickup_point"`
 	DropoffPoint GeoPoint  `gorm:"column:dropoff_point;type:geometry(Point,4326)" json:"dropoff_point"`
 	Status       string    `gorm:"column:status" json:"status"`

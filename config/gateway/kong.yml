@@ -22,6 +22,10 @@ upstreams:
     targets:
       - target: geolocation_tracking_service:8040
 
+  - name: order_upstream
+    targets:
+      - target: order_service:8060
+
 services:
   - name: notification_service
     protocol: tcp
@@ -39,6 +43,9 @@ services:
 
   - name: geolocation_tracking_route
     url: http://geolocation_tracking_upstream 
+
+  - name: order_service_route
+    url: http://order_upstream
 
 routes:
   - name: auth_route
@@ -65,13 +72,71 @@ routes:
       - /api/v1/geo
     strip_path: true
 
+  - name: order_route
+    service: order_service_route
+    paths:
+      - /api/v1/order
+    strip_path: true
+
   - name: notification_tcp_route
     protocols: [tcp]
     destinations:
       - port: 9001
     service: notification_service
 
+
+consumers:
+  - username: user_consumer
+  - username: driver_consumer
+
+jwt_secrets:
+  - consumer: user_consumer
+    key: user-kid
+    algorithm: HS256
+    secret: FV77z4uhQ9M
+
+  - consumer: driver_consumer
+    key: driver-kid
+    algorithm: HS256
+    secret: FV77z4uhQ9M
+
+acls:
+  - consumer: user_consumer
+    group: user
+
+  - consumer: driver_consumer
+    group: driver
+
 plugins:
   - name: jwt
+    service: user_service_route
     config:
-      key_claim_name: 
+      key_claim_name: kid
+      claims_to_verify:
+        - exp
+
+  - name: jwt
+    service: driver_service_route
+    config:
+      key_claim_name: kid
+      claims_to_verify:
+        - exp
+
+  - name: jwt
+    service: order_service_route
+    config:
+      key_claim_name: kid
+      claims_to_verify:
+        - exp
+
+  - name: acl
+    service: user_service_route
+    config:
+      allow:
+        - user
+
+  - name: acl
+    service: driver_service_route
+    config:
+      allow:
+        - driver  

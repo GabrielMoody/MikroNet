@@ -5,6 +5,7 @@ import (
 	"github.com/GabrielMoody/MikroNet/services/order/internal/handler"
 	"github.com/GabrielMoody/MikroNet/services/order/internal/model"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
@@ -29,4 +30,8 @@ func main() {
 	amqp_pub := rabbitmq.Init("amqp://admin:admin123@rabbitmq:5672/")
 
 	handler.OrderHandler(api, db, rdb, aqmp_cons, amqp_pub)
+
+	if err := app.Listen(":8060"); err != nil {
+		log.Errorf(err.Error())
+	}
 }

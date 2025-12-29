@@ -70,6 +70,8 @@ services:
   notification_service:
     build: /services/notification
     container_name: notification_service
+    ports:
+      - 9000:9000
     depends_on:
       rabbitmq:
         condition: service_started

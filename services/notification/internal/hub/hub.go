@@ -117,7 +117,7 @@ func (n *Hub) Unregister(id string) {
 }
 
 func NewHub() *Hub {
-	amqp := rabbitmq.Init("amqp://admin:admin123@localhost:5672/")
+	amqp := rabbitmq.Init("amqp://admin:admin123@rabbitmq:5672/")
 	return &Hub{
 		clients: make(map[string]net.Conn),
 		amqp:    amqp,

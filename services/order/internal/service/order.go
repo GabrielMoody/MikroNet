@@ -55,13 +55,15 @@ func (a *OrderServiceImpl) MakeOrder(c context.Context, msg amqp091.Delivery) er
 		Status: "ORDER_CREATED",
 	}
 
-	_, errRepo := a.repo.MakeOrder(c, order)
+	drivers, errRepo := a.repo.FindNearestDriver(c, order.PickupPoint)
 
 	if errRepo != nil {
 		return errRepo
 	}
+	driverId, _ := strconv.Atoi(drivers[0].Name)
+	order.DriverID = int64(driverId)
 
-	drivers, errRepo := a.repo.FindNearestDriver(c, order.PickupPoint)
+	order, errRepo = a.repo.MakeOrder(c, order)
 
 	if errRepo != nil {
 		return errRepo
@@ -69,6 +71,7 @@ func (a *OrderServiceImpl) MakeOrder(c context.Context, msg amqp091.Delivery) er
 
 	n := dto.OrderNotificationData{
 		RecipientID: drivers[0].Name,
+		OrderID:     int(order.ID),
 		Title:       "New Order",
 		PickupPoint: order_req.PickupPoint,
 		DestPoint:   order_req.DestPoint,

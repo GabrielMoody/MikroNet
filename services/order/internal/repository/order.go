@@ -41,7 +41,7 @@ func (a *OrderRepoImpl) MakeOrder(c context.Context, order model.Order) (res mod
 		return res, err
 	}
 
-	return res, nil
+	return order, nil
 }
 
 func (a *OrderRepoImpl) FindNearestDriver(c context.Context, pickup_point model.GeoPoint) ([]redis.GeoLocation, error) {

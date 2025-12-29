@@ -23,6 +23,7 @@ type (
 	}
 
 	OrderNotificationData struct {
+		OrderID     int    `json:"order_id"`
 		RecipientID string `json:"recipent_id"`
 		Title       string `json:"title"`
 		Passenger   string `json:"passenger"`
