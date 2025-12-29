@@ -12,11 +12,20 @@ type OrderRepo interface {
 	MakeOrder(c context.Context, order model.Order) (model.Order, error)
 	FindNearestDriver(c context.Context, pickup_point model.GeoPoint) ([]redis.GeoLocation, error)
 	ConfirmOrder(c context.Context, order model.Order) (model.Order, error)
+	GetOrderByID(c context.Context, orderId int) (model.Order, error)
 }
 
 type OrderRepoImpl struct {
 	db  *gorm.DB
 	rdb *redis.Client
+}
+
+func (a *OrderRepoImpl) GetOrderByID(c context.Context, orderId int) (res model.Order, err error) {
+	if err = a.db.WithContext(c).First(&res, orderId).Error; err != nil {
+		return res, err
+	}
+
+	return res, nil
 }
 
 func (a *OrderRepoImpl) ConfirmOrder(c context.Context, order model.Order) (model.Order, error) {

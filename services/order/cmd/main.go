@@ -21,10 +21,12 @@ func main() {
 		TimeZone:   "Asia/Singapore",
 	}))
 
+	api := app.Group("/")
+
 	db := model.DatabaseInit()
 	rdb := model.RedisConnect()
 	aqmp_cons := rabbitmq.Init("amqp://admin:admin123@rabbitmq:5672/")
 	amqp_pub := rabbitmq.Init("amqp://admin:admin123@rabbitmq:5672/")
 
-	handler.OrderHandler(db, rdb, aqmp_cons, amqp_pub)
+	handler.OrderHandler(api, db, rdb, aqmp_cons, amqp_pub)
 }

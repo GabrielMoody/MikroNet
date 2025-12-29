@@ -59,6 +59,7 @@ func NewEvents(service service.OrderService, amqp_cons *common.AMQP) OrderEvents
 		{
 			RoutingKey: "order.confirmation",
 			Queue:      "order_confirmation",
+			Handler:    service.ConfirmOrder,
 		},
 	}
 

@@ -17,11 +17,22 @@ type OrderService interface {
 	MakeOrder(c context.Context, msg amqp091.Delivery) error
 	ConfirmOrder(c context.Context, msg amqp091.Delivery) error
 	OrderNotification(c context.Context, msg amqp091.Delivery) error
+	GetOrderByID(c context.Context, orderId int) (model.Order, error)
 }
 
 type OrderServiceImpl struct {
 	repo     repository.OrderRepo
 	amqp_pub *common.AMQP
+}
+
+func (a *OrderServiceImpl) GetOrderByID(c context.Context, orderId int) (res model.Order, err error) {
+	res, errRepo := a.repo.GetOrderByID(c, orderId)
+
+	if errRepo != nil {
+		return res, err
+	}
+
+	return res, nil
 }
 
 func (a *OrderServiceImpl) MakeOrder(c context.Context, msg amqp091.Delivery) error {
