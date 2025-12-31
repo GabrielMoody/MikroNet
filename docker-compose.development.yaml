@@ -49,23 +49,33 @@ services:
     networks:
       - kong-net
 
-  # driver_service:
-  #   build: /services/driver
-  #   container_name: driver_service
-  #   depends_on:
-  #     postgresql:
-  #       condition: service_healthy
-  #   environment:
-  #     - DB_HOST=postgresql
-  #     - DB_USER=postgres
-  #     - DB_PASSWORD=123
-  #     - DB_PORT=5432
-  #     - DB_NAME=mikronet
-  #     - JWT_SECRET=FV77z4uhQ9M
-  #     - JWT_ISS=MikroNet
-  #     - BASE_URL=http://localhost:8000
-  #   networks:
-  #     - kong-net
+  driver_service:
+    build: /services/driver
+    container_name: driver_service
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    environment:
+      - DB_HOST=postgresql
+      - DB_USER=postgres
+      - DB_PASSWORD=123
+      - DB_PORT=5432
+      - DB_NAME=mikronet
+      - JWT_SECRET=FV77z4uhQ9M
+      - JWT_ISS=MikroNet
+    networks:
+      - kong-net
+
+  notification_service:
+    build: /services/notification
+    container_name: notification_service
+    ports:
+      - 9000:9000
+    depends_on:
+      rabbitmq:
+        condition: service_started
+    networks:
+      - kong-net
 
   order_service:
     build: /services/order
@@ -80,7 +90,6 @@ services:
     volumes:
       - ./var/log/mikronet:/var/log/mikronet
     environment:
-      - SERVICE_NAME=dashboard_service
       - DB_HOST=postgresql
       - DB_USER=postgres
       - DB_PASSWORD=123
@@ -176,7 +185,7 @@ services:
       KONG_PROXY_ERROR_LOG: /dev/stderr
       KONG_DECLARATIVE_CONFIG: /etc/config/kong.yml
     volumes:
-      - ./config/kong.yml:/etc/config/kong.yml
+      - ./config/gateway/kong.yml:/etc/config/kong.yml
     networks:
       - kong-net
     ports:
@@ -217,16 +226,18 @@ services:
     image: grafana/loki
     ports:
       - "3100:3100"
-    command: -config.expand-env=true -config.file=/etc/loki/local-config.yaml
+    command: 
+      - -config.file=/etc/loki/loki.yaml
+      - -config.expand-env=true 
     volumes:
-      - ./monitoring/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - ./config/monitoring/loki-config.yaml:/etc/loki/loki.yaml:ro
 
   fluent-bit:
     container_name: fluent-bit
     image: fluent/fluent-bit
     volumes:
-      - ./monitoring/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
-      - ./monitoring/parser.conf:/fluent-bit/etc/parser.conf
+      - ./config/monitoring/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./config/monitoring/parser.conf:/fluent-bit/etc/parser.conf
       - ./var/log/mikronet:/var/log/mikronet
     depends_on:
       - loki
@@ -245,7 +256,6 @@ services:
     container_name: cadvisor
     image: gcr.io/cadvisor/cadvisor:latest
     privileged: true
-    # network_mode: host
     command:
       - "--docker_only=true"
     volumes:
@@ -261,7 +271,7 @@ services:
     container_name: promotheus
     image: prom/prometheus
     volumes:
-      - ./monitoring/promotheus.yaml:/etc/prometheus/prometheus.yml
+      - ./config/monitoring/promotheus.yaml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090" 
 

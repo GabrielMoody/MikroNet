@@ -1,9 +1,9 @@
-module github.com/GabrielMoody/mikronet-user-service
+module github.com/GabrielMoody/MikroNet/services/user
 
 go 1.25.4
 
 require (
-	github.com/fasthttp/websocket v1.5.12
+	github.com/GabrielMoody/MikroNet/services/common v0.1.0
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/golang-jwt/jwt/v5 v5.2.1
@@ -12,11 +12,8 @@ require (
 )
 
 require (
-	github.com/GabrielMoody/MikroNet/services/common v0.0.0-20251125061638-a32b81d7fa4b // indirect
 	github.com/andybalholm/brotli v1.1.1 // indirect
-	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -34,9 +31,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
-	github.com/redis/go-redis/v9 v9.17.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
-	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.58.0 // indirect

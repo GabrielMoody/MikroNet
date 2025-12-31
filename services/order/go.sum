@@ -1,5 +1,5 @@
-github.com/GabrielMoody/MikroNet/services/common v0.0.0-20251126082409-7097e3ef9402 h1:6BhaMC/sUKw78QHyPHB3PvR5gU5iO5OTtah+LIwHLxs=
-github.com/GabrielMoody/MikroNet/services/common v0.0.0-20251126082409-7097e3ef9402/go.mod h1:9b7AMGnHdVcxfnDZcj476EoQbnFK/rpf5SChCJu9cUE=
+github.com/GabrielMoody/MikroNet/services/common v0.1.0 h1:L2D11Q1sgc2UNoJNJyykYkBOB79GPB3BBGe5gIgIaHo=
+github.com/GabrielMoody/MikroNet/services/common v0.1.0/go.mod h1:9b7AMGnHdVcxfnDZcj476EoQbnFK/rpf5SChCJu9cUE=
 github.com/andybalholm/brotli v1.2.0 h1:ukwgCxwYrmACq68yiUqwIWnGY0cTPox/M94sVwToPjQ=
 github.com/andybalholm/brotli v1.2.0/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
 github.com/bsm/ginkgo/v2 v2.12.0 h1:Ny8MWAHyOepLGlLKYmXG4IEkioBysk6GpaRTLC8zwWs=

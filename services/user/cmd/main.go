@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/GabrielMoody/mikronet-user-service/config/rabbitmq"
-	"github.com/GabrielMoody/mikronet-user-service/internal/handler"
-	"github.com/GabrielMoody/mikronet-user-service/internal/model"
+	"github.com/GabrielMoody/MikroNet/services/user/config/rabbitmq"
+	"github.com/GabrielMoody/MikroNet/services/user/internal/handler"
+	"github.com/GabrielMoody/MikroNet/services/user/internal/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"

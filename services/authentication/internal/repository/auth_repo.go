@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/GabrielMoody/mikronet-auth-service/internal/dto"
-	"github.com/GabrielMoody/mikronet-auth-service/internal/helper"
-	"github.com/GabrielMoody/mikronet-auth-service/internal/models"
+	"github.com/GabrielMoody/MikroNet/services/authentication/internal/dto"
+	"github.com/GabrielMoody/MikroNet/services/authentication/internal/helper"
+	"github.com/GabrielMoody/MikroNet/services/authentication/internal/models"
 	"github.com/lib/pq"
 
 	"golang.org/x/crypto/bcrypt"

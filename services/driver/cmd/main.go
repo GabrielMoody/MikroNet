@@ -1,9 +1,8 @@
 package main
 
 import (
-	"github.com/GabrielMoody/mikronet-driver-service/internal/handler"
-	"github.com/GabrielMoody/mikronet-driver-service/internal/model"
-
+	"github.com/GabrielMoody/MikroNet/services/driver/internal/handler"
+	"github.com/GabrielMoody/MikroNet/services/driver/internal/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/cors"

@@ -3,10 +3,11 @@ module github.com/GabrielMoody/MikroNet/services/order
 go 1.25.4
 
 require (
-	github.com/GabrielMoody/MikroNet/services/common v0.0.0-20251126082409-7097e3ef9402
+	github.com/GabrielMoody/MikroNet/services/common v0.1.0
 	github.com/go-playground/validator/v10 v10.28.0
 	github.com/gofiber/fiber/v2 v2.52.10
 	github.com/golang-jwt/jwt/v5 v5.3.0
+	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/redis/go-redis/v9 v9.17.2
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
@@ -34,7 +35,6 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.68.0 // indirect

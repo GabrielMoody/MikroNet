@@ -2,7 +2,7 @@ package dto
 
 type (
 	StatusReq struct {
-		Status string `json:"status" validate:"required"`
+		IsOnline bool `json:"is_online" validate:"required"`
 	}
 
 	SeatReq struct {
@@ -10,7 +10,7 @@ type (
 	}
 
 	GetDriverDetailsRes struct {
-		ID             string `json:"id"`
+		ID             int64  `json:"id"`
 		Name           string `json:"name"`
 		Email          string `json:"email"`
 		LicenseNumber  string `json:"license_number" form:"license_number"`
@@ -30,5 +30,9 @@ type (
 		RouteId  int     `json:"route_id"`
 		Lat      float64 `json:"lat"`
 		Lng      float64 `json:"lng"`
+	}
+
+	OrderConfirmation struct {
+		IsAccepted bool `json:"is_accepted"`
 	}
 )

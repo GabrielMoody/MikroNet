@@ -11,6 +11,8 @@ import (
 type OrderRepo interface {
 	MakeOrder(c context.Context, order model.Order) (model.Order, error)
 	FindNearestDriver(c context.Context, pickup_point model.GeoPoint) ([]redis.GeoLocation, error)
+	ConfirmOrder(c context.Context, order model.Order) (model.Order, error)
+	GetOrderByID(c context.Context, orderId int) (model.Order, error)
 }
 
 type OrderRepoImpl struct {
@@ -18,12 +20,30 @@ type OrderRepoImpl struct {
 	rdb *redis.Client
 }
 
+func (a *OrderRepoImpl) GetOrderByID(c context.Context, orderId int) (res model.Order, err error) {
+	if err = a.db.WithContext(c).
+		First(&res, orderId).
+		Error; err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
+func (a *OrderRepoImpl) ConfirmOrder(c context.Context, order model.Order) (model.Order, error) {
+	if err := a.db.WithContext(c).Updates(order).Error; err != nil {
+		return order, err
+	}
+
+	return order, nil
+}
+
 func (a *OrderRepoImpl) MakeOrder(c context.Context, order model.Order) (res model.Order, err error) {
 	if err := a.db.WithContext(c).Save(&order).Error; err != nil {
 		return res, err
 	}
 
-	return res, nil
+	return order, nil
 }
 
 func (a *OrderRepoImpl) FindNearestDriver(c context.Context, pickup_point model.GeoPoint) ([]redis.GeoLocation, error) {

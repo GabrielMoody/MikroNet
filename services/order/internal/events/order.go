@@ -2,13 +2,20 @@ package events
 
 import (
 	"context"
-	"encoding/json"
-	"log"
 
 	"github.com/GabrielMoody/MikroNet/services/common"
-	"github.com/GabrielMoody/MikroNet/services/order/internal/dto"
 	"github.com/GabrielMoody/MikroNet/services/order/internal/service"
+	"github.com/gofiber/fiber/v2/log"
+	"github.com/rabbitmq/amqp091-go"
 )
+
+type handler func(context.Context, amqp091.Delivery) error
+
+type Q struct {
+	RoutingKey string
+	Queue      string
+	Handler    handler
+}
 
 type OrderEvents interface {
 	Listen(c context.Context) error
@@ -17,37 +24,59 @@ type OrderEvents interface {
 type OrderEventsImpl struct {
 	amqp_cons *common.AMQP
 	service   service.OrderService
+	queue     []Q
 }
 
 func (a *OrderEventsImpl) Listen(c context.Context) error {
-	msgs, err := a.amqp_cons.Consume("order_created", "order", "order.created")
+	for _, qname := range a.queue {
+		go func(queue Q) {
+			messages, err := a.amqp_cons.Consume(queue.Queue, "order", queue.RoutingKey)
 
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		for msg := range msgs {
-			var order_req dto.OrderReq
-
-			if err := json.Unmarshal(msg.Body, &order_req); err != nil {
-				log.Fatal(err)
+			if err != nil {
+				log.Errorf("Error consuming queue: %s", err.Error())
 			}
 
-			driver, _ := a.service.MakeOrder(c, order_req)
+			for {
+				select {
+				case <-c.Done():
+					log.Info("Stopping consumer:", qname.Queue)
+					return
+				case msg, ok := <-messages:
+					if !ok {
+						return
+					}
 
-			log.Println(driver)
+					qname.Handler(c, msg)
+				}
+			}
+		}(qname)
 
-			msg.Ack(false)
-		}
-	}()
+	}
 
-	select {}
+	return nil
 }
 
 func NewEvents(service service.OrderService, amqp_cons *common.AMQP) OrderEvents {
+	q := []Q{
+		{
+			RoutingKey: "order.created",
+			Queue:      "order_created",
+			Handler:    service.MakeOrder,
+		},
+		{
+			RoutingKey: "order.notification",
+			Queue:      "order_notifications",
+		},
+		{
+			RoutingKey: "order.confirmation",
+			Queue:      "order_confirmation",
+			Handler:    service.ConfirmOrder,
+		},
+	}
+
 	return &OrderEventsImpl{
 		service:   service,
 		amqp_cons: amqp_cons,
+		queue:     q,
 	}
 }

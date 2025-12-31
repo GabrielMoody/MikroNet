@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/GabrielMoody/mikronet-auth-service/internal/handler"
-	"github.com/GabrielMoody/mikronet-auth-service/internal/models"
+	"github.com/GabrielMoody/MikroNet/services/authentication/internal/handler"
+	"github.com/GabrielMoody/MikroNet/services/authentication/internal/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"

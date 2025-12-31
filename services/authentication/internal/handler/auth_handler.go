@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"github.com/GabrielMoody/mikronet-auth-service/internal/controller"
-	"github.com/GabrielMoody/mikronet-auth-service/internal/repository"
-	"github.com/GabrielMoody/mikronet-auth-service/internal/service"
+	"github.com/GabrielMoody/MikroNet/services/authentication/internal/controller"
+	"github.com/GabrielMoody/MikroNet/services/authentication/internal/repository"
+	"github.com/GabrielMoody/MikroNet/services/authentication/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )

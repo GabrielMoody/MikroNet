@@ -10,8 +10,8 @@ import (
 	"sync"
 
 	"github.com/GabrielMoody/MikroNet/services/common"
-	"github.com/GabrielMoody/mikroNet/notification/config/rabbitmq"
-	"github.com/GabrielMoody/mikroNet/notification/internal/dto"
+	"github.com/GabrielMoody/MikroNet/services/notification/config/rabbitmq"
+	"github.com/GabrielMoody/MikroNet/services/notification/internal/dto"
 )
 
 type Hub struct {
@@ -27,27 +27,44 @@ func (h *Hub) SendOrderNotification() {
 		log.Fatal(err.Error())
 	}
 
-	var req dto.OrderNotificationData
-
 	go func() {
 		for m := range msg {
+
+			var req dto.OrderNotificationData
+
 			if err := json.Unmarshal(m.Body, &req); err != nil {
 				log.Fatal(err)
+				m.Nack(false, false)
+				continue
 			}
 
 			h.mu.Lock()
 
 			conn, ok := h.clients[req.RecipientID]
 
+			h.mu.Unlock()
+
 			if !ok {
 				log.Fatal("client id doesn't exist")
+				m.Nack(false, false)
+				continue
 			}
 
 			b, _ := json.Marshal(req)
 
-			conn.Write(b)
+			if _, err = conn.Write(append(b, '\n')); err != nil {
+				log.Printf("client %s disconnected, removing\n", req.RecipientID)
 
-			h.mu.Unlock()
+				h.mu.Lock()
+				conn.Close()
+				delete(h.clients, req.RecipientID)
+				h.mu.Unlock()
+
+				m.Nack(false, false)
+				continue
+			}
+
+			m.Ack(false)
 		}
 	}()
 
@@ -100,7 +117,7 @@ func (n *Hub) Unregister(id string) {
 }
 
 func NewHub() *Hub {
-	amqp := rabbitmq.Init("amqp://admin:admin123@localhost:5672/")
+	amqp := rabbitmq.Init("amqp://admin:admin123@rabbitmq:5672/")
 	return &Hub{
 		clients: make(map[string]net.Conn),
 		amqp:    amqp,

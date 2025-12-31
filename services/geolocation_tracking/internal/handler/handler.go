@@ -3,9 +3,9 @@ package handler
 import (
 	"context"
 
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/dto"
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/repository"
-	"github.com/GabrielMoody/MikroNet/geolocation_tracking/internal/ws"
+	"github.com/GabrielMoody/MikroNet/services/geolocation_tracking/internal/dto"
+	"github.com/GabrielMoody/MikroNet/services/geolocation_tracking/internal/repository"
+	"github.com/GabrielMoody/MikroNet/services/geolocation_tracking/internal/ws"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
