@@ -1,0 +1,121 @@
+_format_version: "3.0"
+_transform: true
+
+upstreams:
+  - name: notification_upstream
+    targets:
+      - target: notification_service:9000
+      
+  - name: auth_upstream
+    targets:
+      - target: auth_service:8050
+
+  - name: user_upstream
+    targets:
+      - target: user_service:8010
+
+  - name: driver_upstream
+    targets:
+      - target: driver_service:8020
+
+  - name: geolocation_tracking_upstream
+    targets:
+      - target: geolocation_tracking_service:8040
+
+services:
+  - name: notification_service
+    protocol: tcp
+    host: notification_upstream
+    port: 9000
+
+  - name: auth_service_route
+    url: http://auth_upstream
+
+  - name: user_service_route
+    url: http://user_upstream
+
+  - name: driver_service_route
+    url: http://driver_upstream
+
+  - name: geolocation_tracking_route
+    url: http://geolocation_tracking_upstream 
+
+routes:
+  - name: auth_route
+    service: auth_service_route
+    paths:
+      - /api/v1/auth
+    strip_path: true
+
+  - name: user_route
+    service: user_service_route
+    paths:
+      - /api/v1/user
+    strip_path: true
+
+  - name: driver_route
+    service: driver_service_route
+    paths:
+      - /api/v1/driver
+    strip_path: true
+
+  - name: geolocation_tracking_route
+    service: geolocation_tracking_route
+    paths:
+      - /api/v1/geo
+    strip_path: true
+
+  - name: notification_tcp_route
+    protocols: [tcp]
+    destinations:
+      - port: 9001
+    service: notification_service
+
+consumers:
+  - username: user_consumer
+  - username: driver_consumer
+
+jwt_secrets:
+  - consumer: user_consumer
+    key: user-kid
+    algorithm: HS256
+    secret: FV77z4uhQ9M
+
+  - consumer: driver_consumer
+    key: driver-kid
+    algorithm: HS256
+    secret: FV77z4uhQ9M
+
+acls:
+  - consumer: user_consumer
+    group: user
+
+  - consumer: driver_consumer
+    group: driver
+
+plugins:
+  - name: jwt
+    service: user_service_route
+    config:
+      key_claim_name: kid
+      claims_to_verify:
+        - exp
+
+  - name: jwt
+    service: driver_service_route
+    config:
+      key_claim_name: kid
+      claims_to_verify:
+        - exp
+
+  - name: acl
+    service: user_service_route
+    config:
+      allow:
+        - user
+
+  - name: acl
+    service: driver_service_route
+    config:
+      allow:
+        - driver
