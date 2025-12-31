@@ -19,11 +19,11 @@ func OrderHandler(r fiber.Router, db *gorm.DB, rdb *redis.Client, amqp_cons, amq
 	controller := controller.NewOrderController(service)
 
 	api := r.Group("/")
-	api.Get("/:orderID", controller.GetOrderByID)
-
 	api.Get("/healthcheck", func(c *fiber.Ctx) error {
 		return c.Status(200).JSON(fiber.Map{"status": "pass"})
 	})
+
+	api.Get("/:orderID", controller.GetOrderByID)
 
 	return events
 }

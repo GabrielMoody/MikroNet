@@ -1,5 +1,7 @@
 package dto
 
+import "time"
+
 type (
 	EditUserDetails struct {
 		Name string `json:"name" validate:"required"`
@@ -34,5 +36,15 @@ type (
 	OrderConfirmationReq struct {
 		OrderID     int  `json:"order_id"`
 		IsConfirmed bool `json:"is_confirmed"`
+	}
+
+	GetOrderRequest struct {
+		OrderID       int       `json:"order_id"`
+		DriverName    string    `json:"driver_name"`
+		PassengerName string    `json:"passenger_name"`
+		PickupPoint   Point     `json:"pickup_point"`
+		DropoffPoint  Point     `json:"dropoff_point"`
+		Status        string    `json:"status"`
+		Date          time.Time `json:"date"`
 	}
 )

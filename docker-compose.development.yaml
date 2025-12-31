@@ -226,9 +226,11 @@ services:
     image: grafana/loki
     ports:
       - "3100:3100"
-    command: -config.expand-env=true -config.file=/etc/loki/local-config.yaml
+    command: 
+      - -config.file=/etc/loki/loki.yaml
+      - -config.expand-env=true 
     volumes:
-      - ./config/monitoring/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - ./config/monitoring/loki-config.yaml:/etc/loki/loki.yaml:ro
 
   fluent-bit:
     container_name: fluent-bit

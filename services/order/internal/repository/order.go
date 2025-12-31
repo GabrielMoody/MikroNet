@@ -21,7 +21,9 @@ type OrderRepoImpl struct {
 }
 
 func (a *OrderRepoImpl) GetOrderByID(c context.Context, orderId int) (res model.Order, err error) {
-	if err = a.db.WithContext(c).First(&res, orderId).Error; err != nil {
+	if err = a.db.WithContext(c).
+		First(&res, orderId).
+		Error; err != nil {
 		return res, err
 	}
 
