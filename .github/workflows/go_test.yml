@@ -23,6 +23,7 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
+      - name: Run Tests for All Services
         run: |
           find services -type f -name "go.mod" | while read -r gomod_file; do
             service_dir=$(dirname "$gomod_file")
