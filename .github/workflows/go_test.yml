@@ -21,7 +21,12 @@ jobs:
           go-version: '1.25'
 
       - name: Download dependencies
-        run: go mod download
+        run: |
+          find services -type f -name "go.mod" | while read -r gomod_file; do
+            service_dir=$(dirname "$gomod_file")
+            echo "Downloading dependencies in $service_dir"
+            (cd "$service_dir" && go mod download)
+          done
 
       - name: Run Tests for All Services
         run: |
