@@ -7,7 +7,7 @@ import (
 	"github.com/GabrielMoody/MikroNet/services/authentication/internal/dto"
 	"github.com/GabrielMoody/MikroNet/services/authentication/internal/helper"
 	"github.com/GabrielMoody/MikroNet/services/authentication/internal/models"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -47,9 +47,15 @@ func (a *AuthRepoImpl) CreateUser(c context.Context, data models.Authentication)
 	if err := tx.Create(&data).Error; err != nil {
 		tx.Rollback()
 
-		var psqlErr *pq.Error
+		var psqlErr *pgconn.PgError
 
-		if errors.As(err, &psqlErr) && psqlErr.Code == "23505" {
+		if errors.As(err, &psqlErr) {
+			if psqlErr.Code == "23505" {
+				return 0, helper.ErrDuplicateEntry
+			}
+		}
+
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return 0, helper.ErrDuplicateEntry
 		}
 
@@ -73,10 +79,12 @@ func (a *AuthRepoImpl) CreateDriver(c context.Context, data models.Authenticatio
 	if err := tx.Create(&data).Error; err != nil {
 		tx.Rollback()
 
-		var psqlErr *pq.Error
+		var psqlErr *pgconn.PgError
 
-		if errors.As(err, &psqlErr) && psqlErr.Code == "23505" {
-			return 0, helper.ErrDuplicateEntry
+		if errors.As(err, &psqlErr) {
+			if psqlErr.Code == "23505" {
+				return 0, helper.ErrDuplicateEntry
+			}
 		}
 
 		return 0, helper.ErrDatabase

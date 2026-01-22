@@ -30,3 +30,4 @@ services/user/uploads
 /redis_data
 
 /test_notification_client
+/driver_client

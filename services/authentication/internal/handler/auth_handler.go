@@ -2,17 +2,10 @@ package handler
 
 import (
 	"github.com/GabrielMoody/MikroNet/services/authentication/internal/controller"
-	"github.com/GabrielMoody/MikroNet/services/authentication/internal/repository"
-	"github.com/GabrielMoody/MikroNet/services/authentication/internal/service"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
-func AuthHandler(r fiber.Router, db *gorm.DB) {
-	repo := repository.NewAuthRepo(db)
-	authService := service.NewAuthService(repo)
-	authController := controller.NewAuthController(authService)
-
+func AuthHandler(r fiber.Router, authController controller.AuthController) {
 	authHandler := r.Group("/")
 
 	authHandler.Post("/register/user", authController.CreateUser)

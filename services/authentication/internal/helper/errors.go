@@ -3,6 +3,7 @@ package helper
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -63,42 +64,42 @@ func CheckError(err error) *ErrorStruct {
 	case errors.Is(err, ErrNotFound):
 		return &ErrorStruct{
 			Err:  err,
-			Code: 404,
+			Code: http.StatusNotFound,
 		}
 	case errors.Is(err, ErrDuplicateEntry):
 		return &ErrorStruct{
 			Err:  err,
-			Code: 409,
+			Code: http.StatusConflict,
 		}
 	case errors.Is(err, ErrDatabase):
 		return &ErrorStruct{
 			Err:  err,
-			Code: 500,
+			Code: http.StatusInternalServerError,
 		}
 	case errors.Is(err, ErrBadRequest):
 		return &ErrorStruct{
 			Err:  err,
-			Code: 400,
+			Code: http.StatusBadRequest,
 		}
 	case errors.Is(err, ErrPasswordIncorrect):
 		return &ErrorStruct{
 			Err:  err,
-			Code: 401,
+			Code: http.StatusUnauthorized,
 		}
 	case errors.Is(err, ErrBlockedAccount):
 		return &ErrorStruct{
 			Err:  err,
-			Code: 403,
+			Code: http.StatusForbidden,
 		}
 	case errors.Is(err, ErrNotVerified):
 		return &ErrorStruct{
 			Err:  err,
-			Code: 403,
+			Code: http.StatusForbidden,
 		}
 	default:
 		return &ErrorStruct{
 			Err:  err,
-			Code: 500,
+			Code: http.StatusInternalServerError,
 		}
 	}
 }
