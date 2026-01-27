@@ -3,7 +3,6 @@ package handler_test
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -40,8 +39,7 @@ func (suite *AuthHandlerTestSuite) SetupSuite() {
 	os.Setenv("JWT_SECRET", "test-secret")
 	os.Setenv("JWT_ISS", "test-iss")
 
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
+	connStr := "host=localhost port=5432 user=test password=test dbname=test_db sslmode=disable"
 
 	// Initialize gorm
 	gormDB, err := gorm.Open(gormpostgres.Open(connStr), &gorm.Config{})
@@ -67,7 +65,6 @@ func (suite *AuthHandlerTestSuite) SetupSuite() {
 		}
 	}
 
-
 	// Initialize fiber app
 	app := fiber.New()
 	repo := repository.NewAuthRepo(suite.db)
@@ -79,10 +76,9 @@ func (suite *AuthHandlerTestSuite) SetupSuite() {
 }
 
 func (suite *AuthHandlerTestSuite) TearDownTest() {
-    // Clean up the database after each test
-    suite.db.Exec("TRUNCATE TABLE authentications, users, drivers CASCADE")
+	// Clean up the database after each test
+	suite.db.Exec("TRUNCATE TABLE authentications, users, drivers CASCADE")
 }
-
 
 func TestAuthHandlerTestSuite(t *testing.T) {
 	suite.Run(t, new(AuthHandlerTestSuite))
