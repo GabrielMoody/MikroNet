@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 
+
 	"github.com/GabrielMoody/MikroNet/services/authentication/internal/dto"
 	"github.com/GabrielMoody/MikroNet/services/authentication/internal/helper"
 	"github.com/GabrielMoody/MikroNet/services/authentication/internal/models"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/mattn/go-sqlite3"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -47,21 +49,25 @@ func (a *AuthRepoImpl) CreateUser(c context.Context, data models.Authentication)
 	if err := tx.Create(&data).Error; err != nil {
 		tx.Rollback()
 
+		// Check for PostgreSQL unique constraint error
 		var psqlErr *pgconn.PgError
-
-		if errors.As(err, &psqlErr) {
-			if psqlErr.Code == "23505" {
-				return 0, helper.ErrDuplicateEntry
-			}
+		if errors.As(err, &psqlErr) && psqlErr.Code == "23505" {
+			return 0, helper.ErrDuplicateEntry
 		}
 
+		// Check for GORM's duplicated key error (should be database agnostic, but might not catch all cases)
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return 0, helper.ErrDuplicateEntry
+		}
+
+		// Check for SQLite specific unique constraint error
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
 			return 0, helper.ErrDuplicateEntry
 		}
 
 		return 0, helper.ErrDatabase
 	}
-
 	tx.Commit()
 
 	return data.ID, nil
@@ -79,17 +85,24 @@ func (a *AuthRepoImpl) CreateDriver(c context.Context, data models.Authenticatio
 	if err := tx.Create(&data).Error; err != nil {
 		tx.Rollback()
 
+		// Check for PostgreSQL unique constraint error
 		var psqlErr *pgconn.PgError
+		if errors.As(err, &psqlErr) && psqlErr.Code == "23505" {
+			return 0, helper.ErrDuplicateEntry
+		}
 
-		if errors.As(err, &psqlErr) {
-			if psqlErr.Code == "23505" {
-				return 0, helper.ErrDuplicateEntry
-			}
+		// Check for GORM's duplicated key error (should be database agnostic, but might not catch all cases)
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return 0, helper.ErrDuplicateEntry
+		}
+
+		// Check for SQLite specific unique constraint error
+		var sqliteErr sqlite3.Error
+					if errors.As(err, &sqliteErr) && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {			return 0, helper.ErrDuplicateEntry
 		}
 
 		return 0, helper.ErrDatabase
 	}
-
 	tx.Commit()
 
 	return data.ID, nil

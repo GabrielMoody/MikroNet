@@ -15,34 +15,27 @@ import (
 	"github.com/GabrielMoody/MikroNet/services/authentication/internal/repository"
 	"github.com/GabrielMoody/MikroNet/services/authentication/internal/service"
 	"github.com/gofiber/fiber/v2"
-	"github.com/jackc/pgx/v5/pgxpool"
+
 	"github.com/stretchr/testify/suite"
-	gormpostgres "gorm.io/driver/postgres"
+	gormsqlite "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 type AuthHandlerTestSuite struct {
 	suite.Suite
-	app      *fiber.App
-	db       *gorm.DB
-	pgxPool  *pgxpool.Pool
+	app *fiber.App
+	db  *gorm.DB
+	// Removed pgxPool as it's not used with SQLite
 	httpPort string
 }
 
 func (suite *AuthHandlerTestSuite) SetupSuite() {
 	// Set environment variables for the application
-	os.Setenv("DB_HOST", "localhost")
-	os.Setenv("DB_PORT", "5432")
-	os.Setenv("DB_USER", "postgres")
-	os.Setenv("DB_PASSWORD", "123")
-	os.Setenv("DB_NAME", "mikronet")
 	os.Setenv("JWT_SECRET", "test-secret")
 	os.Setenv("JWT_ISS", "test-iss")
 
-	connStr := "host=localhost port=5432 user=test password=test dbname=test_db sslmode=disable"
-
-	// Initialize gorm
-	gormDB, err := gorm.Open(gormpostgres.Open(connStr), &gorm.Config{})
+	// Initialize gorm with SQLite in-memory database
+	gormDB, err := gorm.Open(gormsqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
 		suite.T().Fatal(err)
 	}
@@ -77,7 +70,9 @@ func (suite *AuthHandlerTestSuite) SetupSuite() {
 
 func (suite *AuthHandlerTestSuite) TearDownTest() {
 	// Clean up the database after each test
-	suite.db.Exec("TRUNCATE TABLE authentications, users, drivers CASCADE")
+	suite.db.Exec("DELETE FROM authentications")
+	suite.db.Exec("DELETE FROM users")
+	suite.db.Exec("DELETE FROM drivers")
 }
 
 func TestAuthHandlerTestSuite(t *testing.T) {
