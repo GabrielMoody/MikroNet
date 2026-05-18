@@ -25,6 +25,8 @@ services:
       - DB_NAME=mikronet
       - JWT_SECRET=FV77z4uhQ9M
       - JWT_ISS=MikroNet
+    volumes:
+      - ./var/log:/var/log
     networks:
       - kong-net
 
@@ -46,6 +48,8 @@ services:
       - JWT_SECRET=FV77z4uhQ9M
       - JWT_ISS=MikroNet
       - BASE_URL=kong:8000/api
+    volumes:
+      - ./var/log:/var/log
     networks:
       - kong-net
 
@@ -63,6 +67,8 @@ services:
       - DB_NAME=mikronet
       - JWT_SECRET=FV77z4uhQ9M
       - JWT_ISS=MikroNet
+    volumes:
+      - ./var/log:/var/log
     networks:
       - kong-net
 
@@ -88,7 +94,7 @@ services:
       rabbitmq:
         condition: service_started
     volumes:
-      - ./var/log/mikronet:/var/log/mikronet
+      - ./var/log:/var/log
     environment:
       - DB_HOST=postgresql
       - DB_USER=postgres
@@ -114,6 +120,8 @@ services:
       - DB_NAME=mikronet
       - JWT_SECRET=FV77z4uhQ9M
       - JWT_ISS=MikroNet
+    volumes:
+      - ./var/log:/var/log
     networks:
       - kong-net
 
@@ -235,10 +243,13 @@ services:
   fluent-bit:
     container_name: fluent-bit
     image: fluent/fluent-bit
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
     volumes:
       - ./config/monitoring/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
       - ./config/monitoring/parser.conf:/fluent-bit/etc/parser.conf
-      - ./var/log/mikronet:/var/log/mikronet
+      - ./var/log:/var/log
     depends_on:
       - loki
 
@@ -278,4 +289,3 @@ services:
 networks:
   kong-net:
     driver: bridge
-

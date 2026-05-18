@@ -1,8 +1,11 @@
 run:
-	docker compose -f docker-compose.development.yaml up -d
+	docker compose up -d
+
+no-cache:
+	docker compose build --no-cache && docker compose up -d --force-recreate
 
 down:
-	docker compose -f docker-compose.development.yaml down
+	docker compose down
 
 build:
-	docker compose -f docker-compose.development.yaml build
+	docker compose build

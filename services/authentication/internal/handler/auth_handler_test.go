@@ -23,31 +23,26 @@ import (
 
 type AuthHandlerTestSuite struct {
 	suite.Suite
-	app *fiber.App
-	db  *gorm.DB
-	// Removed pgxPool as it's not used with SQLite
+	app      *fiber.App
+	db       *gorm.DB
 	httpPort string
 }
 
 func (suite *AuthHandlerTestSuite) SetupSuite() {
-	// Set environment variables for the application
 	os.Setenv("JWT_SECRET", "test-secret")
 	os.Setenv("JWT_ISS", "test-iss")
 
-	// Initialize gorm with SQLite in-memory database
 	gormDB, err := gorm.Open(gormsqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
 		suite.T().Fatal(err)
 	}
 	suite.db = gormDB
 
-	// Run migrations
 	sqlFile, err := ioutil.ReadFile("../../../../init.sql")
 	if err != nil {
 		suite.T().Fatal(err)
 	}
 
-	// Split the SQL file into individual statements
 	sqlStatements := bytes.Split(sqlFile, []byte(";"))
 
 	for _, statement := range sqlStatements {
@@ -58,7 +53,6 @@ func (suite *AuthHandlerTestSuite) SetupSuite() {
 		}
 	}
 
-	// Initialize fiber app
 	app := fiber.New()
 	repo := repository.NewAuthRepo(suite.db)
 	authService := service.NewAuthService(repo)
@@ -69,7 +63,6 @@ func (suite *AuthHandlerTestSuite) SetupSuite() {
 }
 
 func (suite *AuthHandlerTestSuite) TearDownTest() {
-	// Clean up the database after each test
 	suite.db.Exec("DELETE FROM authentications")
 	suite.db.Exec("DELETE FROM users")
 	suite.db.Exec("DELETE FROM drivers")
@@ -113,14 +106,12 @@ func (suite *AuthHandlerTestSuite) TestCreateUser_Duplicate() {
 	}
 	body, _ := json.Marshal(user)
 
-	// First request
 	req1 := httptest.NewRequest("POST", "/register/user", bytes.NewReader(body))
 	req1.Header.Set("Content-Type", "application/json")
 	resp1, err1 := suite.app.Test(req1)
 	suite.NoError(err1)
 	suite.Equal(http.StatusCreated, resp1.StatusCode)
 
-	// Second request with the same email
 	req2 := httptest.NewRequest("POST", "/register/user", bytes.NewReader(body))
 	req2.Header.Set("Content-Type", "application/json")
 	resp2, err2 := suite.app.Test(req2)
@@ -147,7 +138,6 @@ func (suite *AuthHandlerTestSuite) TestCreateDriver_Success() {
 }
 
 func (suite *AuthHandlerTestSuite) TestLoginUser_Success() {
-	// Create user first
 	user := dto.UserRegistrationsReq{
 		Email:                "test@example.com",
 		Password:             "password",
@@ -160,7 +150,6 @@ func (suite *AuthHandlerTestSuite) TestLoginUser_Success() {
 	req.Header.Set("Content-Type", "application/json")
 	suite.app.Test(req)
 
-	// Login
 	loginReq := dto.UserLoginReq{
 		Email:    "test@example.com",
 		Password: "password",
@@ -194,7 +183,6 @@ func (suite *AuthHandlerTestSuite) TestLoginUser_NotFound() {
 }
 
 func (suite *AuthHandlerTestSuite) TestLoginUser_IncorrectPassword() {
-	// Create user first
 	user := dto.UserRegistrationsReq{
 		Email:                "test@example.com",
 		Password:             "password",
@@ -207,7 +195,6 @@ func (suite *AuthHandlerTestSuite) TestLoginUser_IncorrectPassword() {
 	req.Header.Set("Content-Type", "application/json")
 	suite.app.Test(req)
 
-	// Login with incorrect password
 	loginReq := dto.UserLoginReq{
 		Email:    "test@example.com",
 		Password: "wrongpassword",
